@@ -1,4 +1,4 @@
-# Lumen IM 即时聊天
+# Lumen IM 即时聊天系统
 
 
 [![License](https://poser.pugx.org/laravel/lumen-framework/license.svg)](https://packagist.org/packages/laravel/lumen-framework)
