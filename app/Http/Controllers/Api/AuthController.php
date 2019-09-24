@@ -14,6 +14,10 @@ class AuthController extends CController
 {
 
     public function login(){
+
+
+
+        
         dd(config('database'));
 
         dd(Config::where('config_name','asdfas')->get()->toArray());
