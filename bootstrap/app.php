@@ -6,6 +6,13 @@ require_once __DIR__.'/../vendor/autoload.php';
     dirname(__DIR__)
 ))->bootstrap();
 
+//https://learnku.com/laravel/t/9582/new-wheel-php-cors-middleware-to-solve-cross-domain-problems-in-lumen-programs
+//https://learnku.com/articles/20051
+header('Access-Control-Allow-Origin:*');
+header('Access-Control-Allow-Methods:GET,POST,PUT,DELETE');
+header('Access-Control-Allow-Headers:Origin, Content-Type, Cookie, Accept, X-CSRF-TOKEN');
+header('Access-Control-Allow-Credentials:true');
+
 /*
 |--------------------------------------------------------------------------
 | Create The Application
@@ -30,6 +37,7 @@ $app->withFacades(true,[
 ]);
 
 $app->withEloquent();
+
 
 
 /*
@@ -87,6 +95,8 @@ $app->routeMiddleware([
 
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+//$app->register(Medz\Cors\Lumen\ServiceProvider::class);
+
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes

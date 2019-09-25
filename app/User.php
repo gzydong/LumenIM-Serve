@@ -1,13 +1,26 @@
 <?php
+
 namespace App;
 
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Database\Eloquent\Model;
+use Laravel\Lumen\Auth\Authorizable;
+
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Model implements AuthenticatableContract, AuthorizableContract ,JWTSubject
 {
-    use Notifiable;
+    use Authenticatable, Authorizable;
+
+    /**
+     * 关联到模型的数据表
+     *
+     * @var string
+     */
+    protected $table = 'lar_users';
+
 
     /**
      * The attributes that are mass assignable.
@@ -15,24 +28,17 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'openid', 'unionid','mobile','nickname','avatarurl','gender','password','created_at'
+        'mobile', 'nickname','avatarurl','gender','password','created_at'
     ];
 
     /**
-     * The attributes that should be hidden for arrays.
+     * The attributes excluded from the model's JSON form.
      *
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
     ];
-
-    /**
-     * 表明模型是否应该被打上时间戳
-     *
-     * @var bool
-     */
-    public $timestamps = false;
 
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
@@ -53,5 +59,11 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
-}
 
+    /**
+     * 表明模型是否应该被打上时间戳
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+}

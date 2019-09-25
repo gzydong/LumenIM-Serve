@@ -12,6 +12,5 @@
 */
 
 $router->get('/', function () use ($router) {
-
     return '欢迎来到Lumen';
 });

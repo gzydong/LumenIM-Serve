@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
  */
 class ApiSignAuth
 {
-
     /**
      * 不需要签名验证的url白名单 (例如: api/index/get-home-page)
      *
