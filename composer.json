@@ -8,7 +8,6 @@
         "php": "^7.2",
         "illuminate/redis": "^6.0",
         "laravel/lumen-framework": "^6.0",
-        "medz/cors": "^1.4",
         "predis/predis": "^1.1",
         "tymon/jwt-auth": "1.0.0-rc.5"
     },

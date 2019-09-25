@@ -15,4 +15,5 @@ $router->group([],function () use ($router) {
 //AuthController 控制器分组
 $router->group([],function () use ($router) {
     $router->get('/auth/login', ['middleware'=>[],'uses' => 'AuthController@login']);
+    $router->get('/auth/register', ['middleware'=>[],'uses' => 'AuthController@register']);
 });

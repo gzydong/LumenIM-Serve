@@ -16,11 +16,12 @@ class UsersLogic extends Logic
 {
 
     /**
-     * 用户注册逻辑
+     * 账号注册逻辑
+     * @param array $data
+     * @return bool
      */
     public function register(array $data){
         try{
-
             $data['password']    = Hash::make($data['password']);
             $data['created_at']  = date('Y-m-d H:i:s');
             $isTrue = User::create($data);
@@ -29,5 +30,23 @@ class UsersLogic extends Logic
         }
 
         return $isTrue;
+    }
+
+    /**
+     * 获取用户所有好友
+     *
+     * @param int $uid  用户ID
+     */
+    public function getUserFriends(int $uid){
+
+    }
+
+    /**
+     * 获取用户所在的群聊
+     *
+     * @param int $uid 用户ID
+     */
+    public function getUserChatGroups(int $uid){
+
     }
 }

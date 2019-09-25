@@ -17,13 +17,23 @@ class AuthController extends CController
     /**
      * 账号注册接口
      *
+     * @param Request $request
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(UsersLogic $usersLogic){
+    public function register(Request $request,UsersLogic $usersLogic){
+        $params = $request->filled(['mobile','password','invite_code'=>'']);
+        if(!$request->filled(['mobile','password','invite_code'=>'']) || !isMobile($params['mobile'])){
+            return $this->ajaxParamError();
+        }
+
+        if($params['invite_code'] == 'aa123456'){
+            return $this->ajaxParamError('邀请码不正确...');
+        }
+
         $isTrue = $usersLogic->register([
-            'mobile'=>'18798276809',
-            'password'=>'aa123456'
+            'mobile'  =>$params['mobile'],
+            'password'=>$params['password']
         ]);
 
         return $isTrue ? $this->ajaxSuccess('账号注册成功...') : $this->ajaxError('账号注册失败,手机号已被其他(她)人使用...');
