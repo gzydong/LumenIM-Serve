@@ -22,9 +22,15 @@ class AuthController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function register(Request $request,UsersLogic $usersLogic){
-        $params = $request->filled(['mobile','password','invite_code'=>'']);
-        if(!$request->filled(['mobile','password','invite_code'=>'']) || !isMobile($params['mobile'])){
+        $params = $request->filled(['mobile','password','invite_code']);
+
+        dd($request->post());
+        if(!$request->filled(['mobile','password','invite_code'])){
             return $this->ajaxParamError();
+        }
+
+        if(!isMobile($params['mobile'])){
+            return $this->ajaxParamError('手机号格式不正确...');
         }
 
         if($params['invite_code'] == 'aa123456'){
@@ -43,10 +49,9 @@ class AuthController extends CController
      * 账号登录接口
      *
      * @param Request $request
-     * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request,UsersLogic $usersLogic){
+    public function login(Request $request){
         if(!$request->filled(['mobile','password'])){
             return $this->ajaxParamError();
         }
@@ -62,7 +67,7 @@ class AuthController extends CController
         }
 
         if (!$token = Auth::login($user)) {
-            return $this->ajaxReturn(30004, '获取登录状态失败');
+            return $this->ajaxReturn(305, '获取登录状态失败');
         }
 
         return $this->ajaxReturn(200, '授权登录成功', [

@@ -3,8 +3,11 @@
 namespace App\Logic;
 
 use App\User;
+use App\Models\UsersFriends;
+
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 
 /**
@@ -22,6 +25,7 @@ class UsersLogic extends Logic
      */
     public function register(array $data){
         try{
+            $data['nickname']    = Str::random(10);
             $data['password']    = Hash::make($data['password']);
             $data['created_at']  = date('Y-m-d H:i:s');
             $isTrue = User::create($data);
@@ -33,12 +37,13 @@ class UsersLogic extends Logic
     }
 
     /**
-     * 获取用户所有好友
+     * 获取用户好友列表
      *
-     * @param int $uid  用户ID
+     * @param int $uid 用户ID
+     * @return mixed
      */
     public function getUserFriends(int $uid){
-
+        return (new UsersFriends())->getUserFriends($uid);
     }
 
     /**

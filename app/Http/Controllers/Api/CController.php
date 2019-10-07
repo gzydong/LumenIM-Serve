@@ -51,7 +51,11 @@ class CController extends Controller
         return $this->ajaxReturn(305, $msg, $data);
     }
 
-
+    /**
+     * 请求参数错误提示
+     * @param string $msg
+     * @return \Illuminate\Http\JsonResponse
+     */
     protected function ajaxParamError($msg = '请求参数错误')
     {
         return $this->ajaxReturn(301, $msg, []);
