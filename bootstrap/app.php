@@ -1,10 +1,17 @@
 <?php
-
 require_once __DIR__.'/../vendor/autoload.php';
 
-(new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
-    dirname(__DIR__)
-))->bootstrap();
+//6.0 启动方式
+//(new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
+//    dirname(__DIR__)
+//))->bootstrap();
+
+
+//5.7启动方式
+try {
+    (new Dotenv\Dotenv(dirname(__DIR__)))->load();
+} catch (Dotenv\Exception\InvalidPathException $e) {}
+
 
 //https://learnku.com/laravel/t/9582/new-wheel-php-cors-middleware-to-solve-cross-domain-problems-in-lumen-programs
 //https://learnku.com/articles/20051

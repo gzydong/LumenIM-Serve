@@ -2,6 +2,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+
+
+use Illuminate\Support\Facades\Auth;
 class CController extends Controller
 {
 
@@ -12,7 +15,7 @@ class CController extends Controller
      */
     protected function guard()
     {
-        return auth('api');
+        return Auth::guard('api');
     }
 
     /**

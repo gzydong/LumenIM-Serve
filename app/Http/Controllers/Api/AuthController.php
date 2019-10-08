@@ -22,19 +22,19 @@ class AuthController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function register(Request $request,UsersLogic $usersLogic){
-        $params = $request->filled(['mobile','password','invite_code']);
 
-        dd($request->post());
+
         if(!$request->filled(['mobile','password','invite_code'])){
             return $this->ajaxParamError();
         }
 
+        $params = $request->only(['mobile','password','invite_code']);
         if(!isMobile($params['mobile'])){
             return $this->ajaxParamError('手机号格式不正确...');
         }
 
         if($params['invite_code'] == 'aa123456'){
-            return $this->ajaxParamError('邀请码不正确...');
+            return $this->ajaxParamError('注册邀请码不正确...');
         }
 
         $isTrue = $usersLogic->register([
