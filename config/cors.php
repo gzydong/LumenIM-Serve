@@ -7,10 +7,19 @@
  */
 
 return [
-    'allow-credentiails' => env('CORS_ALLOW_CREDENTIAILS', false), // set "Access-Control-Allow-Credentials" ? string "false" or "true".
-    'allow-headers'      => ['*'], // ex: Content-Type, Accept, X-Requested-With
-    'expose-headers'     => [],
-    'origins'            => ['*'], // ex: http://localhost
-    'methods'            => ['*'], // ex: GET, POST, PUT, PATCH, DELETE
-    'max-age'            => env('CORS_ACCESS_CONTROL_MAX_AGE', 0),
+    /*
+    |--------------------------------------------------------------------------
+    | Laravel CORS
+    |--------------------------------------------------------------------------
+    |
+    | allowedOrigins, allowedHeaders and allowedMethods can be set to array('*')
+    | to accept any value.
+    |
+    */
+    'supportsCredentials' => false,
+    'allowedOrigins' => ['*'],
+    'allowedHeaders' => ['Content-Type', 'X-Requested-With','Authorization'],
+    'allowedMethods' => ['*'], // ex: ['GET', 'POST', 'PUT',  'DELETE']
+    'exposedHeaders' => [],
+    'maxAge' => 60*60*1,//Access-Control-Max-Age 字段指定了预检请求的结果能够被缓存多久，单位秒
 ];

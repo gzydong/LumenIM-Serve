@@ -12,14 +12,6 @@ try {
     (new Dotenv\Dotenv(dirname(__DIR__)))->load();
 } catch (Dotenv\Exception\InvalidPathException $e) {}
 
-
-//https://learnku.com/laravel/t/9582/new-wheel-php-cors-middleware-to-solve-cross-domain-problems-in-lumen-programs
-//https://learnku.com/articles/20051
-header('Access-Control-Allow-Origin:*');
-header('Access-Control-Allow-Methods:GET,POST,PUT,DELETE');
-header('Access-Control-Allow-Headers:Origin, Content-Type, Cookie, Accept, X-CSRF-TOKEN');
-header('Access-Control-Allow-Credentials:true');
-
 /*
 |--------------------------------------------------------------------------
 | Create The Application
@@ -35,14 +27,16 @@ $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
 
+//加载配置文件
 $app->configure('config');
 $app->configure('database');
+$app->configure('cors');
 
-$app->withFacades(true,[
-    'Tymon\JWTAuth\Facades\JWTAuth'             => 'JWTAuth',
-    'Tymon\JWTAuth\Facades\JWTFactory'          => 'JWTFactory'
-]);
 
+//允许使用门面
+$app->withFacades();
+
+//允许使用ORM 查看类
 $app->withEloquent();
 
 
@@ -79,10 +73,16 @@ $app->singleton(
 |
 */
 
-//加载中间件
+//加载中间件组
 $app->routeMiddleware([
-    'api.auth' => App\Http\Middleware\ApiSignAuth::class,
+    'api.auth' => App\Http\Middleware\ApiSignAuth::class
 ]);
+
+//加载默认中间件
+$app->middleware([
+    \Barryvdh\Cors\HandleCors::class
+]);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -102,7 +102,11 @@ $app->routeMiddleware([
 
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
-//$app->register(Medz\Cors\Lumen\ServiceProvider::class);
+
+
+//注册支持跨域服务
+$app->register(Barryvdh\Cors\ServiceProvider::class);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -129,6 +133,5 @@ $app->router->group([
 ], function ($router) {
     require __DIR__.'/../routes/api.php';
 });
-
 
 return $app;
