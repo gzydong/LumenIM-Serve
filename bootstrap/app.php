@@ -107,6 +107,7 @@ $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 //注册支持跨域服务
 $app->register(Barryvdh\Cors\ServiceProvider::class);
 
+$app->register(SwooleTW\Http\LumenServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------
