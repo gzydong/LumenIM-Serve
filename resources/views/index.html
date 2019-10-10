@@ -1,0 +1,33 @@
+!<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+<script type="text/javascript">
+
+    var ws = new WebSocket("ws://127.0.0.1:1215/socket.io?sid=7hKWVnKteqU21PKPDAF2pA");
+
+    ws.onopen = function(evt) {  //绑定连接事件
+        console.log("Connection open ...");
+        ws.send("发送的数据");
+    };
+
+    ws.onmessage = function(evt) {//绑定收到消息事件
+        console.log( "Received Message: " + evt.data);
+    };
+
+    ws.onclose = function(evt) { //绑定关闭或断开连接事件
+        console.log("Connection closed.");
+    };
+
+
+
+    setTimeout(function(){
+        console.log('asfaaaaaa');
+        ws.send('fasfansjfnaks');
+    },5000)
+</script>
+
+</body>
+</html>
