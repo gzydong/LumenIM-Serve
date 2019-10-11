@@ -5,12 +5,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Swoole\Websocket\Frame;
 use SwooleTW\Http\Server\Facades\Server;
-
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 
 class SocketHandler  extends WebsocketHandler
 {
 
+    /**
+     * 连接成功方法
+     * @param int $fd
+     * @param Request $request
+     * @return bool
+     */
     public function onOpen($fd, Request $request)
     {
         echo date('Y-m-d H:i:s')." {$fd}连接了".PHP_EOL;
@@ -19,6 +24,11 @@ class SocketHandler  extends WebsocketHandler
         return true;
     }
 
+    /**
+     * 消息接收方法
+     * @param Frame $frame
+     * @return bool|void
+     */
     public function onMessage(Frame $frame)
     {
         $wsServer = App::make(Server::class);

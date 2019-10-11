@@ -1,20 +1,29 @@
-!<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title></title>
 </head>
 <body>
+<input type="text" id="ele-value">
+<input type="button" id="ele-send" value="发送" />
+
+
+<div id="list-val" style="width: 500px;min-height: 300px;border: 1px solid red">
+
+</div>
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
 <script type="text/javascript">
 
-    var ws = new WebSocket("ws://127.0.0.1:1215/socket.io?sid=7hKWVnKteqU21PKPDAF2pA");
-
+    let ws = new WebSocket("ws://47.105.180.123:9501/socket.io?sid=7hKWVnKteqU21PKPDAF2pA");
     ws.onopen = function(evt) {  //绑定连接事件
         console.log("Connection open ...");
-        ws.send("发送的数据");
+        ws.send("连接成功");
     };
 
     ws.onmessage = function(evt) {//绑定收到消息事件
         console.log( "Received Message: " + evt.data);
+
+        $('#list-val').append(`<p>${evt.data}</p>`);
     };
 
     ws.onclose = function(evt) { //绑定关闭或断开连接事件
@@ -22,11 +31,12 @@
     };
 
 
+    $('#ele-send').on('click',function () {
+        let val= $('#ele-value').val();
 
-    setTimeout(function(){
-        console.log('asfaaaaaa');
-        ws.send('fasfansjfnaks');
-    },5000)
+
+        ws.send(val);
+    });
 </script>
 
 </body>
