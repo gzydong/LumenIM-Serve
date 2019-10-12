@@ -3,6 +3,8 @@ namespace App\Services\Websocket;
 
 use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\SocketIO\Packet;
+use Illuminate\Support\Arr;
+
 
 class SocketIOParser extends Parser
 {
@@ -11,6 +13,15 @@ class SocketIOParser extends Parser
     {
         $skip = false;
 
+        $data = $frame->data;
+        if($data == 'heartbeat'){
+            return true;
+        }
+
+        $data = json_decode($data,true);
+        if(!$data){
+            return true;
+        }
 
         return $skip;
     }

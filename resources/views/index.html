@@ -6,6 +6,7 @@
 <body>
 <input type="text" id="ele-value">
 <input type="button" id="ele-send" value="发送" />
+<input type="button" id="ele-close" value="关闭" />
 
 
 <div id="list-val" style="width: 500px;min-height: 300px;border: 1px solid red">
@@ -14,29 +15,88 @@
 <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
 <script type="text/javascript">
 
-    let ws = new WebSocket("ws://47.105.180.123:9501/socket.io?sid=7hKWVnKteqU21PKPDAF2pA");
-    ws.onopen = function(evt) {  //绑定连接事件
-        console.log("Connection open ...");
-        ws.send("连接成功");
+    let obj = {
+        fromUserId:'7hKWVnKteqU21PKPDAF2pA',
+        getData:function (toUserId,message) {
+            return {
+                //1:私信  2:群聊
+                sourceType:1,
+
+                //接收者信息
+                receiveUser: toUserId,
+
+                //发送者ID
+                sendUser: this.fromUserId,
+
+                //消息类型  1:文字消息  2:图片消息  3:文件消息
+                msgType:1,
+
+                //文字消息
+                textMessage:'',
+
+                //图片消息
+                imgMessage:'',
+
+                //文件消息
+                fileMessage:'',
+            };
+        },
+
+        heartbeatInterval:null,
     };
 
-    ws.onmessage = function(evt) {//绑定收到消息事件
-        console.log( "Received Message: " + evt.data);
 
-        $('#list-val').append(`<p>${evt.data}</p>`);
-    };
-
-    ws.onclose = function(evt) { //绑定关闭或断开连接事件
-        console.log("Connection closed.");
-    };
+    try {
+        let ws = new WebSocket("ws://127.0.0.1:1215/socket.io?sid=1000022");
 
 
-    $('#ele-send').on('click',function () {
-        let val= $('#ele-value').val();
+        ws.onerror = function(e){
+            console.log('error',e);
+        };
+
+        ws.onopen = function(evt) {  //绑定连接事件
+            console.log("Connection open ...");
+
+            //连接成功后一分钟发送一次心跳检测
+            obj.heartbeatInterval = setInterval(function () {
+                // ws.send('heartbeat');
+            },10000);
+        };
+
+        ws.onmessage = function(evt) {//绑定收到消息事件
+            let [messageName,message] = JSON.parse(evt.data.substr(2));
+
+            message = JSON.stringify(message)
+
+            $('#list-val').append(`<p>${message}</p>`);
+        };
+
+        ws.onclose = function(evt) { //绑定关闭或断开连接事件
+            console.log("Connection closed.");
+            clearInterval(obj.heartbeatInterval);
 
 
-        ws.send(val);
-    });
+            console.log(evt);
+            if(evt.code == 4030){
+                alert('您的账号在其他设备登录，如果这不是您的操作，请及时修改您的登录密码');
+            }
+        };
+
+
+        $('#ele-send').on('click',function () {
+            let val= $('#ele-value').val();
+            ws.send(JSON.stringify(obj.getData('test',val)));
+        });
+        $('#ele-close').on('click',function () {
+            ws.close(4000,'33333');
+        });
+
+
+    }catch (e) {
+        if (window.console) alert(exception);
+    }
+
+
 </script>
 
 </body>

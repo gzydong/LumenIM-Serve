@@ -41,6 +41,11 @@ return [
             // You must add --enable-openssl while compiling Swoole
             'ssl_cert_file' => null,
             'ssl_key_file' => null,
+
+
+//            设置心跳检测
+            'heartbeat_idle_time' => 30,
+            'heartbeat_check_interval' => 30,
         ],
     ],
 

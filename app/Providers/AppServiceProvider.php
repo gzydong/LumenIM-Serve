@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
+use App\Helpers\WebSocketHelper;
+
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -13,6 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton('websocket.helper', function ($app) {
+            return new WebSocketHelper();
+        });
     }
 }

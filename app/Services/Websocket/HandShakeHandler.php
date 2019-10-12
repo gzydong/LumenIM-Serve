@@ -29,8 +29,6 @@ class HandShakeHandler
             return false;
         }
 
-        echo "token:{$token}".PHP_EOL;
-
         //连接用户验证
         if(empty($token)){
             $response->status(401);

@@ -32,9 +32,9 @@ return [
     |--------------------------------------------------------------------------
     */
     'middleware' => [
-//         SwooleTW\Http\Websocket\Middleware\DecryptCookies::class,
-//         SwooleTW\Http\Websocket\Middleware\StartSession::class,
-//         SwooleTW\Http\Websocket\Middleware\Authenticate::class,
+         SwooleTW\Http\Websocket\Middleware\DecryptCookies::class,
+         SwooleTW\Http\Websocket\Middleware\StartSession::class,
+         SwooleTW\Http\Websocket\Middleware\Authenticate::class,
     ],
 
     /*
@@ -60,7 +60,7 @@ return [
     | Websocket client's heartbeat interval (ms)
     |--------------------------------------------------------------------------
     */
-    'ping_interval' => 10*1000,
+    'ping_interval' => 25*1000,
 
     /*
     |--------------------------------------------------------------------------

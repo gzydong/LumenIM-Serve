@@ -18,3 +18,11 @@ $router->group([],function () use ($router) {
     $router->post('/auth/logout', ['middleware'=>[],'uses' => 'AuthController@logout']);
     $router->post('/auth/refresh-token', ['middleware'=>[],'uses' => 'AuthController@refreshToken']);
 });
+
+
+
+
+//ChatController 控制器分组
+$router->group([],function () use ($router) {
+    $router->get('/caht/user-records', ['middleware'=>[],'uses' => 'ChatController@userRecords']);
+});
