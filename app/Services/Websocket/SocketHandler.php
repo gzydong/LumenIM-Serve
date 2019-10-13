@@ -52,18 +52,8 @@ class SocketHandler  extends WebsocketHandler
     public function onMessage(Frame $frame)
     {
 
-        var_dump($frame);
-
-
-        $data = [
-            'sourceType'=>1,
-            'receiveUser'=> 'toUserId',//接收者信息
-            'sendUser'=> '',//发送者ID
-            'msgType'=>1,//消息类型  1:文字消息  2:图片消息  3:文件消息
-            'textMessage'=>$frame->data,//文字消息
-            'imgMessage'=>'',//图片消息
-            'fileMessage'=>'',//文件消息
-        ];
+        //sourceType:发送类型(1:私信  2:群聊)   receiveUser:接收者信息        sendUser:发送者ID  msgType:消息类型(1:文字消息  2:图片消息  3:文件消息)    textMessage:文字消息     imgMessage:图片消息       fileMessage:文件消息
+        var_dump($frame->data);
 
         Websocket::broadcast()->to('qunliao')->emit('message', json_encode($data));
 

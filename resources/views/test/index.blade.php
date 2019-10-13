@@ -16,29 +16,16 @@
 <script type="text/javascript">
 
     let obj = {
-        fromUserId:'7hKWVnKteqU21PKPDAF2pA',
+        fromUserId:"{{$sid}}",
         getData:function (toUserId,message) {
             return {
-                //1:私信  2:群聊
-                sourceType:1,
-
-                //接收者信息
-                receiveUser: toUserId,
-
-                //发送者ID
-                sendUser: this.fromUserId,
-
-                //消息类型  1:文字消息  2:图片消息  3:文件消息
-                msgType:1,
-
-                //文字消息
-                textMessage:'',
-
-                //图片消息
-                imgMessage:'',
-
-                //文件消息
-                fileMessage:'',
+                sourceType:2,//1:私信  2:群聊
+                receiveUser: 1,//接收者信息
+                sendUser: this.fromUserId,//发送者ID
+                msgType:1,//消息类型  1:文字消息  2:图片消息  3:文件消息
+                textMessage:'',//文字消息
+                imgMessage:'',//图片消息
+                fileMessage:'',//文件消息
             };
         },
 

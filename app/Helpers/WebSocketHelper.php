@@ -14,6 +14,7 @@ class WebSocketHelper
     //通过用户ID可找到用户的fd
     const BIND_USER_TO_FD ='hash.users.fds';
     const BIND_FD_TO_USER ='hash.fds.list';
+    const ROOM_GROUP_PREFIX ='room.group.chat';
 
     /**
      * 获取reids 实例
@@ -97,8 +98,19 @@ class WebSocketHelper
 
         //将用户添加到所在的所有房间里
         $rooms = array_map(function ($group_id){
-            return "room.group.chat.{$group_id}";
+            return self::ROOM_GROUP_PREFIX.$group_id;
         },$ids);
         Room::add($fd, $rooms);
     }
+
+    /**
+     * 获取群聊ID的房间名称
+     *
+     * @param $group_id 群聊ID
+     * @return string
+     */
+    public function getRoomGroupName($group_id){
+        return self::ROOM_GROUP_PREFIX.$group_id;
+    }
+
 }
