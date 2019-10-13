@@ -18,7 +18,7 @@ class TestController
             'imgMessage'=>'',
             'fileMessage'=>'',
         ];
-
+        sdf
 
         dd(array_has($data,['sourceType','receiveUser','sendUser','msgType','textMessage','imgMessage','fileMessage']));
 
