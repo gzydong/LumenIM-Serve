@@ -24,6 +24,9 @@ class SocketHandler  extends WebsocketHandler
     {
         echo date('Y-m-d H:i:s')." {$fd}连接了".PHP_EOL;
 
+        var_dump(Room::getClients('room.group.chat.1'));
+
+
         $user_id = $request->get('sid');
         if($fd == 1){
             WebSocketHelper::clearRedisCache();
@@ -45,8 +48,11 @@ class SocketHandler  extends WebsocketHandler
         WebSocketHelper::bindUserFd($user_id,$fd);   //绑定用户ID与fd的关系
         WebSocketHelper::bindGroupChat($user_id,$fd);//绑定群聊关系
 
-
+        echo PHP_EOL;
         var_dump(Room::getRooms($fd));
+        echo PHP_EOL;
+
+        var_dump(Room::getClients('room.group.chat.1'));
 
         return true;
     }

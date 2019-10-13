@@ -43,9 +43,9 @@ return [
             'ssl_key_file' => null,
 
 
-//            设置心跳检测
-            'heartbeat_idle_time' => 30,
-            'heartbeat_check_interval' => 30,
+            //设置心跳检测
+            'heartbeat_idle_time' => 60*3,
+            'heartbeat_check_interval' => 60,
         ],
     ],
 
