@@ -38,7 +38,6 @@
         heartbeatInterval:null,
     };
 
-
     try {
         let ws = new WebSocket("ws://47.105.180.123:9501/socket.io?sid={{$sid}}");
 

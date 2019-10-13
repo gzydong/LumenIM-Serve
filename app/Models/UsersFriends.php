@@ -51,4 +51,21 @@ SQL;
 
         return DB::select($sql);
     }
+
+    /**
+     * 判断用户之间是否存在好友关系
+     *
+     * @param int $user_id1  用户1
+     * @param int $user_id2  用户2
+     * @return bool
+     */
+    public static function checkFriends(int $user_id1,int $user_id2){
+        $sql = <<<SQL
+            (SELECT user2 as uid from lar_users_friends where user1 = {$user_id1} and user2 = {$user_id2} and `status` = 1 limit 1)
+              UNION all
+            (SELECT user1 as uid from lar_users_friends where user1 = {$user_id2} and user2 = {$user_id1} and `status` = 1 limit 1)
+SQL;
+
+        return DB::select($sql) ? true :false;
+    }
 }

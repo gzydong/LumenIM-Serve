@@ -19,5 +19,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('websocket.helper', function ($app) {
             return new WebSocketHelper();
         });
+
+        $this->app->singleton('chat.service', function ($app) {
+            return new ChatService();
+        });
     }
 }

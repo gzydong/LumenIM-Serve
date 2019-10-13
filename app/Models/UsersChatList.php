@@ -1,15 +1,22 @@
 <?php
-namespace App\Models;
-use Illuminate\Database\Eloquent\Model;
+/**
+ * Created by PhpStorm.
+ * User: admin
+ * Date: 2019/10/13
+ * Time: 17:17
+ */
 
-class UsersGroupMember extends Model
+namespace App\Models;
+
+
+class UsersChatList extends Model
 {
     /**
      * 关联到模型的数据表
      *
      * @var string
      */
-    protected $table = 'users_group_member';
+    protected $table = 'users_chat_list';
 
     /**
      * 不能被批量赋值的属性
@@ -23,8 +30,7 @@ class UsersGroupMember extends Model
      *
      * @var array
      */
-    protected $fillable = ['group_id','uid','group_owner','created_at'];
-
+    protected $fillable = ['type','uid','friend_id','friend_id','group_id','status','created_at'];
 
     /**
      * 表明模型是否应该被打上时间戳

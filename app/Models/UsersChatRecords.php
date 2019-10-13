@@ -1,15 +1,15 @@
 <?php
 namespace App\Models;
-use Illuminate\Database\Eloquent\Model;
 
-class UsersGroupMember extends Model
+use Illuminate\Database\Eloquent\Model;
+class UsersChatRecords extends Model
 {
     /**
      * 关联到模型的数据表
      *
      * @var string
      */
-    protected $table = 'users_group_member';
+    protected $table = 'users_chat_records';
 
     /**
      * 不能被批量赋值的属性
@@ -23,8 +23,7 @@ class UsersGroupMember extends Model
      *
      * @var array
      */
-    protected $fillable = ['group_id','uid','group_owner','created_at'];
-
+    protected $fillable = ['source','user_id','friend_id','group_id','send_time'];
 
     /**
      * 表明模型是否应该被打上时间戳
