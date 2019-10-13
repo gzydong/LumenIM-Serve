@@ -3,17 +3,21 @@ namespace App\Services\Websocket;
 
 use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\SocketIO\Packet;
-use Illuminate\Support\Arr;
 
-
+/**
+ * 消息接收过滤处理类
+ *
+ * @package App\Services\Websocket
+ */
 class SocketIOParser extends Parser
 {
 
     public function execute($server, $frame)
     {
+        $data = $frame->data;
         $skip = false;
 
-        $data = $frame->data;
+        //心跳过滤
         if($data == 'heartbeat'){
             return true;
         }
