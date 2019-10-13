@@ -6,6 +6,11 @@
 <body>
 <span>接受者ID</span>
 <input type="text" id="ele-receive-user" value="0"><br/><br/>
+
+<span>聊天类型</span>
+<input type="text" id="ele-source-type" value="1"><br/><br/>
+
+
 <input type="text" id="ele-value" value="" placeholder="发送内容">
 <input type="button" id="ele-send" value="发送" />
 <input type="button" id="ele-close" value="关闭" />
@@ -21,7 +26,7 @@
         fromUserId:"{{$sid}}",
         getData:function (toUserId,message) {
             return {
-                sourceType:1,//1:私信  2:群聊
+                sourceType:$('#ele-source-type').val(),//1:私信  2:群聊
                 receiveUser: $('#ele-receive-user').val(),//接收者信息
                 sendUser: this.fromUserId,//发送者ID
                 msgType:1,//消息类型  1:文字消息  2:图片消息  3:文件消息
