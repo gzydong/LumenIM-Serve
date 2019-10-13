@@ -47,7 +47,7 @@
 
 
     try {
-        let ws = new WebSocket("ws://47.105.180.123:9501/socket.io?sid=1000022");
+        let ws = new WebSocket("ws://47.105.180.123:9501/socket.io?sid={{$sid}}");
 
 
         ws.onerror = function(e){

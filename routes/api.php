@@ -26,3 +26,11 @@ $router->group([],function () use ($router) {
 $router->group([],function () use ($router) {
     $router->get('/caht/user-records', ['middleware'=>[],'uses' => 'ChatController@userRecords']);
 });
+
+
+
+
+//ChatController 控制器分组
+$router->group([],function () use ($router) {
+    $router->get('/test/index', ['middleware'=>[],'uses' => 'TestController@index']);
+});

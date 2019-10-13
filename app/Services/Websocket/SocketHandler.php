@@ -45,6 +45,9 @@ class SocketHandler  extends WebsocketHandler
         WebSocketHelper::bindUserFd($user_id,$fd);   //绑定用户ID与fd的关系
         WebSocketHelper::bindGroupChat($user_id,$fd);//绑定群聊关系
 
+
+        var_dump(Room::getRooms($fd));
+
         return true;
     }
 
