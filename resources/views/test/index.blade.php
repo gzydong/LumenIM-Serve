@@ -30,7 +30,6 @@
                 fileMessage:'',//文件消息
             };
         },
-
         heartbeatInterval:null,
     };
 

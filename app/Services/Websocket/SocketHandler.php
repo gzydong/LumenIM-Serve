@@ -53,9 +53,12 @@ class SocketHandler  extends WebsocketHandler
     {
 
         //sourceType:发送类型(1:私信  2:群聊)   receiveUser:接收者信息        sendUser:发送者ID  msgType:消息类型(1:文字消息  2:图片消息  3:文件消息)    textMessage:文字消息     imgMessage:图片消息       fileMessage:文件消息
-        var_dump($frame->data);
+        $msgData = json_encode($frame->data,true);
+        if($msgData['sourceType'] == 1){
+            Websocket::to(WebSocketHelper::getUserFd($msgData['receiveUser']))->emit('message', $frame->data);
+        }else if($msgData['sourceType'] == 2) {
 
-//        Websocket::broadcast()->to('qunliao')->emit('message', json_encode($data));
+        }
 
         return true;
     }
