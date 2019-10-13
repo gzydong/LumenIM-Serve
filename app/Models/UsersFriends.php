@@ -66,6 +66,7 @@ SQL;
             (SELECT user1 as uid from lar_users_friends where user1 = {$user_id2} and user2 = {$user_id1} and `status` = 1 limit 1)
 SQL;
 
+
         return DB::select($sql) ? true :false;
     }
 }

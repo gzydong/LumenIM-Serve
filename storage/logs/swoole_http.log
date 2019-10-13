@@ -215,3 +215,63 @@
 [2019-10-12 19:23:45 *24478.9]	NOTICE	swFactoryProcess_end (ERRNO 1003): The connection[18] is closing
 [2019-10-12 19:23:47 *24479.10]	NOTICE	swFactoryProcess_end (ERRNO 1003): The connection[19] is closing
 [2019-10-12 19:23:48 *24478.9]	NOTICE	swFactoryProcess_end (ERRNO 1003): The connection[20] is closing
+[2019-10-12 23:07:43 #24452.12]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24479.10]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24480.11]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24475.6]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 $24456.0]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24472.3]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24471.2]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24469.0]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24468.23]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24465.20]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24464.19]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24466.21]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24463.18]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24462.17]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24461.16]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24478.9]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24477.8]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24467.22]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24474.5]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24473.4]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24460.15]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24476.7]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 *24470.1]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24458.13]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24457.12]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:43 ^24459.14]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
+[2019-10-12 23:07:51 #24452.12]	INFO	Server is shutdown now
+[2019-10-13 20:54:39 *1177.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#3
+[2019-10-13 20:54:41 *1177.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 20:56:53 *1283.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#3
+[2019-10-13 20:56:55 *1283.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 20:59:27 *1272.0]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=8] is closed
+[2019-10-13 20:59:41 *1273.1]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=12] is closed
+[2019-10-13 21:03:45 *1272.0]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=18] is closed
+[2019-10-13 21:05:09 *1330.2]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=5] is closed
+[2019-10-13 21:06:30 *1378.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#3
+[2019-10-13 21:06:31 *1378.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 21:12:24 *1482.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#3
+[2019-10-13 21:12:25 *1482.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 21:12:28 *1482.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#5
+[2019-10-13 21:24:49 *1578.0]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 21:24:50 *1578.0]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=3] is closed
+[2019-10-13 21:25:09 *1588.10]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=5] is closed
+[2019-10-13 21:27:54 *1578.0]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=7] is closed
+[2019-10-13 21:27:59 *1578.0]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=11] is closed
+[2019-10-13 21:28:00 *1579.1]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=12] is closed
+[2019-10-13 21:32:33 *1680.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#3
+[2019-10-13 21:32:34 *1680.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 21:34:55 *1761.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#3
+[2019-10-13 21:34:56 *1761.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 21:38:33 *1848.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#3
+[2019-10-13 21:38:35 *1848.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 21:40:45 *1930.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#3
+[2019-10-13 21:40:46 *1930.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 21:41:17 *1929.10]	ERROR	php_swoole_server_rshutdown (ERRNO 503): Fatal error: Allowed memory size of 134217728 bytes exhausted (tried to allocate 68825088 bytes) in /www/lumen-im/app/Services/Websocket/ChatService.php on line 138
+[2019-10-13 21:41:17 $1906.0]	WARNING	swManager_check_exit_status: worker#10[pid=1929] abnormal exit, status=255, signal=0
+[2019-10-13 21:53:39 *2077.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#3
+[2019-10-13 21:53:40 *2077.11]	WARNING	swWorker_discard_data (ERRNO 1007): [1]received the wrong data[103 bytes] from socket#4
+[2019-10-13 21:59:33 *2076.10]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=11] is closed
+[2019-10-13 21:59:39 *2076.10]	NOTICE	swFactoryProcess_finish (ERRNO 1004): send 103 byte failed, because connection[fd=14] is closed

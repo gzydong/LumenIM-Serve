@@ -82,9 +82,11 @@ class SocketHandler  extends WebsocketHandler
             $receive = WebSocketHelper::getRoomGroupName($msgData['receiveUser']);
         }
 
+        var_dump($receive);
+
         //发送消息
         if($receive){
-            Websocket::to($receive)->emit('message', $frame->data);
+            Websocket::to($receive)->emit('message', json_decode($frame->data));
         }
 
         return true;

@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 
 use App\Helpers\WebSocketHelper;
 
+use App\Services\Websocket\ChatService;
+
 
 class AppServiceProvider extends ServiceProvider
 {

@@ -24,22 +24,22 @@
 
     let obj = {
         fromUserId:"{{$sid}}",
-        getData:function (toUserId,message) {
-            return {
+        getData:function () {
+            return JSON.stringify({
                 sourceType:$('#ele-source-type').val(),//1:私信  2:群聊
                 receiveUser: $('#ele-receive-user').val(),//接收者信息
                 sendUser: this.fromUserId,//发送者ID
                 msgType:1,//消息类型  1:文字消息  2:图片消息  3:文件消息
-                textMessage:'',//文字消息
+                textMessage:$('#ele-value').val(),//文字消息
                 imgMessage:'',//图片消息
                 fileMessage:'',//文件消息
-            };
+            });
         },
         heartbeatInterval:null,
     };
 
     try {
-        let ws = new WebSocket("ws://47.105.180.123:9501/socket.io?sid={{$sid}}");
+        let ws = new WebSocket("ws://127.0.0.1:1215/socket.io?sid={{$sid}}");
 
 
         ws.onerror = function(e){
@@ -51,14 +51,15 @@
 
             //连接成功后一分钟发送一次心跳检测
             obj.heartbeatInterval = setInterval(function () {
-                // ws.send('heartbeat');
+                ws.send('heartbeat');
             },10000);
         };
 
         ws.onmessage = function(evt) {//绑定收到消息事件
+
             let [messageName,message] = JSON.parse(evt.data.substr(2));
 
-            message = JSON.stringify(message)
+            message = JSON.stringify(message);
 
             $('#list-val').append(`<p>${message}</p>`);
         };
@@ -76,8 +77,7 @@
 
 
         $('#ele-send').on('click',function () {
-            let val= $('#ele-value').val();
-            ws.send(JSON.stringify(obj.getData('test',val)));
+            ws.send(obj.getData());
         });
         $('#ele-close').on('click',function () {
             ws.close(4000,'33333');
