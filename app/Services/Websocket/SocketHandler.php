@@ -23,8 +23,8 @@ class SocketHandler  extends WebsocketHandler
     public function onOpen($fd, Request $request)
     {
         echo date('Y-m-d H:i:s')." {$fd}连接了".PHP_EOL;
-        $user_id = $request->get('sid');
 
+        $user_id = $request->get('sid');
         if($fd == 1){
             WebSocketHelper::clearRedisCache();
         }
@@ -41,10 +41,9 @@ class SocketHandler  extends WebsocketHandler
             }
         }
 
-        WebSocketHelper::bindUserFd($request->get('sid'),$fd);
-
-
         //这里处理用户登录后的逻辑
+        WebSocketHelper::bindUserFd($user_id,$fd);   //绑定用户ID与fd的关系
+        WebSocketHelper::bindGroupChat($user_id,$fd);//绑定群聊关系
 
         return true;
     }
@@ -92,8 +91,6 @@ class SocketHandler  extends WebsocketHandler
     public function onClose($fd, $reactorId)
     {
         echo date('Y-m-d H:i:s')." {$fd} 关闭了连接 reactorId：{$reactorId}".PHP_EOL;
-
-
 
         WebSocketHelper::clearFdCache($fd);
 

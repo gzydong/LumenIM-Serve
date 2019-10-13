@@ -1,6 +1,8 @@
 <?php
 namespace App\Helpers;
 
+use App\Logic\UsersLogic;
+use SwooleTW\Http\Websocket\Facades\Room;
 
 class WebSocketHelper
 {
@@ -65,5 +67,29 @@ class WebSocketHelper
         $user_id = $this->getRedis()->hget(self::BIND_USER_TO_FD,$fd);
         $this->getRedis()->hdel(self::BIND_FD_TO_USER,$user_id);
         $this->getRedis()->hdel(self::BIND_USER_TO_FD,$fd);
+
+        //清除fd 所在的所有聊天室
+        $rooms = Room::getRooms($fd);
+        Room::delete($fd, $rooms);
+    }
+
+    /**
+     * 绑定用户群聊关系
+     *
+     * @param int $user_id 用户ID
+     * @param int $fd
+     * @return bool
+     */
+    public function bindGroupChat(int $user_id,int $fd){
+        $ids = UsersLogic::getUserGroupIds($user_id);
+        if(empty($ids)){
+            return true;
+        }
+
+        //将用户添加到所在的所有房间里
+        $rooms = array_map(function ($group_id){
+            return "room.group.chat.{$group_id}";
+        },$ids);
+        Room::add($fd, $rooms);
     }
 }

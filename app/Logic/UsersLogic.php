@@ -2,10 +2,9 @@
 
 namespace App\Logic;
 
-use App\User;
+use App\Models\User;
 use App\Models\UsersFriends;
-
-
+use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -17,7 +16,6 @@ use Illuminate\Support\Str;
  */
 class UsersLogic extends Logic
 {
-
     /**
      * 账号注册逻辑
      * @param array $data
@@ -53,5 +51,15 @@ class UsersLogic extends Logic
      */
     public function getUserChatGroups(int $uid){
 
+    }
+
+    /**
+     * 获取用户所有的群聊ID
+     *
+     * @param int $user_id
+     * @return mixed
+     */
+    public static function getUserGroupIds(int $user_id){
+        return UsersGroupMember::where('uid',$user_id)->get()->pluck('group_id')->toarray();
     }
 }

@@ -2,9 +2,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Logic\UsersLogic;
-use Illuminate\Support\Facades\App;
-use SwooleTW\Http\Server\Facades\Server;
-
 use App\Helpers\WebSocketHelper;
 
 
@@ -17,8 +14,12 @@ class ChatController extends CController
      */
     public function userRecords(WebSocketHelper $webSocketHelper){
 
-        $webSocketHelper->getUserFd(45);
-        dd($webSocketHelper->getUserFd(45));
+        $ids = UsersLogic::getUserGroupIds(1017);
+
+        $rooms = array_map(function ($group_id){
+            return "room.group.chat.{$group_id}";
+        },$ids);
+        dd($rooms);
     }
 
 

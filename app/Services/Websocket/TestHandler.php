@@ -9,7 +9,7 @@ class TestHandler
 {
 
 
-    public function sendTest{
+    public function sendTest(){
         //仅发送到发件人客户端
         Websocket::emit('message', 'this is a test');
 
@@ -44,7 +44,7 @@ class TestHandler
         //把所有的FD都安排在游戏室里
         Room::getClients('game');
 
-        //把1号FD的所有房间
+        //获取FD所在的所有房间
         Room::getRooms(1);
 
         //将FD 1添加到“游戏”室
