@@ -9,21 +9,19 @@ use Illuminate\Http\Request;
 class TestController
 {
     public function index(Request $request){
-        $data = [
-            'sourceType'=>1,
-            'receiveUser'=> 'toUserId',
-            'sendUser'=> '',
-            'msgType'=>1,
-            'textMessage'=>'',
-            'imgMessage'=>'',
-            'fileMessage'=>'',
-        ];
-        sdf
-
-        dd(array_has($data,['sourceType','receiveUser','sendUser','msgType','textMessage','imgMessage','fileMessage']));
+//        $data = [
+//            'sourceType'=>1,
+//            'receiveUser'=> 'toUserId',
+//            'sendUser'=> '',
+//            'msgType'=>1,
+//            'textMessage'=>'',
+//            'imgMessage'=>'',
+//            'fileMessage'=>'',
+//        ];
+//        dd(array_has($data,['sourceType','receiveUser','sendUser','msgType','textMessage','imgMessage','fileMessage']));
 
 
-        exit;
+//        exit;
         $sid = $request->get('sid','');
         return view('test.index',['sid'=>$sid]);
     }

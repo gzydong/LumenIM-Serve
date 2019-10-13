@@ -4,12 +4,14 @@
     <title></title>
 </head>
 <body>
-<input type="text" id="ele-value">
+<span>接受者ID</span>
+<input type="text" id="ele-receive-user" value="0"><br/><br/>
+<input type="text" id="ele-value" value="" placeholder="发送内容">
 <input type="button" id="ele-send" value="发送" />
 <input type="button" id="ele-close" value="关闭" />
 
 
-<div id="list-val" style="width: 500px;min-height: 300px;border: 1px solid red">
+<div id="list-val" style="width: 500px;min-height: 300px;border: 1px solid red;margin-top: 5px;">
 
 </div>
 <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
@@ -19,8 +21,8 @@
         fromUserId:"{{$sid}}",
         getData:function (toUserId,message) {
             return {
-                sourceType:2,//1:私信  2:群聊
-                receiveUser: 1,//接收者信息
+                sourceType:1,//1:私信  2:群聊
+                receiveUser: $('#ele-receive-user').val(),//接收者信息
                 sendUser: this.fromUserId,//发送者ID
                 msgType:1,//消息类型  1:文字消息  2:图片消息  3:文件消息
                 textMessage:'',//文字消息
