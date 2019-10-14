@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 
-use App\User;
+use App\Models\User;
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
