@@ -72,7 +72,7 @@ class AuthController extends CController
 
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,
-            'expires_in'=>''
+            'sid'=>encrypt($user->id)
         ]);
     }
 

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Logic;
 
 use App\Models\User;
@@ -7,7 +6,6 @@ use App\Models\UsersFriends;
 use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
 
 /**
  * 用户逻辑处理层

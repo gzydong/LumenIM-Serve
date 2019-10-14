@@ -5,10 +5,7 @@ $router->get('/', ['as' => 'api', function () {
 }]);
 
 
-//UsersController 控制器分组
-$router->group([],function () use ($router) {
-    $router->get('/user/friends', ['middleware'=>[],'uses' => 'UsersController@getUserFriends']);
-});
+
 
 
 //AuthController 控制器分组
@@ -20,11 +17,17 @@ $router->group([],function () use ($router) {
 });
 
 
+//UsersController 控制器分组
+$router->group([],function () use ($router) {
+    $router->get('/user/friends', ['middleware'=>[],'uses' => 'UsersController@getUserFriends']);
+    $router->get('/user/chat-list', ['middleware'=>[],'uses' => 'UsersController@getChatList']);
+});
+
 
 
 //ChatController 控制器分组
 $router->group([],function () use ($router) {
-    $router->get('/caht/user-records', ['middleware'=>[],'uses' => 'ChatController@userRecords']);
+//    $router->get('/caht/user-records', ['middleware'=>[],'uses' => 'ChatController@userRecords']);
 });
 
 
