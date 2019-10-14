@@ -30,7 +30,7 @@ class HandShakeHandler
         }
 
         //连接用户验证
-        if(empty($token) || empty(decrypt($token))){
+        if(empty($token)){
             $response->status(401);
             $response->end();
             return false;

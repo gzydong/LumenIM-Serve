@@ -22,8 +22,6 @@ class AuthController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function register(Request $request,UsersLogic $usersLogic){
-
-
         if(!$request->filled(['mobile','password','invite_code'])){
             return $this->ajaxParamError();
         }
@@ -72,7 +70,7 @@ class AuthController extends CController
 
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,
-            'sid'=>encrypt($user->id)
+            'sid'=>$user->id
         ]);
     }
 
