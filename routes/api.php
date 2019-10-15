@@ -1,12 +1,12 @@
 <?php
 
+/**
+ * Api 接口路由配置
+ */
+
 $router->get('/', ['as' => 'api', function () {
     return response()->json(['code'=>200,'msg'=>'SUCCESS','data'=>['username'=>'测试']]);
 }]);
-
-
-
-
 
 //AuthController 控制器分组
 $router->group([],function () use ($router) {
@@ -16,24 +16,34 @@ $router->group([],function () use ($router) {
     $router->post('/auth/refresh-token', ['middleware'=>[],'uses' => 'AuthController@refreshToken']);
 });
 
-
 //UsersController 控制器分组
-$router->group([],function () use ($router) {
-    $router->get('/user/friends', ['middleware'=>[],'uses' => 'UsersController@getUserFriends']);
-    $router->get('/user/chat-list', ['middleware'=>[],'uses' => 'UsersController@getChatList']);
+$router->group(['middleware'=>['jwt.auth']],function () use ($router) {
+    $router->get('/user/friends', ['uses' => 'UsersController@getUserFriends']);
+    $router->get('/user/chat-list', ['uses' => 'UsersController@getChatList']);
+
+    $router->post('/user/edit-nickname', ['uses' => 'UploadController@editNickname']);
+    $router->post('/user/change-password', ['uses' => 'UploadController@changePassword']);
+    $router->post('/user/edit-avatar', ['uses' => 'UploadController@editAvatar']);
+});
+
+//ChatController 控制器分组
+$router->group(['middleware'=>[]],function () use ($router) {
+    $router->get('/caht/chat-records', ['middleware'=>[],'uses' => 'ChatController@getChatRecords']);
+});
+
+/**
+ * 上传文件控制器
+ */
+$router->group(['middleware'=>['jwt.auth']],function () use ($router) {
+    $router->post('/upload/img', ['uses' => 'UploadController@img']);
+    $router->post('/upload/file', ['uses' => 'UploadController@file']);
 });
 
 
 
-//ChatController 控制器分组
-$router->group([],function () use ($router) {
-//    $router->get('/caht/user-records', ['middleware'=>[],'uses' => 'ChatController@userRecords']);
-});
 
 
-
-
-//ChatController 控制器分组
+//TestController 控制器分组
 $router->group([],function () use ($router) {
     $router->get('/test/index', ['middleware'=>[],'uses' => 'TestController@index']);
 });

@@ -23,7 +23,7 @@ class UsersChatRecordsMsg extends Model
      *
      * @var array
      */
-    protected $fillable = ['msg_type','text_msg','img_msg','files_msg','created_time'];
+    protected $fillable = ['chat_record_id','msg_type','text_msg','img_msg','files_msg','created_time'];
 
     /**
      * 表明模型是否应该被打上时间戳

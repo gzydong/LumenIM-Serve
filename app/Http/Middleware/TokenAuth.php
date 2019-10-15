@@ -26,7 +26,6 @@ class TokenAuth extends BaseMiddleware
      */
     public function handle($request, Closure $next)
     {
-        dd('asd');
         $this->authenticate($request);
 
         return $next($request);

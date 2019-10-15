@@ -24,4 +24,14 @@ class ChatLogic extends Logic
 
         return array_merge($res1,$res12);
     }
+
+
+    /**
+     * 用户聊天详情
+     * @param $user_id
+     * @param $receive_id
+     */
+    public function getChatInfos($user_id,$receive_id){
+
+    }
 }

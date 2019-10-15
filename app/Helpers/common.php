@@ -17,3 +17,16 @@ function isMobile($mobile) {
 
     return preg_match('/^[1][3,4,5,7,8][0-9]{9}$/', $mobile) ? true : false;
 }
+
+
+/**
+ * 验证登录密码格式
+ *
+ * @param $mobile
+ * @return bool
+ */
+function isPassword($password) {
+    return preg_match('/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{8,16}$/', $password) ? true : false;
+}
+
+

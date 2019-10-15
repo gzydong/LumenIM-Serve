@@ -23,7 +23,7 @@ class UsersChatRecords extends Model
      *
      * @var array
      */
-    protected $fillable = ['source','user_id','friend_id','group_id','send_time'];
+    protected $fillable = ['source','user_id','receive_id','send_time','text_msg'];
 
     /**
      * 表明模型是否应该被打上时间戳
