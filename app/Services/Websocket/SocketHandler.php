@@ -99,7 +99,6 @@ class SocketHandler  extends WebsocketHandler
         echo date('Y-m-d H:i:s')." [{$fd}]关闭了连接".PHP_EOL;
 
         WebSocketHelper::clearFdCache($fd);
-
         return true;
     }
 

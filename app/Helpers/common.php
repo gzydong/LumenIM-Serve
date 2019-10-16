@@ -29,4 +29,27 @@ function isPassword($password) {
     return preg_match('/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{8,16}$/', $password) ? true : false;
 }
 
+function replaceArrayKey($key,$array){
+    if(empty($array)) return [];
 
+    $arr = [];
+    foreach ($array as $value){
+        $arr[$value['id']] = $value;
+    }
+    unset($array);
+    return $arr;
+}
+
+/**
+ * checkNumber() PHP验证字符串是否为一个数字
+ * @param   string 	$num      	字符串
+ * @return  boolean 验证通过返回 true 没有通过返回 false
+ */
+function checkNumber($num)
+{
+    // 是否为数字标量
+    if (is_numeric($num)) {
+        return preg_match('/^\s*[+-]?\d+\s*$/', $num) || preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $num) ;
+    }
+    return false;
+}
