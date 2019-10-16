@@ -23,7 +23,7 @@ class SocketHandler  extends WebsocketHandler
      */
     public function onOpen($fd, Request $request)
     {
-        //echo date('Y-m-d H:i:s')." {$fd}连接了".PHP_EOL;
+        echo date('Y-m-d H:i:s')." {$fd}连接了".PHP_EOL;
         $user_id = $request->get('sid');
         if($fd == 1){
             WebSocketHelper::clearRedisCache();
@@ -32,7 +32,6 @@ class SocketHandler  extends WebsocketHandler
         //这里检测连接用户是否在其它地方登录（如果之前登录的fd 断开连接） 模拟查询
         $rfd = WebSocketHelper::getUserFd($user_id);//模拟用户其它地方登录的fd
         if($rfd){
-            //echo "user_id[$user_id] : rfd[{$rfd}]";
             $wsServer = App::make(Server::class);
             if($wsServer->exist($rfd)){
                 $wsServer->disconnect($rfd,4030, "您的账号在其他设备登录，如果这不是您的操作，请及时修改您的登录密码");
@@ -42,7 +41,6 @@ class SocketHandler  extends WebsocketHandler
         //这里处理用户登录后的逻辑
         WebSocketHelper::bindUserFd($user_id,$fd);   //绑定用户ID与fd的关系
         WebSocketHelper::bindGroupChat($user_id,$fd);//绑定群聊关系
-
         return true;
     }
 
@@ -82,8 +80,6 @@ class SocketHandler  extends WebsocketHandler
             $receive = WebSocketHelper::getRoomGroupName($msgData['receiveUser']);
         }
 
-//        var_dump($receive);
-
         //发送消息
         if($receive){
             Websocket::to($receive)->emit('message', json_decode($frame->data));
@@ -100,7 +96,7 @@ class SocketHandler  extends WebsocketHandler
      */
     public function onClose($fd, $reactorId)
     {
-        echo date('Y-m-d H:i:s')." {$fd} 关闭了连接 reactorId：{$reactorId}".PHP_EOL;
+        echo date('Y-m-d H:i:s')." [{$fd}]关闭了连接".PHP_EOL;
 
         WebSocketHelper::clearFdCache($fd);
 
