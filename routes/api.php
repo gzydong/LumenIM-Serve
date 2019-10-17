@@ -11,8 +11,8 @@ $router->get('/', ['as' => 'api', function () {
 $router->group([],function () use ($router) {
     $router->post('/auth/login', ['middleware'=>[],'uses' => 'AuthController@login']);
     $router->post('/auth/register', ['middleware'=>[],'uses' => 'AuthController@register']);
-    $router->post('/auth/logout', ['middleware'=>[],'uses' => 'AuthController@logout']);
-    $router->post('/auth/refresh-token', ['middleware'=>[],'uses' => 'AuthController@refreshToken']);
+    $router->post('/auth/logout', ['middleware'=>['jwt.auth'],'uses' => 'AuthController@logout']);
+    $router->post('/auth/refresh-token', ['middleware'=>['jwt.auth'],'uses' => 'AuthController@refreshToken']);
 });
 
 //UsersController 控制器分组
@@ -24,7 +24,7 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
 });
 
 //ChatController 控制器分组
-$router->group(['middleware'=>[]],function () use ($router) {
+$router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->get('/caht/chat-list', ['uses' => 'UsersController@getChatList']);
     $router->get('/caht/chat-records', ['middleware'=>[],'uses' => 'ChatController@getChatRecords']);
 });
@@ -37,5 +37,5 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
 
 //TestController 控制器分组
 $router->group([],function () use ($router) {
-    $router->get('/test/index', ['middleware'=>[],'uses' => 'TestController@index']);
+//    $router->get('/test/index', ['middleware'=>[],'uses' => 'TestController@index']);
 });
