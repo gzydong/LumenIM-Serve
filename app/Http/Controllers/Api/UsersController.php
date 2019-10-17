@@ -20,16 +20,6 @@ class UsersController extends CController
         return $this->ajaxSuccess('success',$rows);
     }
 
-    /**
-     * 获取用户聊天列表
-     *
-     * @param ChatLogic $chatLogic
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getChatList(ChatLogic $chatLogic){
-        $rows = $chatLogic->getUserChatList($this->uid());
-        return $this->ajaxSuccess('success',$rows);
-    }
 
     /**
      * 编辑用户昵称

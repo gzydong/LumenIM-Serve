@@ -1,9 +1,6 @@
 <?php
 namespace App\Services\Websocket;
 
-
-use PHPUnit\Framework\Warning;
-
 /**
  * ebsocket 自定义挥手处理
  * Class HandShakeHandler

@@ -8,6 +8,17 @@ class ChatController extends CController
 {
 
     /**
+     * 获取用户聊天列表
+     *
+     * @param ChatLogic $chatLogic
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getChatList(ChatLogic $chatLogic){
+        $rows = $chatLogic->getUserChatList($this->uid());
+        return $this->ajaxSuccess('success',$rows);
+    }
+
+    /**
      * 获取私信或群聊的聊天记录
      *
      * @param Request $request
@@ -34,7 +45,7 @@ class ChatController extends CController
         if($type == 1){
             $data = $chatLogic->getPrivateChatInfos($record_id,$this->uid(),$receive_id);
         }else{
-            $data = $chatLogic->getGroupChatInfos($record_id,$receive_id,2053);
+            $data = $chatLogic->getGroupChatInfos($record_id,$receive_id,$this->uid());
         }
 
         return $this->ajaxSuccess('success',$data);
