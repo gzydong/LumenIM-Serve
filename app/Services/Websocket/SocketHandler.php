@@ -8,7 +8,6 @@ use App\Facades\ChatService;
 
 use Swoole\Websocket\Frame;
 use SwooleTW\Http\Server\Facades\Server;
-use SwooleTW\Http\Websocket\Facades\Websocket;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 
 class SocketHandler  extends WebsocketHandler
@@ -36,6 +35,7 @@ class SocketHandler  extends WebsocketHandler
             if($wsServer->exist($rfd)){
                 $wsServer->disconnect($rfd,4030, "您的账号在其他设备登录，如果这不是您的操作，请及时修改您的登录密码");
             }
+            unset($wsServer);
         }
 
         //这里处理用户登录后的逻辑
@@ -61,7 +61,7 @@ class SocketHandler  extends WebsocketHandler
          * fileMessage:文件消息
          */
         $msgData = json_decode($frame->data,true);
-        $msgData['created_at'] = date('Y-m-d H:i:s');
+        $msgData['send_time'] = date('Y-m-d H:i:s');
 
         //这里做消息处理
         if(!ChatService::check($msgData)){
@@ -82,8 +82,10 @@ class SocketHandler  extends WebsocketHandler
 
         //发送消息
         if($receive){
-            Websocket::to($receive)->emit('message', json_decode($frame->data));
+            WebSocketHelper::sendResponseMessage('chat_message',$receive,$msgData);
         }
+
+        unset($msgData);unset($receive);
 
         return true;
     }
@@ -101,6 +103,4 @@ class SocketHandler  extends WebsocketHandler
         WebSocketHelper::clearFdCache($fd);
         return true;
     }
-
-    //这里可定义其他事件名
 }

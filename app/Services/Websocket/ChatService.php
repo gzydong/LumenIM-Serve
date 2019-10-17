@@ -76,7 +76,7 @@ class ChatService
                 'user_id'=>$receive_msg['sendUser'],
                 'friend_id'=>($receive_msg['sourceType'] == 1)?$receive_msg['receiveUser']:0,
                 'group_id'=>($receive_msg['sourceType'] == 2)?$receive_msg['receiveUser']:0,
-                'send_time'=>$receive_msg['created_at']
+                'send_time'=>$receive_msg['send_time']
             ]);
 
             if(!$recordRes){
@@ -89,7 +89,7 @@ class ChatService
                 'text_msg'=>$receive_msg['textMessage'],
                 'img_msg'=>$receive_msg['imgMessage'],
                 'files_msg'=>$receive_msg['fileMessage'],
-                'send_time'=>$receive_msg['created_at']
+                'send_time'=>$receive_msg['send_time']
             ]);
 
             if(!$msg){
@@ -138,6 +138,7 @@ class ChatService
             return false;
         }
 
+        unset($receive_msg);
         return true;
     }
 }

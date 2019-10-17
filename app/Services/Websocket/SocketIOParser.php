@@ -59,7 +59,7 @@ class SocketIOParser extends Parser
     public function decode($frame)
     {
         $payload = Packet::getPayload($frame->data);
-
+        unset($frame);
         return [
 
             //事件名称

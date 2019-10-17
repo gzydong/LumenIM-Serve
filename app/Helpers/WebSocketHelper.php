@@ -3,6 +3,7 @@ namespace App\Helpers;
 
 use App\Logic\UsersLogic;
 use SwooleTW\Http\Websocket\Facades\Room;
+use SwooleTW\Http\Websocket\Facades\Websocket;
 
 /**
  * WebSocket 处理类
@@ -15,6 +16,14 @@ class WebSocketHelper
     const BIND_USER_TO_FD ='hash.users.fds';
     const BIND_FD_TO_USER ='hash.fds.list';
     const ROOM_GROUP_PREFIX ='room.group.chat';
+
+
+    //消息事件类型
+    const EVENTS = [
+        'chat_message'=>'chat_message',
+        'friend_apply'=>'friend_apply',
+    ];
+
 
     /**
      * 获取reids 实例
@@ -48,6 +57,7 @@ class WebSocketHelper
 
     /**
      * 根据fd获取对应的用户ID
+     *
      * @param int $fd Websocket 连接标识[fd]
      * @return int
      */
@@ -57,20 +67,16 @@ class WebSocketHelper
 
     /**
      * 清除redis 缓存信息
-     *
-     * @return bool
      */
     public function clearRedisCache(){
         $this->getRedis()->del(self::BIND_USER_TO_FD);
         $this->getRedis()->del(self::BIND_FD_TO_USER);
-        return true;
     }
 
     /**
      * 清除指定的fd缓存信息
      *
      * @param int $fd Websocket 连接标识[fd]
-     * @return bool
      */
     public function clearFdCache(int $fd){
         $user_id = $this->getRedis()->hget(self::BIND_USER_TO_FD,$fd);
@@ -79,8 +85,7 @@ class WebSocketHelper
 
         //清除fd 所在的所有聊天室
         $rooms = Room::getRooms($fd);
-        Room::delete($fd, $rooms);
-        return true;
+        Room::delete($fd, $rooms);unset($rooms);
     }
 
     /**
@@ -100,7 +105,8 @@ class WebSocketHelper
         $rooms = array_map(function ($group_id){
             return self::ROOM_GROUP_PREFIX.$group_id;
         },$ids);
-        Room::add($fd, $rooms);
+
+        Room::add($fd, $rooms);unset($rooms);
     }
 
     /**
@@ -113,4 +119,17 @@ class WebSocketHelper
         return self::ROOM_GROUP_PREFIX.$group_id;
     }
 
+    /**
+     * 统一发送websocket 响应信息
+     *
+     * @param $event
+     * @param int|array $receive
+     * @param string|array $data
+     */
+    public function sendResponseMessage(string $event,$receive,$data){
+        if(isset(self::EVENTS[$event])){
+            Websocket::to($receive)->emit(self::EVENTS[$event], $data);
+        }
+        unset($receive);unset($data);
+    }
 }
