@@ -37,5 +37,5 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
 
 //TestController 控制器分组
 $router->group([],function () use ($router) {
-//    $router->get('/test/index', ['middleware'=>[],'uses' => 'TestController@index']);
+    $router->get('/test/index', ['middleware'=>[],'uses' => 'TestController@index']);
 });

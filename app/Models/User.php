@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract ,JWTSubject
 {

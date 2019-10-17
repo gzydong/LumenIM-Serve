@@ -11,7 +11,7 @@ class KeyGenerateCommand extends Command
 
     /**
      * The name and signature of the console command.
-     *
+     * @link https://www.jianshu.com/p/95d475754296
      * @var string
      */
     protected $signature = 'key:generate
