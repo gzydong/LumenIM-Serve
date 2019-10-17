@@ -68,7 +68,7 @@ class SocketHandler  extends WebsocketHandler
             return true;
         }
 
-        //将聊天记录保存到数据库(后面采用异步保存信息)
+        //将聊天记录保存到数据库(待优化：后面采用异步保存信息)
         if(!ChatService::saveChatRecord($msgData)){
             info("聊天记录保存失败：".json_encode($msgData));
         }
