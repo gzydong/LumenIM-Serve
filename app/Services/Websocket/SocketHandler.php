@@ -9,6 +9,7 @@ use App\Facades\ChatService;
 use Swoole\Websocket\Frame;
 use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
+use App\Helpers\RsaMeans;
 
 class SocketHandler  extends WebsocketHandler
 {
@@ -23,7 +24,7 @@ class SocketHandler  extends WebsocketHandler
     public function onOpen($fd, Request $request)
     {
         echo date('Y-m-d H:i:s')." {$fd}连接了".PHP_EOL;
-        $user_id = $request->get('sid');
+        $user_id = RsaMeans::decrypt($request->get('sid'));
         if($fd == 1){
             WebSocketHelper::clearRedisCache();
         }
