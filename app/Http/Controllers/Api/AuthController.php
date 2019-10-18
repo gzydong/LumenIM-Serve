@@ -6,6 +6,7 @@ use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\RsaMeans;
 
 /**
  * 接口授权登录控制器
@@ -71,7 +72,7 @@ class AuthController extends CController
 
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,
-            'sid'=>$user->id
+            'sid'=>RsaMeans::encrypt($user->id)
         ]);
     }
 

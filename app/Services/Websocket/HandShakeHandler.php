@@ -1,6 +1,8 @@
 <?php
 namespace App\Services\Websocket;
 
+use App\Helpers\RsaMeans;
+
 /**
  * ebsocket 自定义挥手处理
  * Class HandShakeHandler
@@ -26,8 +28,10 @@ class HandShakeHandler
             return false;
         }
 
+        echo 'SID:'.$token.PHP_EOL;
+
         //连接用户验证
-        if(empty($token)){
+        if(empty($token) || !RsaMeans::decrypt($token)){
             $response->status(401);
             $response->end();
             return false;

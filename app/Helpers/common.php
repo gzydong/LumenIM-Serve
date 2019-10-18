@@ -53,3 +53,25 @@ function checkNumber($num)
     }
     return false;
 }
+
+
+/**
+ * 安全URL编码
+ * @param type $data
+ * @return type
+ */
+function encode($data) {
+    return str_replace(array('+', '/', '='), array('-', '_', ''), base64_encode(serialize($data)));
+}
+
+/**
+ * 安全URL解码
+ * @param type $string
+ * @return type
+ */
+function decode($string) {
+    $data = str_replace(array('-', '_'), array('+', '/'), $string);
+    $mod4 = strlen($data) % 4;
+    ($mod4) && $data .= substr('====', $mod4);
+    return unserialize(base64_decode($data));
+}
