@@ -99,6 +99,13 @@ class UsersController extends CController
      * 处理好友的申请
      */
     public function handleFriendApply(Request $request){
-        $type = $request->post();
+        $apply_id = $request->post('apply_id',0);
+        $type     = $request->post('type',0);
+        if(!checkNumber($apply_id) || $apply_id <= 0 || !in_array($type,[1,2])){
+            return $this->ajaxParamError();
+        }
+
+
+
     }
 }

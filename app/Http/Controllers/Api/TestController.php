@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Logic\UsersLogic;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\UsersFriends;
 
@@ -14,22 +16,10 @@ use App\Helpers\RsaMeans;
  */
 class TestController
 {
-    public function index(Request $request){
+    public function index(Request $request,UsersLogic $usersLogic){
 
-
-        $data = RsaMeans::encrypt('use App\Helpers\RsaMeans;safa sdfas dfasdfasdfa sdfas dfasdf');
-        echo strlen($data),' : '.$data;
-        echo '<br/>';
-
-        dd(RsaMeans::decrypt($data));
-
-        exit;
-        $json = '{"sourceType":"1","receiveUser":"2054","sendUser":"2053","msgType":1,"textMessage":"222222","imgMessage":"","fileMessage":""}';
-        $data = json_decode($json,true);
-
-        $data['created_at'] = date('Y-m-d H:i:s');
-        ChatService::saveChatRecord($data);
-
+        $data = $usersLogic->searchUserInfo('18969249284',2054);
+        dd($data);
 
         $sid = $request->get('sid','');
         return view('test.index',['sid'=>$sid]);
