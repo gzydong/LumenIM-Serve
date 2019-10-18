@@ -28,8 +28,6 @@ class HandShakeHandler
             return false;
         }
 
-        echo 'SID:'.$token.PHP_EOL;
-
         //连接用户验证
         if(empty($token) || !RsaMeans::decrypt($token)){
             $response->status(401);
