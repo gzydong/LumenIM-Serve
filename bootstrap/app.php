@@ -1,13 +1,6 @@
 <?php
 require_once __DIR__.'/../vendor/autoload.php';
 
-//6.0 启动方式
-//(new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
-//    dirname(__DIR__)
-//))->bootstrap();
-
-
-//5.7启动方式
 try {
     (new Dotenv\Dotenv(dirname(__DIR__)))->load();
 } catch (Dotenv\Exception\InvalidPathException $e) {}
@@ -23,23 +16,18 @@ try {
 |
 */
 
-$app = new Laravel\Lumen\Application(
-    dirname(__DIR__)
-);
+$app = new Laravel\Lumen\Application(dirname(__DIR__));
 
 //加载配置文件
 $app->configure('config');
 $app->configure('database');
 $app->configure('cors');
 
-
 //允许使用门面
 $app->withFacades();
 
-//允许使用ORM 查看类
+//允许使用ORM Model类
 $app->withEloquent();
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -95,7 +83,7 @@ $app->middleware([
 |
 */
 
- $app->register(App\Providers\AppServiceProvider::class);
+$app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 
@@ -107,6 +95,7 @@ $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 //注册支持跨域服务
 $app->register(Barryvdh\Cors\ServiceProvider::class);
 
+//注册支持Swoole服务
 $app->register(SwooleTW\Http\LumenServiceProvider::class);
 
 /*

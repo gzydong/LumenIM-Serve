@@ -6,7 +6,6 @@
 
 /**
  * 验证手机号是否正确
- *
  * @param $mobile
  * @return bool
  */
@@ -21,8 +20,7 @@ function isMobile($mobile) {
 
 /**
  * 验证登录密码格式
- *
- * @param $mobile
+ * @param $password
  * @return bool
  */
 function isPassword($password) {
@@ -52,4 +50,29 @@ function checkNumber($num)
         return preg_match('/^\s*[+-]?\d+\s*$/', $num) || preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $num) ;
     }
     return false;
+}
+
+
+/**
+ * 获取目录下的文件信息
+ * @param string $path 目录路径
+ * @return array 文件信息
+ */
+function getPathFileName($path)
+{
+    $arrReturn = [];
+    if (is_dir($path)) {
+        $resource = opendir($path);
+        if ($resource) {
+            while (!!($file = readdir($resource))) {
+                if (is_file($path . '/' . $file)) {
+//                    $arrReturn[] = pathinfo($path . '/' . $file, PATHINFO_FILENAME);
+
+                    $arrReturn[] = $file;
+                }
+            }
+            closedir($resource);
+        }
+    }
+    return $arrReturn;
 }

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class UploadController extends CController
 {
+
     /**
      * 图片上传接口
      *

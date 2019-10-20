@@ -70,6 +70,18 @@ class UsersController extends CController
     }
 
     /**
+     * 获取用户好友申请记录
+     *
+     * @param Request $request
+     * @param FriendsLogic $friendsLogic
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFriendApplyRecords(Request $request,FriendsLogic $friendsLogic){
+        $data = $friendsLogic->friendApplyRecords($this->uid(),intval($request->get('page',1)));
+        return $this->ajaxSuccess('success',$data);
+    }
+
+    /**
      * 发送添加好友申请
      *
      * @param Request $request
@@ -97,15 +109,23 @@ class UsersController extends CController
 
     /**
      * 处理好友的申请
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function handleFriendApply(Request $request){
         $apply_id = $request->post('apply_id',0);
         $type     = $request->post('type',0);
+        $remarks  = $request->post('remarks','');
         if(!checkNumber($apply_id) || $apply_id <= 0 || !in_array($type,[1,2])){
             return $this->ajaxParamError();
         }
 
+        if($type == 2 && empty($remarks)){
+            return $this->ajaxParamError('请填写拒绝的原因...');
+        }
 
-
+        $isTrue = FriendsLogic::handleFriendApply($this->uid(),$apply_id,$type,$remarks);
+        return $isTrue ? $this->ajaxSuccess('处理完成...') : $this->ajaxError('处理失败，请稍后再试...');
     }
 }

@@ -83,7 +83,7 @@ class AuthController extends CController
      */
     public function logout()
     {
-        Auth::invalidate(true);
+        Auth::logout(true);
         return $this->ajaxSuccess('退出成功');
     }
 

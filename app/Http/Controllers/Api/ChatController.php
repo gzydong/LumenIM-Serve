@@ -50,4 +50,14 @@ class ChatController extends CController
 
         return $this->ajaxSuccess('success',$data);
     }
+
+    /**
+     * 发起群聊
+     */
+    public function launchGroupChat(Request $request,ChatLogic $chatLogic){
+        $group_name = $request->post('group_name','');/**群聊名称*/
+        $uids = $request->post('uids','');            /**群聊用户*/
+
+        //$isTrue = $chatLogic->launchGroupChat($this->uid(),$group_name,$uids);
+    }
 }

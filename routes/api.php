@@ -18,15 +18,19 @@ $router->group([],function () use ($router) {
 //UsersController 控制器分组
 $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->get('/user/friends', ['uses' => 'UsersController@getUserFriends']);
-    $router->post('/user/edit-nickname', ['uses' => 'UploadController@editNickname']);
-    $router->post('/user/change-password', ['uses' => 'UploadController@changePassword']);
-    $router->post('/user/edit-avatar', ['uses' => 'UploadController@editAvatar']);
+    $router->post('/user/edit-nickname', ['uses' => 'UsersController@editNickname']);
+    $router->post('/user/change-password', ['uses' => 'UsersController@changePassword']);
+    $router->post('/user/edit-avatar', ['uses' => 'UsersController@editAvatar']);
+
+    $router->get('/user/friend-apply-records', ['uses' => 'UsersController@getFriendApplyRecords']);
+    $router->post('/user/send-friend-apply', ['uses' => 'UsersController@sendFriendApply']);
+    $router->post('/user/handle-friend-apply', ['uses' => 'UsersController@handleFriendApply']);
 });
 
 //ChatController 控制器分组
 $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
-    $router->get('/caht/chat-list', ['uses' => 'UsersController@getChatList']);
-    $router->get('/caht/chat-records', ['middleware'=>[],'uses' => 'ChatController@getChatRecords']);
+    $router->get('/chat/chat-list', ['uses' => 'ChatController@getChatList']);
+    $router->get('/chat/chat-records', ['middleware'=>[],'uses' => 'ChatController@getChatRecords']);
 });
 
 //UploadController 上传文件控制器分组

@@ -2,10 +2,9 @@
 namespace App\Logic;
 
 use App\Models\User;
-use App\Models\UsersFriendsApply;
 use App\Models\UsersFriends;
+use App\Models\UsersFriendsApply;
 use Illuminate\Support\Facades\DB;
-use Mockery\Exception;
 
 class FriendsLogic extends Logic
 {
@@ -58,13 +57,13 @@ class FriendsLogic extends Logic
             try{
                 $res = UsersFriendsApply::where('id',$apply_id)->update(['status'=>1,'updated_at'=>date('Y-m-d H:i:s')]);
                 if(!$res){
-                    throw new Exception('更新好友申请表信息失败');
+                    throw new \Exception('更新好友申请表信息失败');
                 }
 
                 if($isFriend){
                     $active = ($isFriend->user1 == $info->user_id && $isFriend->user2 == $info->friend_id) ? 1 :2;
                     if(!UsersFriends::where('id',$isFriend->id)->update(['active'=>$active,'status'=>1])){
-                        throw new Exception('更新好友关系信息失败');
+                        throw new \Exception('更新好友关系信息失败');
                     }
                 }else{
                     $insRes = UsersFriends::create([
@@ -78,7 +77,7 @@ class FriendsLogic extends Logic
                         'created_at'=>date('Y-m-d H:i:s'),
                     ]);
                     if(!$insRes){
-                        throw new Exception('创建好友关系失败');
+                        throw new \Exception('创建好友关系失败');
                     }
                 }
 
@@ -117,4 +116,31 @@ class FriendsLogic extends Logic
         return false;
     }
 
+    /**
+     * 获取用户好友申请记录
+     *
+     * @param int $user_id 用户ID
+     * @param int $page  分页数
+     * @param int $page_size 分页大小
+     * @return array
+     */
+    public function friendApplyRecords(int $user_id,$page = 1,$page_size = 30){
+        $countSqlObj = UsersFriendsApply::select();
+        $rowsSqlObj  = UsersFriendsApply::select(['users_friends_apply.id','users_friends_apply.status','users_friends_apply.remarks','users_friends_apply.reason','users.nickname','users.avatarurl']);
+
+        //join 查询
+        $rowsSqlObj->leftJoin('users','users.id','=','users_friends_apply.user_id');
+
+        //where 条件
+        $countSqlObj->where('users_friends_apply.friend_id',$user_id);
+        $rowsSqlObj->where('users_friends_apply.friend_id',$user_id);
+
+        $count = $countSqlObj->count();
+        $rows = [];
+        if ($count > 0) {
+            $rows = $rowsSqlObj->orderBy('users_friends_apply.id','desc')->forPage($page, $page_size)->get()->toArray();
+        }
+
+        return $this->packData($rows, $count, $page, $page_size);
+    }
 }

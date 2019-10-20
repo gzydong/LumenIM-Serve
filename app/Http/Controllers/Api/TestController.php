@@ -1,13 +1,10 @@
 <?php
 namespace App\Http\Controllers\Api;
 
-use App\Logic\UsersLogic;
+use App\Logic\FriendsLogic;
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Models\UsersFriends;
 
-use App\Facades\ChatService;
-use App\Helpers\RsaMeans;
 
 /**
  * 测试控制器
@@ -16,10 +13,7 @@ use App\Helpers\RsaMeans;
  */
 class TestController
 {
-    public function index(Request $request,UsersLogic $usersLogic){
-
-        $data = $usersLogic->searchUserInfo('18969249284',2054);
-        dd($data);
+    public function index(Request $request,FriendsLogic $friendsLogic){
 
         $sid = $request->get('sid','');
         return view('test.index',['sid'=>$sid]);
