@@ -14,7 +14,11 @@ use Illuminate\Http\Request;
 class TestController
 {
     public function index(Request $request,FriendsLogic $friendsLogic){
+        $redis = app('redis.connection');
 
+        dd($redis->hgetall('hash.fds.list'));
+
+        exit;
         $sid = $request->get('sid','');
         return view('test.index',['sid'=>$sid]);
     }

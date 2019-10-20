@@ -24,7 +24,6 @@ class WebSocketHelper
         'friend_apply'=>'friend_apply',
     ];
 
-
     /**
      * 获取reids 实例
      *
@@ -132,4 +131,6 @@ class WebSocketHelper
         }
         unset($receive);unset($data);
     }
+
+
 }
