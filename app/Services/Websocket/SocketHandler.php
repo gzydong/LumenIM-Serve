@@ -78,7 +78,7 @@ class SocketHandler  extends WebsocketHandler
 
         $receive = '';
         if($msgData['sourceType'] == 1){//私聊
-            $receive = WebSocketHelper::getUserFd($msgData['receiveUser']);
+            $receive = WebSocketHelper::getUserFds($msgData['receiveUser']);
         }else if($msgData['sourceType'] == 2){
             $receive = WebSocketHelper::getRoomGroupName($msgData['receiveUser']);
         }

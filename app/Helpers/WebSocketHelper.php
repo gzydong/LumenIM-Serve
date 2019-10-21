@@ -34,28 +34,28 @@ class WebSocketHelper
     }
 
     /**
-     * 绑定用户ID和fd的关系(一个用户只能拥有一个fd)
+     * 绑定用户ID和fd的关系(注：用户与Fd 的关系是一对多 、Fd与用户 的关系是一对一)
      *
      * @param int $user_id 用户ID
      * @param int $fd      Websocket 连接标识[fd]
      */
     public function bindUserFd(int $user_id,int $fd){
-        echo 'USER_ID'.PHP_EOL;
-        var_dump($this->getUserFd($user_id));
-
-
-        $this->getRedis()->hset(self::BIND_FD_TO_USER,$user_id,$fd);
+        $fds = $this->getUserFds($user_id);
+        $fds[] = $fd;
+        $this->getRedis()->hset(self::BIND_FD_TO_USER,$user_id,implode(',',$fds));
         $this->getRedis()->hset(self::BIND_USER_TO_FD,$fd,$user_id);
+        unset($fds);
     }
 
     /**
-     * 获取指定用户的fd
+     * 获取指定用户的fd(一个用户可能存在多个fd)
      *
      * @param int $user_id  用户ID
      * @return mixed
      */
-    public function getUserFd(int $user_id){
-        return $this->getRedis()->hget(self::BIND_FD_TO_USER,$user_id) | 0;
+    public function getUserFds(int $user_id){
+        $fds = $this->getRedis()->hget(self::BIND_FD_TO_USER,$user_id);
+        return $fds ? explode(',',$fds) : [];
     }
 
     /**
@@ -83,7 +83,14 @@ class WebSocketHelper
      */
     public function clearFdCache(int $fd){
         $user_id = $this->getRedis()->hget(self::BIND_USER_TO_FD,$fd);
-        $this->getRedis()->hdel(self::BIND_FD_TO_USER,$user_id);
+        $fds = $this->getUserFds($user_id);
+
+        if(count($fds) > 1){
+            $this->getRedis()->hset(self::BIND_FD_TO_USER,$user_id,implode(',',array_diff($fds,[$fd])));
+        }else{
+            $this->getRedis()->hdel(self::BIND_FD_TO_USER,$user_id);
+        }
+
         $this->getRedis()->hdel(self::BIND_USER_TO_FD,$fd);
 
         //清除fd 所在的所有聊天室
