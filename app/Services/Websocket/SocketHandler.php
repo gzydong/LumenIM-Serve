@@ -47,7 +47,7 @@ class SocketHandler  extends WebsocketHandler
         WebSocketHelper::bindGroupChat($user_id,$fd);//绑定群聊关系
 
 
-        var_dump(Room::getClients('room.group.chat.1'));
+        var_dump(Room::getClients('room.group.chat1'));
 
         return true;
     }

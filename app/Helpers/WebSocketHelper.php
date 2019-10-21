@@ -106,7 +106,7 @@ class WebSocketHelper
         },$ids);
 
 
-        echo '群聊ID'.PHP_EOL;var_dump($rooms);echo '群聊ID - end'.PHP_EOL;
+//        echo '群聊ID'.PHP_EOL;var_dump($rooms);echo '群聊ID - end'.PHP_EOL;
 
         Room::add($fd, $rooms);unset($rooms);
     }
