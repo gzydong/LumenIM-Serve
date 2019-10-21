@@ -4,6 +4,8 @@ namespace App\Logic;
 use App\Models\User;
 use App\Models\UsersChatList;
 use App\Models\UsersChatRecords;
+use App\Models\UsersGroup;
+use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\DB;
 
 class ChatLogic extends Logic
@@ -114,5 +116,139 @@ SQL;
         }
 
         return ['rows'=>$rows,'record_id'=>end($rows)['id']];
+    }
+
+    /**
+     * 创建群聊
+     *
+     * @param int $user_id 用户ID
+     * @param string $group_name 群聊名称
+     * @param array $uids 群聊用户ID(不包括群成员)
+     * @return array
+     */
+    public function launchGroupChat(int $user_id,string $group_name,$uids = []){
+        array_unshift($uids,$user_id);
+        $groupMember = [];
+
+        DB::beginTransaction();
+        try{
+            $insRes = UsersGroup::create(['user_id'=>$user_id,'group_name'=>$group_name,'people_num'=>count($uids),'status'=>0,'created_at'=>date('Y-m-d H:i:s')]);
+            if(!$insRes){
+                throw new \Exception('创建群失败');
+            }
+
+            foreach ($uids as $k=>$uid){
+                $groupMember[] = [
+                    'group_id'=>$insRes->id,
+                    'user_id'=>$uid,
+                    'group_owner'=>($k == 0) ? 1 : 0,
+                    'status'=>0,
+                    'created_at'=>date('Y-m-d H:i:s'),
+                ];
+            }
+
+            if(!DB::table('users_group_member')->insert($groupMember)){
+                throw new \Exception('创建群成员信息失败');
+            }
+
+            DB::commit();
+        }catch (\Exception $e){
+            DB::rollBack();
+            return [false,[]];
+        }
+
+        unset($groupMember);
+        unset($insRes);
+        return [true,$uids];
+    }
+
+    /**
+     * 邀请好友加入群聊
+     *
+     * @param int $group_id 群ID
+     * @param int $friends_id 好友ID
+     * @return bool
+     */
+    public function inviteFriendsGroupChat(int $group_id,int $friends_id){
+        $info = UsersGroupMember::select(['id','status'])->where('group_id')->where('user_id',$friends_id)->first();
+        if($info && $info->status == 0){
+            return false;
+        }
+
+        try{
+            if($info){
+                $info->status = 1;$info->save();
+            }else{
+                if(!UsersGroupMember::create(['group_id'=>$group_id,'user_id'=>$friends_id,'group_owner'=>0,'status'=>0,'created_at'=>date('Y-m-d H:i:s')])){
+                    throw new \Exception('创建群成员信息失败');
+                }
+            }
+
+            UsersGroup::where('group_id',$group_id)->increment('people_num');
+            DB::commit();
+        }catch (\Exception $e){
+            DB::rollBack();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 将指定的用户踢出群聊
+     *
+     * @param int $group_id 群ID
+     * @param int $group_owner_id 操作用户ID
+     * @param int $group_member_id  群成员ID
+     * @return bool
+     */
+    public function removeGroupChat(int $group_id,int $group_owner_id,int $group_member_id){
+        if(!UsersGroup::where('id',$group_id)->where('user_id',$group_owner_id)->exists()){
+            return false;
+        }
+
+        DB::beginTransaction();
+        try{
+            if(!UsersGroupMember::where('group_id',$group_id)->where('user_id',$group_member_id)->where('group_owner',0)->update(['status'=>0])){
+                throw new \Exception('修改群成员状态失败');
+            }
+
+            UsersGroup::where('group_id',$group_id)->decrement('people_num');
+            DB::commit();
+        }catch (\Exception $e){
+            DB::rollBack();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 解散指定的群聊
+     *
+     * @param int $group_id 群ID
+     * @param int $user_id  用户ID
+     * @return bool
+     */
+    public function dismissGroupChat(int $group_id,int $user_id){
+        if(!UsersGroup::where('id',$group_id)->where('status',0)->exists()){
+            return false;
+        }
+
+        //判断执行者是否属于群主
+        if(!UsersGroupMember::where('group_id',$group_id)->where('user_id',$user_id)->where('group_owner',1)->exists()){
+            return false;
+        }
+
+        DB::beginTransaction();
+        try{
+            UsersGroup::where('id',$group_id)->update(['status'=>1]);
+            UsersGroupMember::where('group_id',$group_id)->update(['status'=>1]);
+            DB::commit();
+        }catch (\Exception $e){
+            DB::rollBack();
+            return false;
+        }
+
+        return true;
     }
 }

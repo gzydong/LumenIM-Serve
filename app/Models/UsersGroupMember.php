@@ -23,7 +23,7 @@ class UsersGroupMember extends Model
      *
      * @var array
      */
-    protected $fillable = ['group_id','uid','group_owner','created_at'];
+    protected $fillable = ['group_id','user_id','group_owner','created_at'];
 
 
     /**

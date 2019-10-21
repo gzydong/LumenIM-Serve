@@ -49,6 +49,7 @@ function checkNumber($num)
     if (is_numeric($num)) {
         return preg_match('/^\s*[+-]?\d+\s*$/', $num) || preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $num) ;
     }
+
     return false;
 }
 
@@ -66,8 +67,6 @@ function getPathFileName($path)
         if ($resource) {
             while (!!($file = readdir($resource))) {
                 if (is_file($path . '/' . $file)) {
-//                    $arrReturn[] = pathinfo($path . '/' . $file, PATHINFO_FILENAME);
-
                     $arrReturn[] = $file;
                 }
             }
@@ -75,4 +74,17 @@ function getPathFileName($path)
         }
     }
     return $arrReturn;
+}
+
+
+
+function checkIds(array $ids){
+    foreach ($ids as $id){
+        if(!checkNumber($id) || $id <= 0){
+            return false;
+        }
+    }
+
+    unset($ids);
+    return true;
 }

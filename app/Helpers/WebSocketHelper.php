@@ -131,6 +131,4 @@ class WebSocketHelper
         }
         unset($receive);unset($data);
     }
-
-
 }

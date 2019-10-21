@@ -6,29 +6,34 @@ use App\Logic\ChatLogic;
 
 class ChatController extends CController
 {
+    public $request;
+    public $chatLogic;
+
+    public function __construct(Request $request,ChatLogic $chatLogic)
+    {
+        $this->request = $request;
+        $this->chatLogic = $chatLogic;
+    }
 
     /**
      * 获取用户聊天列表
      *
-     * @param ChatLogic $chatLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getChatList(ChatLogic $chatLogic){
-        $rows = $chatLogic->getUserChatList($this->uid());
+    public function getChatList(){
+        $rows = $this->chatLogic->getUserChatList($this->uid());
         return $this->ajaxSuccess('success',$rows);
     }
 
     /**
      * 获取私信或群聊的聊天记录
      *
-     * @param Request $request
-     * @param ChatLogic $chatLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getChatRecords(Request $request,ChatLogic $chatLogic){
-        $record_id  = $request->get('record_id',0);
-        $receive_id = $request->get('receive_id',0);
-        $type       = $request->get('type',1);
+    public function getChatRecords(){
+        $record_id  = $this->request->get('record_id',0);
+        $receive_id = $this->request->get('receive_id',0);
+        $type       = $this->request->get('type',1);
 
         if(!checkNumber($record_id) || $record_id < 0){
             return $this->ajaxParamError();
@@ -43,21 +48,90 @@ class ChatController extends CController
         }
 
         if($type == 1){
-            $data = $chatLogic->getPrivateChatInfos($record_id,$this->uid(),$receive_id);
+            $data = $this->chatLogic->getPrivateChatInfos($record_id,$this->uid(),$receive_id);
         }else{
-            $data = $chatLogic->getGroupChatInfos($record_id,$receive_id,$this->uid());
+            $data = $this->chatLogic->getGroupChatInfos($record_id,$receive_id,$this->uid());
         }
 
         return $this->ajaxSuccess('success',$data);
     }
 
     /**
-     * 发起群聊
+     * 创建群聊
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function launchGroupChat(Request $request,ChatLogic $chatLogic){
-        $group_name = $request->post('group_name','');/**群聊名称*/
-        $uids = $request->post('uids','');            /**群聊用户*/
+    public function launchGroupChat(){
+        $group_name = $this->request->post('group_name','');/**群聊名称*/
+        $uids = $this->request->post('uids','');            /**群聊用户*/
 
-        //$isTrue = $chatLogic->launchGroupChat($this->uid(),$group_name,$uids);
+        if(empty($group_name) || empty($uids)){
+            return $this->ajaxParamError();
+        }
+
+        $uids = array_filter(explode(',',$uids));
+        if(!checkIds($uids)){
+            return $this->ajaxParamError();
+        }
+
+        [$isTrue,$data] = $this->chatLogic->launchGroupChat($this->uid(),$group_name,array_unique($uids));
+        if($isTrue){
+            //群聊创建成功后需要创建聊天室并发送消息通知
+            // ... 逻辑后期添加
+
+            return $this->ajaxError('创建群聊成功...');
+        }
+
+        return $this->ajaxError('创建群聊失败，请稍后再试...');
+    }
+
+    /**
+     * 邀请好友加入群聊
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function inviteGroupChat(){
+        $group_id = $this->request->post('group_id',0);
+        $friend_id = $this->request->post('friend_id',0);
+
+        if(!checkNumber($group_id) || !checkNumber($friend_id)){
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->chatLogic->inviteFriendsGroupChat($group_id,$friend_id);
+        return $isTrue ? $this->ajaxSuccess('好友已成功加入群聊...') : $this->ajaxError('邀请好友加入群聊失败...');
+    }
+
+    /**
+     * 用户踢出群聊
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function removeGroupChat(){
+        $group_id = $this->request->post('group_id',0);
+        $member_id = $this->request->post('member_id',0);
+
+        if(!checkNumber($group_id) || !checkNumber($member_id)){
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->chatLogic->removeGroupChat($group_id,$this->uid(),$member_id);
+
+        return $isTrue ? $this->ajaxSuccess('群聊用户已被移除..') : $this->ajaxError('群聊用户移除失败...');
+    }
+
+    /**
+     * 解散群聊
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function dismissGroupChat(){
+        $group_id = $this->request->post('group_id',0);
+        if(!checkNumber($group_id)){
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->chatLogic->dismissGroupChat($group_id,$this->uid());
+        return $isTrue ? $this->ajaxSuccess('群聊已解散成功..') : $this->ajaxError('群聊解散失败...');
     }
 }

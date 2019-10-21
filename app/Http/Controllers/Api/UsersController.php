@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Logic\UsersLogic;
 use App\Logic\FriendsLogic;
 use App\Facades\WebSocketHelper;
+
 class UsersController extends CController
 {
 

@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 
-use App\Logic\FriendsLogic;
+use App\Logic\ChatLogic;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -13,10 +13,14 @@ use Illuminate\Http\Request;
  */
 class TestController
 {
-    public function index(Request $request,FriendsLogic $friendsLogic){
-        $redis = app('redis.connection');
+    public function index(Request $request,ChatLogic $chatLogic){
 
-        dd($redis->hgetall('hash.fds.list'));
+
+        dd('asd');
+
+
+
+        $chatLogic->launchGroupChat(15,'测试群',[1513,11351,135135,4546,78914646]);
 
         exit;
         $sid = $request->get('sid','');

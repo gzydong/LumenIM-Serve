@@ -23,7 +23,7 @@ class UsersGroup extends Model
      *
      * @var array
      */
-    protected $fillable = ['group_id','uid','group_owner','created_at'];
+    protected $fillable = ['group_id','user_id','group_owner','created_at'];
 
     /**
      * 表明模型是否应该被打上时间戳

@@ -7,6 +7,7 @@ $router->get('/', ['as' => 'api', function () {
     return response()->json(['code'=>305,'msg'=>'FAIL','data'=>['username'=>'非法请求...']]);
 }]);
 
+
 //AuthController 控制器分组
 $router->group([],function () use ($router) {
     $router->post('/auth/login', ['middleware'=>[],'uses' => 'AuthController@login']);
@@ -30,7 +31,14 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
 //ChatController 控制器分组
 $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->get('/chat/chat-list', ['uses' => 'ChatController@getChatList']);
-    $router->get('/chat/chat-records', ['middleware'=>[],'uses' => 'ChatController@getChatRecords']);
+    $router->get('/chat/chat-records', ['uses' => 'ChatController@getChatRecords']);
+
+
+    //群聊相关接口
+    $router->post('/chat/launch-group-chat', ['uses' => 'ChatController@launchGroupChat']);
+    $router->post('/chat/invite-group-chat', ['uses' => 'ChatController@inviteGroupChat']);
+    $router->post('/chat/remove-group-chat', ['uses' => 'ChatController@removeGroupChat']);
+    $router->post('/chat/dismiss-group-chat', ['uses' => 'ChatController@dismissGroupChat']);
 });
 
 //UploadController 上传文件控制器分组
