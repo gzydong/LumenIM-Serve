@@ -95,7 +95,7 @@ class WebSocketHelper
      * @return bool
      */
     public function bindGroupChat(int $user_id,int $fd){
-        $ids = UsersLogic::getUserGroupIds($user_id);echo '群聊ID'.PHP_EOL;var_dump($ids);
+        $ids = UsersLogic::getUserGroupIds($user_id);
         if(empty($ids)){
             return true;
         }
@@ -104,6 +104,9 @@ class WebSocketHelper
         $rooms = array_map(function ($group_id){
             return self::ROOM_GROUP_PREFIX.$group_id;
         },$ids);
+
+
+        echo '群聊ID'.PHP_EOL;var_dump($rooms);echo '群聊ID - end'.PHP_EOL;
 
         Room::add($fd, $rooms);unset($rooms);
     }
