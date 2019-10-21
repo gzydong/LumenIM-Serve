@@ -41,7 +41,7 @@ class WebSocketHelper
      */
     public function bindUserFd(int $user_id,int $fd){
         echo 'USER_ID'.PHP_EOL;
-        var_dump($this->getUserFd());
+        var_dump($this->getUserFd($user_id));
 
 
         $this->getRedis()->hset(self::BIND_FD_TO_USER,$user_id,$fd);
