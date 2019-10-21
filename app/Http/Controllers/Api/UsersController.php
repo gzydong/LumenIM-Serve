@@ -129,4 +129,24 @@ class UsersController extends CController
         $isTrue = FriendsLogic::handleFriendApply($this->uid(),$apply_id,$type,$remarks);
         return $isTrue ? $this->ajaxSuccess('处理完成...') : $this->ajaxError('处理失败，请稍后再试...');
     }
+
+    /**
+     * 编辑好友备注信息
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function editFriendRemark(Request $request){
+        $friend_id = $request->post('friend_id',0);
+        $remarks   = $request->post('remarks','');
+
+        if(!checkNumber($friend_id) || empty($remarks)){
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = FriendsLogic::editFriendRemark($this->uid(),$friend_id,$remarks);
+        return $isTrue ?
+            $this->ajaxSuccess('备注修改成功...') :
+            $this->ajaxError('备注修改失败，请稍后再试...');
+    }
 }

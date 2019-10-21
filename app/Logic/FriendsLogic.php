@@ -143,4 +143,21 @@ class FriendsLogic extends Logic
 
         return $this->packData($rows, $count, $page, $page_size);
     }
+
+    /**
+     * 编辑好友备注信息
+     *
+     * @param int $user_id 用户ID
+     * @param int $friend_id 朋友ID
+     * @param string $remarks 好友备注
+     * @return bool
+     */
+    public static function editFriendRemark(int $user_id,int $friend_id,string $remarks){
+        if(UsersFriends::where('user1',$user_id)->where('user2',$friend_id)->update(['user1_remark'=>$remarks]) ||
+            UsersFriends::where('user1',$friend_id)->where('user2',$user_id)->update(['user2_remark'=>$remarks])){
+            return true;
+        }
+
+        return false;
+    }
 }
