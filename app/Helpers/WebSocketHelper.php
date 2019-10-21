@@ -95,7 +95,7 @@ class WebSocketHelper
      * @return bool
      */
     public function bindGroupChat(int $user_id,int $fd){
-        $ids = UsersLogic::getUserGroupIds($user_id);
+        $ids = UsersLogic::getUserGroupIds($user_id);echo '群聊ID'.PHP_EOL;var_dump($ids);
         if(empty($ids)){
             return true;
         }
