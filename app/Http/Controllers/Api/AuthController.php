@@ -70,6 +70,9 @@ class AuthController extends CController
             return $this->ajaxReturn(305, '获取登录状态失败');
         }
 
+        //判断系统是否在其他地方登录，若存在则将强制下线
+        // ...逻辑预留
+
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,
             'sid'=>RsaMeans::encrypt($user->id),
