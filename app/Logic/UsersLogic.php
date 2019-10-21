@@ -59,7 +59,7 @@ class UsersLogic extends Logic
      * @return mixed
      */
     public static function getUserGroupIds(int $user_id){
-        return UsersGroupMember::where('uid',$user_id)->get()->pluck('group_id')->toarray();
+        return UsersGroupMember::where('user_id',$user_id)->get()->pluck('group_id')->toarray();
     }
 
     /**
