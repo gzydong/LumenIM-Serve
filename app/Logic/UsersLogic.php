@@ -40,7 +40,7 @@ class UsersLogic extends Logic
      * @return mixed
      */
     public function getUserFriends(int $uid){
-        return (new UsersFriends())->getUserFriends($uid);
+        return UsersFriends::getUserFriends($uid);
     }
 
     /**

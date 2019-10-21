@@ -11,6 +11,9 @@ use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 use App\Helpers\RsaMeans;
 
+
+use SwooleTW\Http\Websocket\Facades\Room;
+
 class SocketHandler  extends WebsocketHandler
 {
 
@@ -42,6 +45,10 @@ class SocketHandler  extends WebsocketHandler
         //这里处理用户登录后的逻辑
         WebSocketHelper::bindUserFd($user_id,$fd);   //绑定用户ID与fd的关系
         WebSocketHelper::bindGroupChat($user_id,$fd);//绑定群聊关系
+
+
+        var_dump(Room::getClients('room.group.chat.1'));
+
         return true;
     }
 

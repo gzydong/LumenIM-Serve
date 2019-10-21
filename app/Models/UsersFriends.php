@@ -38,15 +38,15 @@ class UsersFriends extends Model
      * @param int $uid  用户ID
      * @return mixed
      */
-    public function getUserFriends(int $uid){
+    public static function getUserFriends(int $uid){
         $sql = <<<SQL
-            SELECT lar_users.id,lar_users.nickname,lar_users.avatarurl,lar_users.gender from lar_users 
+            SELECT lar_users.id,lar_users.nickname,lar_users.avatarurl,lar_users.gender,tmp_table.friend_remark from lar_users 
             INNER join
             (
-              SELECT user2 as uid from lar_users_friends where user1 = {$uid} and `status` = 1
+              SELECT user2 as uid,user1_remark as friend_remark from lar_users_friends where user1 = {$uid} and `status` = 1
                 UNION all 
-              SELECT user1 as uid from lar_users_friends where user2 = {$uid} and `status` = 1
-            ) ids_table on ids_table.uid = lar_users.id
+              SELECT user1 as uid,user2_remark as friend_remark from lar_users_friends where user2 = {$uid} and `status` = 1
+            ) tmp_table on tmp_table.uid = lar_users.id
 SQL;
 
         return DB::select($sql);
