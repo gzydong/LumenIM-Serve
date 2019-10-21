@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Helpers\RsaMeans;
 
+use App\Facades\WebSocketHelper;
+
 /**
  * 接口授权登录控制器
  * Class AuthController
@@ -71,7 +73,9 @@ class AuthController extends CController
         }
 
         //判断系统是否在其他地方登录，若存在则将强制下线
-        // ...逻辑预留
+        if($fds = WebSocketHelper::getUserFds($user->id)){
+            WebSocketHelper::disconnect($fds);
+        }
 
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,

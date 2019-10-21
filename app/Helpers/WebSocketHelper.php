@@ -4,6 +4,8 @@ namespace App\Helpers;
 use App\Logic\UsersLogic;
 use SwooleTW\Http\Websocket\Facades\Room;
 use SwooleTW\Http\Websocket\Facades\Websocket;
+use SwooleTW\Http\Server\Facades\Server;
+
 
 /**
  * WebSocket 处理类
@@ -82,9 +84,8 @@ class WebSocketHelper
      * @param int $fd Websocket 连接标识[fd]
      */
     public function clearFdCache(int $fd){
-        $user_id = $this->getRedis()->hget(self::BIND_USER_TO_FD,$fd);
+        $user_id = $this->getFdUserId($fd);
         $fds = $this->getUserFds($user_id);
-
         if(count($fds) > 1){
             $this->getRedis()->hset(self::BIND_FD_TO_USER,$user_id,implode(',',array_diff($fds,[$fd])));
         }else{
@@ -140,6 +141,21 @@ class WebSocketHelper
         if(isset(self::EVENTS[$event])){
             Websocket::to($receive)->emit(self::EVENTS[$event], $data);
         }
+
         unset($receive);unset($data);
+    }
+
+    /**
+     * 服务端强制断开 Websocket 连接
+     *
+     * @param array $fds
+     */
+    public function disconnect(array $fds){
+        $wsServer = app(Server::class);
+        foreach ($fds as $fd){
+            if($wsServer->exist($fd)){
+                $wsServer->disconnect($fd,4030, "您的账号在其他设备登录，如果这不是您的操作，请及时修改您的登录密码");
+            }
+        }
     }
 }

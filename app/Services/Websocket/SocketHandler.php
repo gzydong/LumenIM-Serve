@@ -2,12 +2,13 @@
 namespace App\Services\Websocket;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
+
 use App\Facades\WebSocketHelper;
 use App\Facades\ChatService;
 
 use Swoole\Websocket\Frame;
-use SwooleTW\Http\Server\Facades\Server;
+
+
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 use App\Helpers\RsaMeans;
 
@@ -29,15 +30,7 @@ class SocketHandler  extends WebsocketHandler
             WebSocketHelper::clearRedisCache();
         }
 
-        //这里检测连接用户是否在其它地方登录（如果之前登录的fd 断开连接） 模拟查询
-//        $rfd = WebSocketHelper::getUserFd($user_id);//模拟用户其它地方登录的fd
-//        if($rfd){
-//            $wsServer = App::make(Server::class);
-//            if($wsServer->exist($rfd)){
-//                $wsServer->disconnect($rfd,4030, "您的账号在其他设备登录，如果这不是您的操作，请及时修改您的登录密码");
-//            }
-//            unset($wsServer);
-//        }
+
 
 
         //这里处理用户登录后的逻辑
