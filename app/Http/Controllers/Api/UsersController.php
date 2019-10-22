@@ -161,7 +161,7 @@ class UsersController extends CController
         $mobile = $request->post('mobile','');
         $where = [];
 
-        if(!checkNumber($user_id) && $user_id > 0){
+        if(checkNumber($user_id) && $user_id > 0){
             $where['uid'] = $user_id;
         }else if(isMobile($mobile)){
             $where['mobile'] = $mobile;
