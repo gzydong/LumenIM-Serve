@@ -20,6 +20,26 @@ class TestController
 //        $fds = WebSocketHelper::getUserFd(10115);
 //        dd($fds);
 
+
+
+        go(function () {
+            $db = new Co\MySQL();
+            $server = array(
+                'host' => '127.0.0.1',
+                'user' => 'root',
+                'password' => 'yuandong_1hblsqt',
+                'database' => 'lumen-im',
+            );
+
+            $db->connect($server);
+
+            $result = $db->query('SELECT * FROM lar_users WHERE id = 1017');
+            var_dump($result);
+        });
+
+
+        exit;
+
         $sid = $request->get('sid','');
         return view('test.index',['sid'=>$sid]);
     }
