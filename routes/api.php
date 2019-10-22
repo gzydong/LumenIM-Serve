@@ -29,7 +29,7 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->post('/user/edit-friend-remark', ['uses' => 'UsersController@editFriendRemark']);
 
 
-    $router->get('/user/search-user', ['uses' => 'UsersController@searchUserInfo']);
+    $router->post('/user/search-user', ['uses' => 'UsersController@searchUserInfo']);
 });
 
 //ChatController 控制器分组

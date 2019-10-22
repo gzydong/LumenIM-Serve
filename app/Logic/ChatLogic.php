@@ -200,7 +200,7 @@ SQL;
      * @param int $group_member_id  群成员ID
      * @return bool
      */
-    public function removeGroupChat(int $group_id,int $group_owner_id,int $group_member_id){
+    public function removeGroupChat(int $group_id,int $group_owner_id,int $group_member_id,$group_owner = false){
         if(!UsersGroup::where('id',$group_id)->where('user_id',$group_owner_id)->exists()){
             return false;
         }

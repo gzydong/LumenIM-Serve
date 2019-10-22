@@ -157,8 +157,8 @@ class UsersController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function searchUserInfo(Request $request,UsersLogic $usersLogic){
-        $user_id = $request->get('user_id',0);
-        $mobile = $request->get('mobile','');
+        $user_id = $request->post('user_id',0);
+        $mobile = $request->post('mobile','');
         $where = [];
 
         if(!checkNumber($user_id) && $user_id > 0){

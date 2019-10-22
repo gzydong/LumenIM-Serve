@@ -1,8 +1,5 @@
 <?php
-/**
- * 公共方法扩展库
- */
-
+/**---------------------公共方法扩展库---------------*/
 
 /**
  * 验证手机号是否正确
@@ -27,17 +24,6 @@ function isPassword($password) {
     return preg_match('/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{8,16}$/', $password) ? true : false;
 }
 
-function replaceArrayKey($key,$array){
-    if(empty($array)) return [];
-
-    $arr = [];
-    foreach ($array as $value){
-        $arr[$value['id']] = $value;
-    }
-    unset($array);
-    return $arr;
-}
-
 /**
  * checkNumber() PHP验证字符串是否为一个数字
  * @param   string 	$num      	字符串
@@ -51,6 +37,41 @@ function checkNumber($num)
     }
 
     return false;
+}
+
+/**
+ * 验证用户 ids
+ * @param array $ids
+ * @return bool
+ */
+function checkIds(array $ids){
+    foreach ($ids as $id){
+        if(!checkNumber($id) || $id <= 0){
+            return false;
+        }
+    }
+
+    unset($ids);
+    return true;
+}
+
+
+/**
+ * 二维数组用指定的key值作为二维数组的key
+ *
+ * @param $key
+ * @param $array
+ * @return array
+ */
+function replaceArrayKey($key,$array){
+    if(empty($array)) return [];
+
+    $arr = [];
+    foreach ($array as $value){
+        $arr[$value['id']] = $value;
+    }
+    unset($array);
+    return $arr;
 }
 
 
@@ -78,13 +99,3 @@ function getPathFileName($path)
 
 
 
-function checkIds(array $ids){
-    foreach ($ids as $id){
-        if(!checkNumber($id) || $id <= 0){
-            return false;
-        }
-    }
-
-    unset($ids);
-    return true;
-}
