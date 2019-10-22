@@ -61,9 +61,9 @@ SQL;
 
         $rows = array_map(function ($item) use($infos){
             if($infos[0]['id'] == $item->user_id){
-                $item->avatarurl = $infos[0]['avatarurl'];
+                $item->avatar = $infos[0]['avatarurl'];
             }else{
-                $item->avatarurl = $infos[1]['avatarurl'];
+                $item->avatar = $infos[1]['avatarurl'];
             }
 
             $item->nickname = '';
@@ -71,7 +71,6 @@ SQL;
             return (array)$item;
         },DB::select($sql));
 
-        unset($infos);
         return ['rows'=>$rows,'record_id'=>end($rows)['id']];
     }
 

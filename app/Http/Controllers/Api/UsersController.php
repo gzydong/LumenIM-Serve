@@ -145,8 +145,30 @@ class UsersController extends CController
         }
 
         $isTrue = FriendsLogic::editFriendRemark($this->uid(),$friend_id,$remarks);
-        return $isTrue ?
-            $this->ajaxSuccess('备注修改成功...') :
-            $this->ajaxError('备注修改失败，请稍后再试...');
+
+        return $isTrue ? $this->ajaxSuccess('备注修改成功...') : $this->ajaxError('备注修改失败，请稍后再试...');
+    }
+
+    /**
+     * 获取用户信息
+     *
+     * @param Request $request
+     * @param UsersLogic $usersLogic
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function searchUserInfo(Request $request,UsersLogic $usersLogic){
+        $user_id = $request->get('user_id',0);
+        $mobile = $request->get('mobile','');
+        $where = [];
+
+        if(!checkNumber($user_id) && $user_id > 0){
+            $where['uid'] = $user_id;
+        }else if(isMobile($mobile)){
+            $where['mobile'] = $mobile;
+        }else{
+            return $this->ajaxParamError();
+        }
+
+        $usersLogic->searchUserInfo($where,$this->uid());
     }
 }

@@ -65,12 +65,21 @@ class UsersLogic extends Logic
     /**
      * 通过手机号查找用户
      *
-     * @param string $mobile
+     * @param array $where 查询条件
      * @param int $user_id 当前登录用户的ID
      * @return array
      */
-    public function searchUserInfo(string $mobile,int $user_id){
-        $info = User::select(['id','mobile','nickname','avatarurl','gender'])->where('mobile',$mobile)->first();
+    public function searchUserInfo(array $where,int $user_id){
+        $info = User::select(['id','mobile','nickname','avatarurl','gender']);
+        if(isset($where['uid'])){
+            $info->where('id',$where['uid']);
+        }
+
+        if(isset($where['mobile'])){
+            $info->where('mobile',$where['mobile']);
+        }
+
+        $info = $info->first();
         $info = $info ? $info->toArray() : [];
         if($info){
             $info['friend_status'] = 0;//朋友关系状态  0:本人  1:陌生人 2:朋友

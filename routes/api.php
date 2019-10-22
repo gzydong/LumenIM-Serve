@@ -26,6 +26,10 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->get('/user/friend-apply-records', ['uses' => 'UsersController@getFriendApplyRecords']);
     $router->post('/user/send-friend-apply', ['uses' => 'UsersController@sendFriendApply']);
     $router->post('/user/handle-friend-apply', ['uses' => 'UsersController@handleFriendApply']);
+    $router->post('/user/edit-friend-remark', ['uses' => 'UsersController@editFriendRemark']);
+
+
+    $router->get('/user/search-user', ['uses' => 'UsersController@searchUserInfo']);
 });
 
 //ChatController 控制器分组
