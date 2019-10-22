@@ -14,28 +14,15 @@ use App\Facades\WebSocketHelper;
 class TestController
 {
     public function index(Request $request,ChatLogic $chatLogic){
+        echo time().PHP_EOL;
+        for ($i=0;$i < 10;$i++){
+            go(function () {
+                sleep(1);
+                var_dump(date('Y-m-d H:i:s'));
+            });
+        }
 
-//        dd(array_diff([11,22,33],[11]));
-//
-//        $fds = WebSocketHelper::getUserFd(10115);
-//        dd($fds);
-
-
-
-        go(function () {
-            $db = new Co\MySQL();
-            $server = array(
-                'host' => '127.0.0.1',
-                'user' => 'root',
-                'password' => 'yuandong_1hblsqt',
-                'database' => 'lumen-im',
-            );
-
-            $db->connect($server);
-
-            $result = $db->query('SELECT * FROM lar_users WHERE id = 1017');
-            var_dump($result);
-        });
+        echo time().PHP_EOL;
 
 
         exit;
