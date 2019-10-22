@@ -169,6 +169,8 @@ class UsersController extends CController
             return $this->ajaxParamError();
         }
 
-        $usersLogic->searchUserInfo($where,$this->uid());
+        $data = $usersLogic->searchUserInfo($where,$this->uid());
+
+        return $this->ajaxSuccess('success',$data);
     }
 }
