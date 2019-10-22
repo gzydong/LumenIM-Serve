@@ -17,7 +17,7 @@ class TestController
         echo time().PHP_EOL;
         for ($i=0;$i < 10;$i++){
             go(function () {
-                sleep(1);
+                co::sleep(1.0);
                 var_dump(date('Y-m-d H:i:s'));
             });
         }
@@ -25,7 +25,7 @@ class TestController
         echo time().PHP_EOL;
 
 
-        exit;
+
 
         $sid = $request->get('sid','');
         return view('test.index',['sid'=>$sid]);
