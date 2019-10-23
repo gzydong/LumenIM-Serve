@@ -72,7 +72,7 @@ class ChatLogic extends Logic
                 $flagKey = $user_id < $v2['friend_id'] ? "{$user_id}_{$v2['friend_id']}" : "{$v2['friend_id']}_{$user_id}";
                 $rows[$key2]['msg_text'] = Redis::hget('friends.chat.last.msg',$flagKey) ? : $v2['msg_text'];
             }else{
-                $rows[$key2]['avatar'] = $friendInfos[$v2['group_id']]['avatarurl'];
+                $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatarurl'];
                 $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name'];
                 $rows[$key2]['msg_text'] = Redis::hget('groups.chat.last.msg',$v2['group_id']) ? : $v2['msg_text'];
             }
