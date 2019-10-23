@@ -70,6 +70,7 @@ function replaceArrayKey($key,$array){
     foreach ($array as $value){
         $arr[$value['id']] = $value;
     }
+
     unset($array);
     return $arr;
 }

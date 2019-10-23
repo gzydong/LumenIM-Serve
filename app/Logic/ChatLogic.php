@@ -7,6 +7,8 @@ use App\Models\UsersChatRecords;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
+
 
 class ChatLogic extends Logic
 {
@@ -18,19 +20,50 @@ class ChatLogic extends Logic
      * @return mixed
      */
     public function getUserChatList(int $user_id){
-        $rows = UsersChatList::select(['users_chat_list.type','users_chat_list.friend_id','users_chat_list.group_id','users_chat_list.created_at','users.nickname','users.avatarurl'])
-            ->leftJoin('users','users_chat_list.friend_id','=','users.id')
-            ->where(function ($query) use($user_id){
-                $query->where('users_chat_list.uid',$user_id)->orWhere('users_chat_list.friend_id',$user_id);
-            })
-            ->where('users_chat_list.type',1)
+        $rows = UsersChatList::select(['users_chat_list.type','users_chat_list.friend_id','users_chat_list.group_id','users_chat_list.created_at'])
+            ->where('users_chat_list.uid',$user_id)
             ->where('users_chat_list.status',1)->get()->toArray();
 
-        $rows = array_map(function ($item){
-            $item['num'] = 0;
-            $item['text'] = '';
-            return $item;
-        },$rows);
+        if(empty($rows)){
+            return [];
+        }
+
+        $friend_ids = $group_ids = [];
+        foreach ($rows as $key=>$v){
+            $rows[$key]['name'] = '';//对方昵称/群名称
+            $rows[$key]['unread_num'] = 0;//未读消息数量
+            $rows[$key]['msg_text'] = '......';//最新一条消息内容
+            $rows[$key]['avatar'] = 'http://img.duoziwang.com/2018/17/05251620921259.jpg';
+            if($v['type'] == 1){
+                $friend_ids[] = $v['friend_id'];
+            }else{
+                $group_ids[] = $v['group_id'];
+            }
+        }
+
+        $friendInfos = $groupInfos = [];
+        if($group_ids){
+            $groupInfos = UsersGroup::whereIn('id',$group_ids)->get(['id','group_name','people_num'])->toArray();
+            $groupInfos = replaceArrayKey('id',$groupInfos);
+        }
+
+        if($friend_ids){
+            $friendInfos = User::whereIn('id',$friend_ids)->get(['id','nickname','avatarurl'])->toArray();
+            $friendInfos = replaceArrayKey('id',$friendInfos);
+        }
+
+        foreach ($rows as $key2=>$v2){
+            if($v2['type'] == 1){
+                $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatarurl'];
+                $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname'];
+
+                $flagKey = $user_id < $v2['friend_id'] ? "{$user_id}_{$v2['friend_id']}" : "{$v2['friend_id']}_{$user_id}";
+                $rows[$key2]['msg_text']  = Redis::hget('friends.chat.last.msg',$flagKey) ? : $v2['msg_text'];
+            }else{
+                $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name'];
+                $rows[$key2]['msg_text']  = Redis::hget('groups.chat.last.msg',$v2['group_id']) ? : $v2['msg_text'];
+            }
+        }
 
         return $rows;
     }
