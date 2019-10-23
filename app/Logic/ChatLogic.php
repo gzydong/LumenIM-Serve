@@ -47,7 +47,7 @@ class ChatLogic extends Logic
     public function getPrivateChatInfos(int $record_id,int $user_id,int $receive_id,$page_size = 20){
         $infos = User::select('id','avatarurl')->find([$user_id,$receive_id])->toArray();
         if($infos && count($infos) != 2){
-            return [];
+            return ['rows'=>[],'record_id'=>0];
         }
 
         $whereID = ($record_id == 0) ? '' : " and `id` < {$record_id}";
