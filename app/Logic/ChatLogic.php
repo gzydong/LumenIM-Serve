@@ -10,7 +10,6 @@ use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
-
 class ChatLogic extends Logic
 {
 
@@ -36,7 +35,6 @@ class ChatLogic extends Logic
             $rows[$key]['msg_text'] = '......';//最新一条消息内容
             $rows[$key]['avatar'] = 'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3987166397,2421475227&fm=26&gp=0.jpg';//默认头像
 
-
             if($v['type'] == 1){
                 $friend_ids[] = $v['friend_id'];
             }else{
@@ -61,6 +59,7 @@ class ChatLogic extends Logic
 
                 $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname'];
                 $info = UsersFriends::select('user1','user2','user1_remark','user2_remark')->where('user1',($user_id < $v2['friend_id'])? $user_id:$v2['friend_id'])->where('user2',($user_id < $v2['friend_id'])? $v2['friend_id'] : $user_id)->first();
+                //这个环节待优化
                 if($info){
                     if($info->user1 == $v2['friend_id'] && !empty($info->user2_remark)){
                         $rows[$key2]['name'] = $info->user2_remark;
@@ -141,7 +140,7 @@ SQL;
             $uids = implode(',',array_unique(array_column($rows,'user_id')));
 
             $sql = <<<SQL
-            SELECT users.id,users.avatarurl,users.nickname,tmp_table.nickname_remarks from lar_users users
+            SELECT users.id,users.avatarurl as avatar,users.nickname,tmp_table.nickname_remarks from lar_users users
             left JOIN (
             SELECT user2 as friend_id,user1_remark as nickname_remarks  from lar_users_friends where user1 = {$user_id} and user2 in ({$uids}) 
               UNION 
