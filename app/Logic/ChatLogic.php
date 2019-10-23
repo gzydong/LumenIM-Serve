@@ -62,10 +62,10 @@ class ChatLogic extends Logic
                 $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname'];
                 $info = UsersFriends::select('user1','user2','user1_remark','user2_remark')->where('user1',($user_id < $v2['friend_id'])? $user_id:$v2['friend_id'])->where('user2',($user_id < $v2['friend_id'])? $v2['friend_id'] : $user_id)->first();
                 if($info){
-                    if($info->user1 == $v2['friend_id'] && !empty($info->user1_remark)){
-                        $rows[$key2]['name'] = $info->user1_remark;
-                    }else if($info->user2 == $v2['friend_id'] && !empty($info->user2_remark)){
+                    if($info->user1 == $v2['friend_id'] && !empty($info->user2_remark)){
                         $rows[$key2]['name'] = $info->user2_remark;
+                    }else if($info->user2 == $v2['friend_id'] && !empty($info->user1_remark)){
+                        $rows[$key2]['name'] = $info->user1_remark;
                     }
                 }
 
