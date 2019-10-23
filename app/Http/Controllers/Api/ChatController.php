@@ -47,11 +47,19 @@ class ChatController extends CController
             return $this->ajaxParamError();
         }
 
+        $uid = $this->uid();
         if($type == 1){
-            $data = $this->chatLogic->getPrivateChatInfos($record_id,$this->uid(),$receive_id);
+            $data = $this->chatLogic->getPrivateChatInfos($record_id,$uid,$receive_id);
         }else{
-            $data = $this->chatLogic->getGroupChatInfos($record_id,$receive_id,$this->uid());
+            $data = $this->chatLogic->getGroupChatInfos($record_id,$receive_id,$uid);
         }
+
+        if($data['rows']){
+            $data['rows'] = array_map(function ($item) use ($uid){
+                $item['float'] = ($item['user_id'] == $uid) ? 'right' : 'left';
+            },$data['rows']);
+        }
+
 
         return $this->ajaxSuccess('success',$data);
     }
