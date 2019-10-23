@@ -54,13 +54,12 @@ class ChatController extends CController
             $data = $this->chatLogic->getGroupChatInfos($record_id,$receive_id,$uid);
         }
 
-        if($data['rows']){
+        if(count($data['rows']) > 0){
             $data['rows'] = array_map(function ($item) use ($uid){
                 $item['float'] = ($item['user_id'] == $uid) ? 'right' : 'left';
                 return $item;
             },$data['rows']);
         }
-
 
         return $this->ajaxSuccess('success',$data);
     }
