@@ -34,7 +34,7 @@ class ChatLogic extends Logic
             $rows[$key]['name'] = '';//对方昵称/群名称
             $rows[$key]['unread_num'] = 0;//未读消息数量
             $rows[$key]['msg_text'] = '......';//最新一条消息内容
-            $rows[$key]['avatar'] = 'http://img.duoziwang.com/2018/17/05251620921259.jpg';//默认头像
+            $rows[$key]['avatar'] = 'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3987166397,2421475227&fm=26&gp=0.jpg';//默认头像
 
 
             if($v['type'] == 1){
@@ -46,7 +46,7 @@ class ChatLogic extends Logic
 
         $friendInfos = $groupInfos = [];
         if($group_ids){
-            $groupInfos = UsersGroup::whereIn('id',$group_ids)->get(['id','group_name','people_num'])->toArray();
+            $groupInfos = UsersGroup::whereIn('id',$group_ids)->get(['id','group_name','people_num','avatarurl'])->toArray();
             $groupInfos = replaceArrayKey('id',$groupInfos);
         }
 
@@ -72,6 +72,7 @@ class ChatLogic extends Logic
                 $flagKey = $user_id < $v2['friend_id'] ? "{$user_id}_{$v2['friend_id']}" : "{$v2['friend_id']}_{$user_id}";
                 $rows[$key2]['msg_text'] = Redis::hget('friends.chat.last.msg',$flagKey) ? : $v2['msg_text'];
             }else{
+                $rows[$key2]['avatar'] = $friendInfos[$v2['group_id']]['avatarurl'];
                 $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name'];
                 $rows[$key2]['msg_text'] = Redis::hget('groups.chat.last.msg',$v2['group_id']) ? : $v2['msg_text'];
             }
