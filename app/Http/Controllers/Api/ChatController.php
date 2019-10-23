@@ -57,6 +57,7 @@ class ChatController extends CController
         if($data['rows']){
             $data['rows'] = array_map(function ($item) use ($uid){
                 $item['float'] = ($item['user_id'] == $uid) ? 'right' : 'left';
+                return $item;
             },$data['rows']);
         }
 
