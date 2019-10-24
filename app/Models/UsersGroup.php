@@ -50,6 +50,6 @@ class UsersGroup extends Model
      * @return bool
      */
     public static function checkGroupMember(int $group_id,int $user_id){
-        return UsersGroupMember::where('group_id',$group_id)->where('uid',$user_id)->where('status',0)->exists() ? true :false;
+        return UsersGroupMember::where('group_id',$group_id)->where('user_id',$user_id)->where('status',0)->exists() ? true :false;
     }
 }
