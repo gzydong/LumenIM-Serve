@@ -24,7 +24,7 @@ class ChatService
         //判断用户是否存在
         if(!User::checkUserExist($receive_msg['sendUser'])){
             $receive_msg['textMessage'] = '非法操作！';
-            Websocket::to(WebSocketHelper::getUserFd($receive_msg['sendUser']))
+            Websocket::to(WebSocketHelper::getUserFds($receive_msg['sendUser']))
                 ->emit('notify', $receive_msg);
             return false;
         }
@@ -33,7 +33,7 @@ class ChatService
             //判断发送者和接受者是否是好友关系
             if(!UsersFriends::checkFriends($receive_msg['sendUser'],$receive_msg['receiveUser'])){
                 $receive_msg['textMessage'] = '温馨提示:您当前与对方尚未成功好友！';
-                Websocket::to(WebSocketHelper::getUserFd($receive_msg['sendUser']))
+                Websocket::to(WebSocketHelper::getUserFds($receive_msg['sendUser']))
                     ->emit('notify', $receive_msg);
                 return false;
             }
@@ -41,7 +41,7 @@ class ChatService
             //判断群聊是否存在及未解散
             if(!UsersGroup::checkGroupExist($receive_msg['receiveUser'])){
                 $receive_msg['textMessage'] = '温馨提示:群聊房间不存在(或已被解散)';
-                Websocket::to(WebSocketHelper::getUserFd($receive_msg['sendUser']))
+                Websocket::to(WebSocketHelper::getUserFds($receive_msg['sendUser']))
                     ->emit('notify', $receive_msg);
                 return false;
             }
@@ -49,7 +49,7 @@ class ChatService
             //判断是否属于群成员
             if(!UsersGroup::checkGroupMember($receive_msg['receiveUser'],$receive_msg['sendUser'])){
                 $receive_msg['textMessage'] = '温馨提示:您还没有加入该聊天群';
-                Websocket::to(WebSocketHelper::getUserFd($receive_msg['sendUser']))
+                Websocket::to(WebSocketHelper::getUserFds($receive_msg['sendUser']))
                     ->emit('notify', $receive_msg);
                 return false;
             }
