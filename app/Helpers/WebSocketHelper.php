@@ -139,7 +139,11 @@ class WebSocketHelper
      */
     public function sendResponseMessage(string $event,$receive,$data){
         if(isset(self::EVENTS[$event])){
-            Websocket::to($receive)->emit(self::EVENTS[$event], $data);
+            if(!empty($receive)){
+                Websocket::to($receive)->emit(self::EVENTS[$event], $data);
+            }else{
+                Websocket::emit(self::EVENTS[$event], $data);
+            }
         }
 
         unset($receive);unset($data);
