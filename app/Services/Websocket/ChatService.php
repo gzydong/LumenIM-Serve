@@ -92,7 +92,7 @@ class ChatService
                         $info2->save();
                     }
                 }else{
-                    UsersChatList::create(['type'=>1,'uid'=>$receive_msg['receiveUser'],'group_id'=>$receive_msg['sendUser'],'status'=>1,'created_at'=>date('Y-m-d H:i:s')]);
+                    UsersChatList::create(['type'=>1,'uid'=>$receive_msg['receiveUser'],'friend_id'=>$receive_msg['sendUser'],'status'=>1,'created_at'=>date('Y-m-d H:i:s')]);
                 }
             }else if($receive_msg['sourceType'] == 2){//群聊
 

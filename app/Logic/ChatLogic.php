@@ -24,6 +24,7 @@ class ChatLogic extends Logic
             ->where('users_chat_list.uid',$user_id)
             ->where('users_chat_list.status',1)->orderBy('id','desc')->get()->toArray();
 
+
         if(empty($rows)){
             return [];
         }
@@ -48,6 +49,7 @@ class ChatLogic extends Logic
             $groupInfos = replaceArrayKey('id',$groupInfos);
         }
 
+
         if($friend_ids){
             $friendInfos = User::whereIn('id',$friend_ids)->get(['id','nickname','avatarurl'])->toArray();
             $friendInfos = replaceArrayKey('id',$friendInfos);
@@ -55,9 +57,10 @@ class ChatLogic extends Logic
 
         foreach ($rows as $key2=>$v2){
             if($v2['type'] == 1){
-                $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatarurl'];
 
+                $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatarurl'];
                 $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname'];
+
                 $info = UsersFriends::select('user1','user2','user1_remark','user2_remark')->where('user1',($user_id < $v2['friend_id'])? $user_id:$v2['friend_id'])->where('user2',($user_id < $v2['friend_id'])? $v2['friend_id'] : $user_id)->first();
                 //这个环节待优化
                 if($info){

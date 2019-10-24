@@ -71,9 +71,6 @@ class SocketHandler  extends WebsocketHandler
             info("聊天记录保存失败：".json_encode($msgData));
         }
 
-        var_dump($msgData);echo PHP_EOL;
-
-
         $receive = '';
         if($msgData['sourceType'] == 1){//私聊
             $receive = WebSocketHelper::getUserFds($msgData['receiveUser']);
