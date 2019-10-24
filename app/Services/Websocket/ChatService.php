@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\UsersFriends;
 use App\Models\UsersGroup;
 use App\Models\UsersChatRecords;
-use App\Models\UsersChatRecordsMsg;
 use App\Models\UsersChatList;
 use Illuminate\Support\Facades\DB;
 use SwooleTW\Http\Websocket\Facades\Websocket;
@@ -73,26 +72,14 @@ class ChatService
         try{
             $recordRes = UsersChatRecords::create([
                 'source'=>$receive_msg['sourceType'],
+                'msg_type'=>$receive_msg['msgType'],
                 'user_id'=>$receive_msg['sendUser'],
-                'friend_id'=>($receive_msg['sourceType'] == 1)?$receive_msg['receiveUser']:0,
-                'group_id'=>($receive_msg['sourceType'] == 2)?$receive_msg['receiveUser']:0,
-                'send_time'=>$receive_msg['send_time']
+                'receive_id'=>$receive_msg['receiveUser'],
+                'text_msg'=>$receive_msg['textMessage'],
+                'send_time'=>$receive_msg['send_time'],
             ]);
 
             if(!$recordRes){
-                throw new \Exception('聊天记录插入失败');
-            }
-
-            $msg = UsersChatRecordsMsg::create([
-                'chat_record_id'=>$recordRes->id,
-                'msg_type'=>$receive_msg['msgType'],
-                'text_msg'=>$receive_msg['textMessage'],
-                'img_msg'=>$receive_msg['imgMessage'],
-                'files_msg'=>$receive_msg['fileMessage'],
-                'send_time'=>$receive_msg['send_time']
-            ]);
-
-            if(!$msg){
                 throw new \Exception('聊天记录插入失败');
             }
 
