@@ -71,12 +71,15 @@ class SocketHandler  extends WebsocketHandler
             info("聊天记录保存失败：".json_encode($msgData));
         }
 
-        $receive = '';
+        $receive = [];
         if($msgData['sourceType'] == 1){//私聊
             $receive = WebSocketHelper::getUserFds($msgData['receiveUser']);
         }else if($msgData['sourceType'] == 2){
             $receive = WebSocketHelper::getRoomGroupName($msgData['receiveUser']);
         }
+
+
+        var_dump($receive).PHP_EOL;
 
         //发送消息
         if($receive){
