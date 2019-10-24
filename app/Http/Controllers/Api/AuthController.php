@@ -81,6 +81,7 @@ class AuthController extends CController
             'access_token' => $token,
             'sid'=>RsaMeans::encrypt($user->id),
             'userInfo'=>[
+                'uid'=>$user->id,
                 'avatar'=>$user->avatarurl
             ]
         ]);
