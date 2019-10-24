@@ -82,9 +82,9 @@ class SocketHandler  extends WebsocketHandler
         var_dump($receive).PHP_EOL;
 
         //发送消息
-        if($receive){
-            WebSocketHelper::sendResponseMessage('chat_message',$receive,$msgData);
-        }
+
+        WebSocketHelper::sendResponseMessage('chat_message',$receive,$msgData);
+
 
         unset($msgData);unset($receive);
 
