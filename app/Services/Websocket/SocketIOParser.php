@@ -23,6 +23,10 @@ class SocketIOParser extends Parser
         }
 
         $data = json_decode($data,true);
+
+        var_dump($data);
+        echo PHP_EOL;
+
         if(!$data || !array_has($data,['sourceType','receiveUser','sendUser','msgType','textMessage','imgMessage','fileMessage'])){
             return true;
         }
