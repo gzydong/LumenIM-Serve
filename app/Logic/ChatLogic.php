@@ -20,7 +20,7 @@ class ChatLogic extends Logic
      * @return mixed
      */
     public function getUserChatList(int $user_id){
-        $rows = UsersChatList::select(['users_chat_list.type','users_chat_list.friend_id','users_chat_list.group_id','users_chat_list.created_at'])
+        $rows = UsersChatList::select(['users_chat_list.id','users_chat_list.type','users_chat_list.friend_id','users_chat_list.group_id','users_chat_list.created_at'])
             ->where('users_chat_list.uid',$user_id)
             ->where('users_chat_list.status',1)->orderBy('id','desc')->get()->toArray();
 
