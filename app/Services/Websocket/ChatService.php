@@ -84,22 +84,7 @@ class ChatService
             }
 
             if($receive_msg['sourceType'] == 1){
-                $info1 = UsersChatList::where('type',1)->where('uid',$receive_msg['sendUser'])->where('friend_id',$receive_msg['receiveUser'])->first();
-                if($info1){
-                    if($info1->status == 0){
-                        $info1->status = 1;
-                        $info1->save();
-                    }
-                }else{
-                    UsersChatList::create([
-                        'type'=>1,
-                        'uid'=>$receive_msg['sendUser'],
-                        'friend_id'=>$receive_msg['receiveUser'],
-                        'status'=>1,
-                        'created_at'=>date('Y-m-d H:i:s')
-                    ]);
-                }
-
+                //创建好友的聊天列表
                 $info2 = UsersChatList::where('type',1)->where('uid',$receive_msg['receiveUser'])->where('friend_id',$receive_msg['sendUser'])->first();
                 if($info2){
                     if($info2->status == 0){
@@ -107,13 +92,7 @@ class ChatService
                         $info2->save();
                     }
                 }else{
-                    UsersChatList::create([
-                        'type'=>1,
-                        'uid'=>$receive_msg['receiveUser'],
-                        'group_id'=>$receive_msg['sendUser'],
-                        'status'=>1,
-                        'created_at'=>date('Y-m-d H:i:s')
-                    ]);
+                    UsersChatList::create(['type'=>1,'uid'=>$receive_msg['receiveUser'],'group_id'=>$receive_msg['sendUser'],'status'=>1,'created_at'=>date('Y-m-d H:i:s')]);
                 }
             }else if($receive_msg['sourceType'] == 2){//群聊
 

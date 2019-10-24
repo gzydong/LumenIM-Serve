@@ -142,4 +142,21 @@ class ChatController extends CController
         $isTrue = $this->chatLogic->dismissGroupChat($group_id,$this->uid());
         return $isTrue ? $this->ajaxSuccess('群聊已解散成功..') : $this->ajaxError('群聊解散失败...');
     }
+
+    /**
+     * 创建用户聊天列表
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createChatList(){
+        $type = $this->request->post('type',1);//创建的类型
+        $receive_id = $this->request->post('receive_id',0);//接收者ID
+
+        if(!in_array($type,[1,2]) || !checkNumber($receive_id) || $receive_id <= 0){
+            return $this->ajaxParamError();
+        }
+
+        $id = $this->chatLogic->createChatList($this->uid(),$receive_id,$type);
+        return $id ? $this->ajaxSuccess('创建成功...',['list_id'=>$id]) : $this->ajaxError('创建失败...');
+    }
 }

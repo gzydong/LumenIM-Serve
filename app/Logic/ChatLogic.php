@@ -295,4 +295,37 @@ SQL;
 
         return true;
     }
+
+    /**
+     * 创建聊天列表记录
+     *
+     * @param int $user_id 用户ID
+     * @param int $receive_id 接收者ID
+     * @param int $type 创建类型 1:私聊  2:群聊
+     * @return int
+     */
+    public function createChatList(int $user_id,int $receive_id,int $type){
+        $result = UsersChatList::where('uid',$user_id)->where('type',$type)->where($type == 1 ? 'friend_id' : 'group_id',$receive_id)->first();
+        if($result){
+            if($result->status == 0){
+                $result->status = 1;
+                $result->save();
+            }
+        }else{
+            $data = [
+                'type'=>$type,
+                'uid'=>$user_id,
+                'status'=>1,
+                'friend_id'=>$type == 1 ? $receive_id :0,
+                'group_id'=>$type == 2 ? $receive_id :0,
+                'created_at'=>date('Y-m-d H:i:s')
+            ];
+
+            if(!$result = UsersChatList::create($data)){
+                return 0;
+            }
+        }
+
+        return $result->id;
+    }
 }
