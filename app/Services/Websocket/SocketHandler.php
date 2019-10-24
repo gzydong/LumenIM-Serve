@@ -55,8 +55,11 @@ class SocketHandler  extends WebsocketHandler
          * imgMessage:图片消息
          * fileMessage:文件消息
          */
+
+
         $msgData = json_decode($frame->data,true);
         $msgData['send_time'] = date('Y-m-d H:i:s');
+        var_dump($msgData);echo PHP_EOL;
 
         //这里做消息处理
         if(!ChatService::check($msgData)){
