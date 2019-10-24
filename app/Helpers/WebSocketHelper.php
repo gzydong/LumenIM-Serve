@@ -139,6 +139,8 @@ class WebSocketHelper
      */
     public function sendResponseMessage(string $event,$receive,$data){
         if(isset(self::EVENTS[$event])){
+            echo 'fds :'.PHP_EOL;
+            var_dump($receive).PHP_EOL;
             if(!empty($receive)){
                 Websocket::to($receive)->emit(self::EVENTS[$event], $data);
             }else{
