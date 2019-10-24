@@ -46,20 +46,8 @@ class SocketHandler  extends WebsocketHandler
      */
     public function onMessage(Frame $frame)
     {
-        /**
-         * sourceType:发送类型(1:私信  2:群聊)
-         * receiveUser:接收者信息
-         * sendUser:发送者ID
-         * msgType:消息类型(1:文字消息  2:图片消息  3:文件消息)
-         * textMessage:文字消息
-         * imgMessage:图片消息
-         * fileMessage:文件消息
-         */
-
-
         $msgData = json_decode($frame->data,true);
         $msgData['send_time'] = date('Y-m-d H:i:s');
-
 
         //这里做消息处理
         if(!ChatService::check($msgData)){
@@ -78,16 +66,10 @@ class SocketHandler  extends WebsocketHandler
             $receive = WebSocketHelper::getRoomGroupName($msgData['receiveUser']);
         }
 
-
-        var_dump($receive).PHP_EOL;
-
         //发送消息
-
         WebSocketHelper::sendResponseMessage('chat_message',$receive,$msgData);
 
-
         unset($msgData);unset($receive);
-
         return true;
     }
 

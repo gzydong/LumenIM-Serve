@@ -15,8 +15,5 @@ class TestController
         $data = $chatLogic->getPrivateChatInfos(0,2053,2054);
 
         dd($data);
-        exit;
-        $sid = $request->get('sid','');
-        return view('test.index',['sid'=>$sid]);
     }
 }
