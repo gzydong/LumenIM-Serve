@@ -59,7 +59,7 @@ class SocketHandler  extends WebsocketHandler
 
         $msgData = json_decode($frame->data,true);
         $msgData['send_time'] = date('Y-m-d H:i:s');
-        var_dump($msgData);echo PHP_EOL;
+
 
         //这里做消息处理
         if(!ChatService::check($msgData)){
@@ -70,6 +70,9 @@ class SocketHandler  extends WebsocketHandler
         if(!ChatService::saveChatRecord($msgData)){
             info("聊天记录保存失败：".json_encode($msgData));
         }
+
+        var_dump($msgData);echo PHP_EOL;
+
 
         $receive = '';
         if($msgData['sourceType'] == 1){//私聊
