@@ -79,6 +79,7 @@ class AuthController extends CController
 
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,
+            'expires_in' => $this->guard()->factory()->getTTL() * 60,
             'sid'=>RsaMeans::encrypt($user->id),
             'userInfo'=>[
                 'uid'=>$user->id,
