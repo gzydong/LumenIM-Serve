@@ -15,11 +15,6 @@ use App\Facades\WebSocketHelper;
 class TestController
 {
     public function index(Request $request,UsersLogic $usersLogic){
-        $rows = $usersLogic->getUserFriends(2054);
-        if($rows){
-            foreach ($rows as $k => $row){
-                $rows[$k]->online = WebSocketHelper::getUserFds($row->id) ? 1 : 0;
-            }
-        }
+
     }
 }

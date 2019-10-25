@@ -83,7 +83,8 @@ class AuthController extends CController
             'sid'=>RsaMeans::encrypt($user->id),
             'userInfo'=>[
                 'uid'=>$user->id,
-                'avatar'=>$user->avatarurl
+                'avatar'=>$user->avatarurl,
+                'nickname'=>$user->nickname
             ]
         ]);
     }

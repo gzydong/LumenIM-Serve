@@ -34,7 +34,7 @@ class ChatController extends CController
         $record_id  = $this->request->get('record_id',0);
         $receive_id = $this->request->get('receive_id',0);
         $type       = $this->request->get('type',1);
-
+        $page_size  = 20;
         if(!checkNumber($record_id) || $record_id < 0){
             return $this->ajaxParamError();
         }
@@ -49,9 +49,9 @@ class ChatController extends CController
 
         $uid = $this->uid();
         if($type == 1){
-            $data = $this->chatLogic->getPrivateChatInfos($record_id,$uid,$receive_id);
+            $data = $this->chatLogic->getPrivateChatInfos($record_id,$uid,$receive_id,$page_size);
         }else{
-            $data = $this->chatLogic->getGroupChatInfos($record_id,$receive_id,$uid);
+            $data = $this->chatLogic->getGroupChatInfos($record_id,$receive_id,$uid,$page_size);
         }
 
         if(count($data['rows']) > 0){
@@ -60,6 +60,8 @@ class ChatController extends CController
                 return $item;
             },$data['rows']);
         }
+
+        $data['page_size'] = $page_size;
 
         return $this->ajaxSuccess('success',$data);
     }
