@@ -18,7 +18,7 @@ return [
     */
     'supportsCredentials' => false,
     'allowedOrigins' => ['*'],
-    'allowedHeaders' => ['Content-Type', 'X-Requested-With','Authorization'],
+    'allowedHeaders' => ['Content-Type', 'X-Requested-With','Authorization','accept'],
     'allowedMethods' => ['*'], // ex: ['GET', 'POST', 'PUT',  'DELETE']
     'exposedHeaders' => [],
     'maxAge' => 60*60*1,//Access-Control-Max-Age 字段指定了预检请求的结果能够被缓存多久，单位秒
