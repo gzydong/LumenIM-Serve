@@ -104,18 +104,18 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
 
     /**
-     * 修改用户昵称
+     * 修改用户信息
      *
      * @param int $user_id 用户ID
-     * @param string $nickname 昵称
+     * @param array $data 修改数据
      * @return array
      */
-    public static function editNickname(int $user_id,string $nickname){
-        if(!self::where('id',$user_id)->update(['nickname'=>$nickname])){
-            return [false,'昵称修改失败'];
+    public static function editUserDetail(int $user_id,array $data){
+        if(!self::where('id',$user_id)->update($data)){
+            return [false,'信息修改失败'];
         }
 
-        return [true,'昵称修改成功'];
+        return [true,'信息修改成功'];
     }
 
     /**

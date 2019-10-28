@@ -44,17 +44,17 @@ class UsersController extends CController
     }
 
     /**
-     * 编辑用户昵称
+     * 编辑用户信息
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function editUserDetail(Request $request){
-        if(!$request->filled(['nickname'])){
-            return $this->ajaxParamError('昵称不能为空');
+        if(!$request->has(['nickname','avatarurl','motto'])){
+            return $this->ajaxParamError();
         }
 
-        [$isTrue,$message] = User::editNickname($this->uid(),$request->post('nickname'));
+        [$isTrue,$message] = User::editUserDetail($this->uid(),$request->only(['nickname','avatarurl','motto']));
         return $this->ajaxReturn($isTrue?200:305,$message);
     }
 
