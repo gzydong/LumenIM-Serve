@@ -34,6 +34,12 @@ class UsersController extends CController
      */
     public function getUserFriends(UsersLogic $usersLogic){
         $rows = $usersLogic->getUserFriends($this->uid());
+        if($rows){
+            foreach ($rows as $k => $row){
+                $rows[$k]->online = WebSocketHelper::getUserFds($row->id) ? 1 : 0;
+            }
+        }
+
         return $this->ajaxSuccess('success',$rows);
     }
 

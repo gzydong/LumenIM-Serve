@@ -18,6 +18,42 @@ class CController extends Controller
     }
 
     /**
+     * 判断用户是否授权
+     *
+     * @return bool
+     */
+    protected function checkLogin()
+    {
+        return $this->guard()->user() ? true : false;
+    }
+
+    /**
+     * 获取用户ID
+     *
+     * @return int
+     */
+    protected function uid()
+    {
+        $user = $this->guard()->user();
+        return $user ? $user->id : 0;
+    }
+
+    /**
+     * 获取当前用户信息
+     *
+     * @param bool $isArray
+     * @return array
+     */
+    protected function getUser($isArray = false)
+    {
+        if (!$user = $this->guard()->user()) {
+            return [];
+        }
+
+        return $isArray ? $user->toArray() : $user;
+    }
+
+    /**
      * 返回ajax 数据
      * @param $code
      * @param $msg
@@ -61,41 +97,5 @@ class CController extends Controller
     protected function ajaxParamError($msg = '请求参数错误')
     {
         return $this->ajaxReturn(301, $msg, []);
-    }
-
-    /**
-     * 判断用户是否授权
-     *
-     * @return bool
-     */
-    protected function checkLogin()
-    {
-        return $this->guard()->user() ? true : false;
-    }
-
-    /**
-     * 获取用户ID
-     *
-     * @return int
-     */
-    protected function uid()
-    {
-        $user = $this->guard()->user();
-        return $user ? $user->id : 0;
-    }
-
-    /**
-     * 获取当前用户信息
-     *
-     * @param bool $isArray
-     * @return array
-     */
-    protected function getUser($isArray = false)
-    {
-        if (!$user = $this->guard()->user()) {
-            return [];
-        }
-
-        return $isArray ? $user->toArray() : $user;
     }
 }

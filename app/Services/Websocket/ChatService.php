@@ -9,6 +9,7 @@ use App\Models\UsersChatRecords;
 use App\Models\UsersChatList;
 use Illuminate\Support\Facades\DB;
 use SwooleTW\Http\Websocket\Facades\Websocket;
+use App\Helpers\Cache\CacheHelper;
 
 class ChatService
 {
@@ -97,6 +98,8 @@ class ChatService
             }else if($receive_msg['sourceType'] == 2){//群聊
 
             }
+
+            CacheHelper::setFriendsChatCache($receive_msg['sendUser'],$receive_msg['receiveUser'],$receive_msg['textMessage']);
 
             DB::commit();
         }catch (\Exception $e){
