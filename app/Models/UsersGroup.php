@@ -32,6 +32,15 @@ class UsersGroup extends Model
      */
     public $timestamps = false;
 
+
+    /**
+     * 获取群聊成员
+     */
+    public function members()
+    {
+        return $this->hasMany(\App\Models\UsersGroupMember::class,'group_id','id');
+    }
+
     /**
      * 判断群是否存在并且没有被解散
      *

@@ -48,6 +48,9 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->post('/chat/dismiss-group-chat', ['uses' => 'ChatController@dismissGroupChat']);
 
     $router->post('/chat/create-chat-list', ['uses' => 'ChatController@createChatList']);
+
+
+    $router->get('/chat/group-detail', ['uses' => 'ChatController@getGroupDetail']);
 });
 
 //UploadController 上传文件控制器分组

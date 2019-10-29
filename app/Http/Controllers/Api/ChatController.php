@@ -161,4 +161,19 @@ class ChatController extends CController
         $id = $this->chatLogic->createChatList($this->uid(),$receive_id,$type);
         return $id ? $this->ajaxSuccess('创建成功...',['list_id'=>$id]) : $this->ajaxError('创建失败...');
     }
+
+    /**
+     * 获取聊天群信息
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getGroupDetail(){
+        $group_id = $this->request->get('group_id',0);
+        if(!checkNumber($group_id) || $group_id <= 0){
+            return $this->ajaxParamError();
+        }
+
+        $data = $this->chatLogic->getGroupDetail($this->uid(),$group_id);
+        return $this->ajaxSuccess('success',$data);
+    }
 }

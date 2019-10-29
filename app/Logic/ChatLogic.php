@@ -331,4 +331,37 @@ SQL;
 
         return $result->id;
     }
+
+    /**
+     * 获取聊天群
+     *
+     * @param int $user_id 用户ID
+     * @param int $group_id 聊天群ID
+     * @return array
+     */
+    public function getGroupDetail(int $user_id,int $group_id){
+        $groupInfo = UsersGroup::select(['id','user_id','group_name','people_num','avatarurl','created_at'])->where('id',1)->where('status',0)->first();
+        if(!$groupInfo){
+            return [];
+        }
+
+        $members = UsersGroupMember::select([
+            'users_group_member.id','users_group_member.group_owner','users_group_member.user_id','users.avatarurl','users.nickname',
+        ])
+        ->leftJoin('users','users.id','=','users_group_member.user_id')
+        ->where([
+            ['users_group_member.group_id', '=', $group_id],
+            ['users_group_member.status', '=', 0],
+        ])->get()->toArray();
+
+        return [
+            'group_id'=>$group_id,
+            'group_owner'=>User::where('id',$groupInfo->user_id)->value('nickname'),
+            'group_name'=>$groupInfo->group_name,
+            'people_num'=>$groupInfo->people_num,
+            'group_avatar'=>$groupInfo->avatarurl,
+            'created_at'=>$groupInfo->created_at,
+            'members'=>$members
+        ];
+    }
 }
