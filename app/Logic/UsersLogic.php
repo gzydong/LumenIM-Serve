@@ -70,7 +70,7 @@ class UsersLogic extends Logic
      * @return array
      */
     public function searchUserInfo(array $where,int $user_id){
-        $info = User::select(['id','mobile','nickname','avatarurl','gender']);
+        $info = User::select(['id','mobile','nickname','avatarurl','gender','motto']);
         if(isset($where['uid'])){
             $info->where('id',$where['uid']);
         }

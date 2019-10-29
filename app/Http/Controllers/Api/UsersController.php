@@ -11,6 +11,22 @@ class UsersController extends CController
 {
 
     /**
+     * 获取用户个人信息
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserDetail(){
+        $userInfo = $this->getUser(true);
+
+        return $this->ajaxSuccess('success',[
+          'mobile'   => '+86 ~ '.$userInfo['mobile'],
+          'nickname' => $userInfo['nickname'],
+          'avatarurl'=> $userInfo['avatarurl'],
+          'motto'    => '生活需要梦想、需要坚持。只有不断提高自我，才会得到想要的生活...'
+        ]);
+    }
+
+    /**
      * 获取用户好友列表
      *
      * @param UsersLogic $usersLogic
@@ -28,17 +44,17 @@ class UsersController extends CController
     }
 
     /**
-     * 编辑用户昵称
+     * 编辑用户信息
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editNickname(Request $request){
-        if(!$request->filled(['nickname'])){
-            return $this->ajaxParamError('昵称不能为空');
+    public function editUserDetail(Request $request){
+        if(!$request->has(['nickname','avatarurl','motto'])){
+            return $this->ajaxParamError();
         }
 
-        [$isTrue,$message] = User::editNickname($this->uid(),$request->post('nickname'));
+        [$isTrue,$message] = User::editUserDetail($this->uid(),$request->only(['nickname','avatarurl','motto']));
         return $this->ajaxReturn($isTrue?200:305,$message);
     }
 

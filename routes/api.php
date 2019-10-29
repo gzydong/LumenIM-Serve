@@ -19,7 +19,11 @@ $router->group([],function () use ($router) {
 //UsersController 控制器分组
 $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->get('/user/friends', ['uses' => 'UsersController@getUserFriends']);
-    $router->post('/user/edit-nickname', ['uses' => 'UsersController@editNickname']);
+    $router->get('/user/detail', ['uses' => 'UsersController@getUserDetail']);
+
+
+
+    $router->post('/user/edit-user-detail', ['uses' => 'UsersController@editUserDetail']);
     $router->post('/user/change-password', ['uses' => 'UsersController@changePassword']);
     $router->post('/user/edit-avatar', ['uses' => 'UsersController@editAvatar']);
 
@@ -27,10 +31,9 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->post('/user/send-friend-apply', ['uses' => 'UsersController@sendFriendApply']);
     $router->post('/user/handle-friend-apply', ['uses' => 'UsersController@handleFriendApply']);
     $router->post('/user/edit-friend-remark', ['uses' => 'UsersController@editFriendRemark']);
-
-
     $router->post('/user/search-user', ['uses' => 'UsersController@searchUserInfo']);
 });
+
 
 //ChatController 控制器分组
 $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
