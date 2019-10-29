@@ -27,6 +27,8 @@ class TestController
 
 
     public function index(){
+
+        dd(php_uname('s'));
         $arr = [1,2,3];
 
         $redis = $this->getReids();

@@ -5,13 +5,12 @@ use App\Models\User;
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
 use App\Helpers\RsaMeans;
-
 use App\Facades\WebSocketHelper;
 
 /**
  * 接口授权登录控制器
+ *
  * Class AuthController
  * @package App\Http\Controllers\Api
  */
@@ -68,7 +67,7 @@ class AuthController extends CController
             return $this->ajaxReturn(305,'登录密码错误...');
         }
 
-        if (!$token = Auth::login($user)) {
+        if (!$token = $this->guard()->login($user)) {
             return $this->ajaxReturn(305, '获取登录状态失败');
         }
 
@@ -96,7 +95,7 @@ class AuthController extends CController
      */
     public function logout()
     {
-        Auth::logout(true);
+        $this->guard()->logout(true);
         return $this->ajaxSuccess('退出成功');
     }
 
@@ -107,10 +106,13 @@ class AuthController extends CController
      */
     public function refreshToken()
     {
-        if (!$token = Auth::refresh(true, true)) {
-            return $this->ajaxReturn(200, '刷新access_token 成功', ['access_token' => $token]);
+        if ($token = $this->guard()->refresh()) {
+            return $this->ajaxSuccess( 'Refresh success', [
+                'access_token' => $token,
+                'expires_in' => $this->guard()->factory()->getTTL() * 60
+            ]);
         } else {
-            return $this->ajaxError('刷新授权 access_token 失败');
+            return $this->ajaxError('Refresh fail');
         }
     }
 }
