@@ -4,7 +4,7 @@
  * Api 接口路由配置
  */
 $router->get('/', ['as' => 'api', function () {
-    return response()->json(['code'=>305,'msg'=>'FAIL','data'=>['username'=>'非法请求...']]);
+    return response()->json(['code'=>305,'msg'=>'非法请求...']);
 }]);
 
 
@@ -19,9 +19,8 @@ $router->group([],function () use ($router) {
 //UsersController 控制器分组
 $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->get('/user/friends', ['uses' => 'UsersController@getUserFriends']);
+    $router->get('/user/user-groups', ['uses' => 'UsersController@getUserGroups']);
     $router->get('/user/detail', ['uses' => 'UsersController@getUserDetail']);
-
-
 
     $router->post('/user/edit-user-detail', ['uses' => 'UsersController@editUserDetail']);
     $router->post('/user/change-password', ['uses' => 'UsersController@changePassword']);

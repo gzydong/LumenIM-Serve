@@ -36,20 +36,23 @@ class UsersLogic extends Logic
     /**
      * 获取用户好友列表
      *
-     * @param int $uid 用户ID
+     * @param int $user_id 用户ID
      * @return mixed
      */
-    public function getUserFriends(int $uid){
-        return UsersFriends::getUserFriends($uid);
+    public function getUserFriends(int $user_id){
+        return UsersFriends::getUserFriends($user_id);
     }
 
     /**
      * 获取用户所在的群聊
      *
-     * @param int $uid 用户ID
+     * @param int $user_id 用户ID
+     * @return mixed
      */
-    public function getUserChatGroups(int $uid){
-
+    public function getUserChatGroups(int $user_id){
+        return UsersGroupMember::select(['users_group.id','users_group.group_name','users_group.avatarurl'])
+            ->join('users_group','users_group.id','=','users_group_member.group_id')
+            ->where('users_group_member.user_id',$user_id)->where('users_group_member.status',0)->get()->toarray();
     }
 
     /**

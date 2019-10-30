@@ -195,4 +195,16 @@ class UsersController extends CController
 
         return $this->ajaxSuccess('success',$data);
     }
+
+
+    /**
+     * 获取用户群聊列表
+     *
+     * @param UsersLogic $usersLogic
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserGroups(UsersLogic $usersLogic){
+        $rows = $usersLogic->getUserChatGroups($this->uid());
+        return $this->ajaxSuccess('success',$rows);
+    }
 }
