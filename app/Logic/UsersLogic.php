@@ -96,7 +96,13 @@ class UsersLogic extends Logic
                 })->first();
 
                 $info['friend_status'] = $friendInfo ? 2 : 1;
-                $info['nickname_remark'] = ($friendInfo->user1 == $friend_id) ? $friendInfo->user2_remark : $friendInfo->user1_remark;
+
+                if($friendInfo){
+                    $info['nickname_remark'] = ($friendInfo->user1 == $friend_id) ? $friendInfo->user2_remark : $friendInfo->user1_remark;
+                }else{
+                    $info['nickname_remark'] = $info->nickname;
+                }
+
             }
         }
 
