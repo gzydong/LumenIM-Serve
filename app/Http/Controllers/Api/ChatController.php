@@ -73,6 +73,7 @@ class ChatController extends CController
      */
     public function launchGroupChat(){
         $group_name = $this->request->post('group_name','');/**群聊名称*/
+        $group_profile = $this->request->post('group_profile','');/**群聊名称*/
         $uids = $this->request->post('uids','');            /**群聊用户*/
 
         if(empty($group_name) || empty($uids)){
@@ -84,12 +85,12 @@ class ChatController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue,$data] = $this->chatLogic->launchGroupChat($this->uid(),$group_name,array_unique($uids));
+        [$isTrue,$data] = $this->chatLogic->launchGroupChat($this->uid(),$group_name,$group_profile,array_unique($uids));
         if($isTrue){
             //群聊创建成功后需要创建聊天室并发送消息通知
             // ... 逻辑后期添加
 
-            return $this->ajaxError('创建群聊成功...');
+            return $this->ajaxSuccess('创建群聊成功...');
         }
 
         return $this->ajaxError('创建群聊失败，请稍后再试...');
