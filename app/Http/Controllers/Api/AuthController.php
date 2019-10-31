@@ -95,7 +95,7 @@ class AuthController extends CController
      */
     public function logout()
     {
-        $this->guard()->logout(true);
+//        $this->guard()->logout(true);
         return $this->ajaxSuccess('退出成功');
     }
 
