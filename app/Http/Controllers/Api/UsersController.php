@@ -193,7 +193,11 @@ class UsersController extends CController
 
         $data = $usersLogic->searchUserInfo($where,$this->uid());
 
-        return $this->ajaxSuccess('success',$data);
+        if($data){
+            return $this->ajaxSuccess('success',$data);
+        }
+
+        return $this->ajaxReturn(303,'success',[]);
     }
 
 
