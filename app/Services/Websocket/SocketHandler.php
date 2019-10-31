@@ -5,9 +5,7 @@ use Illuminate\Http\Request;
 
 use App\Facades\WebSocketHelper;
 use App\Facades\ChatService;
-
 use Swoole\Websocket\Frame;
-
 
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 use App\Helpers\RsaMeans;
@@ -29,9 +27,6 @@ class SocketHandler  extends WebsocketHandler
         if($fd == 1){
             WebSocketHelper::clearRedisCache();
         }
-
-
-
 
         //这里处理用户登录后的逻辑
         WebSocketHelper::bindUserFd($user_id,$fd);   //绑定用户ID与fd的关系
