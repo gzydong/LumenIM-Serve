@@ -100,7 +100,7 @@ class UsersLogic extends Logic
                 if($friendInfo){
                     $info['nickname_remark'] = ($friendInfo->user1 == $friend_id) ? $friendInfo->user2_remark : $friendInfo->user1_remark;
                 }else{
-                    $info['nickname_remark'] = $info->nickname;
+                    $info['nickname_remark'] = $info['nickname'];
                 }
 
             }
