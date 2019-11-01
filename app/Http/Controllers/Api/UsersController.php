@@ -19,7 +19,7 @@ class UsersController extends CController
         $userInfo = $this->getUser(true);
 
         return $this->ajaxSuccess('success',[
-          'mobile'   => '+86 ~ '.$userInfo['mobile'],
+          'mobile'   => $userInfo['mobile'],
           'nickname' => $userInfo['nickname'],
           'avatarurl'=> $userInfo['avatarurl'],
           'motto'    => '生活需要梦想、需要坚持。只有不断提高自我，才会得到想要的生活...'
