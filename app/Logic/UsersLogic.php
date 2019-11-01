@@ -3,6 +3,7 @@ namespace App\Logic;
 
 use App\Models\User;
 use App\Models\UsersFriends;
+use App\Models\UsersFriendsApply;
 use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -87,6 +88,7 @@ class UsersLogic extends Logic
         if($info){
             $info['friend_status'] = 0;//朋友关系状态  0:本人  1:陌生人 2:朋友
             $info['nickname_remark'] = '';
+            $info['friend_apply'] = 0;
             if($info['id'] != $user_id){
                 $friend_id = $info['id'];
                 $friendInfo = UsersFriends::select('id','user1','user2','active','user1_remark','user2_remark')->where(function ($query) use ($friend_id,$user_id) {
@@ -96,13 +98,14 @@ class UsersLogic extends Logic
                 })->first();
 
                 $info['friend_status'] = $friendInfo ? 2 : 1;
-
                 if($friendInfo){
                     $info['nickname_remark'] = ($friendInfo->user1 == $friend_id) ? $friendInfo->user2_remark : $friendInfo->user1_remark;
                 }else{
                     $info['nickname_remark'] = $info['nickname'];
-                }
 
+                    $res = UsersFriendsApply::where('user_id',$user_id)->where('friend_id',$info['id'])->where('status',0)->orderBy('id','desc')->exists();
+                    $info['friend_apply'] = $res ? 1 : 0;
+                }
             }
         }
 
