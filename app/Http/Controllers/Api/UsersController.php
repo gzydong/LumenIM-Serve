@@ -117,17 +117,19 @@ class UsersController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue,$msg,$data] = FriendsLogic::addFriendApply($this->uid(),$friend_id,$remarks);
+        $isTrue = FriendsLogic::addFriendApply($this->uid(),$friend_id,$remarks);
 
         //确认是否操作成功
-        if($isTrue){
-            //判断对方是否在线。如果在线发送消息通知
-            if($fd = WebSocketHelper::getUserFd($friend_id)){
-                WebSocketHelper::sendResponseMessage('friend_apply',$fd,[]);
-            }
+        if(!$isTrue){
+            return $this->ajaxError('发送好友申请失败...');
         }
 
-        return $this->ajaxReturn($isTrue?200:305,$msg);
+        //判断对方是否在线。如果在线发送消息通知
+        if($fd = WebSocketHelper::getUserFds($friend_id)){
+            WebSocketHelper::sendResponseMessage('friend_apply',$fd,[]);
+        }
+
+        return $this->ajaxReturn(200,'发送好友申请成功...');
     }
 
     /**
