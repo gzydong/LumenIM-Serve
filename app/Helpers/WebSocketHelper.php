@@ -22,8 +22,9 @@ class WebSocketHelper
 
     //消息事件类型
     const EVENTS = [
-        'chat_message'=>'chat_message',
-        'friend_apply'=>'friend_apply',
+        'chat_message'=>'chat_message',//用户聊天消息
+        'friend_apply'=>'friend_apply',//好友添加申请消息
+        'join_group'=>'join_group',    //入群消息
     ];
 
     /**
@@ -131,10 +132,10 @@ class WebSocketHelper
     }
 
     /**
-     * 统一发送websocket 响应信息
+     * 发送Websocket 响应信息
      *
-     * @param $event
-     * @param int|array $receive
+     * @param string $event 消息事件名
+     * @param int|array $receive 接受者
      * @param string|array $data
      */
     public function sendResponseMessage(string $event,$receive,$data){

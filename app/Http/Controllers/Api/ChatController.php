@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Logic\ChatLogic;
+use App\Facades\WebSocketHelper;
 
 class ChatController extends CController
 {
@@ -86,9 +87,18 @@ class ChatController extends CController
         }
 
         [$isTrue,$data] = $this->chatLogic->launchGroupChat($this->uid(),$group_name,$group_profile,array_unique($uids));
-        if($isTrue){
-            //群聊创建成功后需要创建聊天室并发送消息通知
-            // ... 逻辑后期添加
+        if($isTrue){//群聊创建成功后需要创建聊天室并发送消息通知
+            $fids = [];
+            foreach ($data['uids'] as $uuid){
+                if($ufds = WebSocketHelper::getUserFds($uuid)){
+                    $fids = array_merge($fids,$ufds);
+                }
+            }
+
+            if($fids){
+                $group_info = $data['group_info'];
+                WebSocketHelper::sendResponseMessage('join_group',$fids,$group_info);
+            }
 
             return $this->ajaxSuccess('创建群聊成功...');
         }

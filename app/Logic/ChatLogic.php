@@ -204,9 +204,7 @@ SQL;
             return [false,[]];
         }
 
-        unset($groupMember);
-        unset($insRes);
-        return [true,$uids];
+        return [true,['group_info'=>$insRes->toArray(),'uids'=>$uids]];
     }
 
     /**
