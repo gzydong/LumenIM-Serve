@@ -100,7 +100,7 @@ class UsersController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function getFriendApplyRecords(Request $request,FriendsLogic $friendsLogic){
-        $data = $friendsLogic->friendApplyRecords($this->uid(),intval($request->get('page',1)));
+        $data = $friendsLogic->friendApplyRecords($this->uid(),intval($request->get('page',1)),1000);
         return $this->ajaxSuccess('success',$data);
     }
 
