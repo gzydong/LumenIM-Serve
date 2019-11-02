@@ -90,6 +90,7 @@ class ChatController extends CController
         if($isTrue){//群聊创建成功后需要创建聊天室并发送消息通知
             $fids = [];
             foreach ($data['uids'] as $uuid){
+                WebSocketHelper::bindUserGroupChat($uuid,$data['group_info']['id']);
                 if($ufds = WebSocketHelper::getUserFds($uuid)){
                     $fids = array_merge($fids,$ufds);
                 }

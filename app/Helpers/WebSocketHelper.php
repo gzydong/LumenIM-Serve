@@ -101,13 +101,13 @@ class WebSocketHelper
     }
 
     /**
-     * 绑定用户群聊关系
+     * 绑定用户所有的群聊到聊天室
      *
      * @param int $user_id 用户ID
      * @param int $fd Websocket 连接标识[fd]
      * @return bool
      */
-    public function bindGroupChat(int $user_id,int $fd){
+    public function bindGroupChats(int $user_id,int $fd){
         $ids = UsersLogic::getUserGroupIds($user_id);
         if(empty($ids)){
             return true;
@@ -120,6 +120,23 @@ class WebSocketHelper
 
         Room::add($fd, $rooms);unset($rooms);
     }
+
+    /**
+     * 绑定指定的用户到指定的聊天室
+     *
+     * @param int $user_id 用户ID
+     * @param int $group_id 群聊ID
+     */
+    public function bindUserGroupChat(int $user_id,int $group_id){
+        $room = $this->getRoomGroupName($group_id);
+        $fids = $this->getUserFds($user_id);
+        if($fids){
+            foreach ($fids as $fid){
+                Room::add($fid, $room);
+            }
+        }
+    }
+
 
     /**
      * 获取群聊ID的房间名称
