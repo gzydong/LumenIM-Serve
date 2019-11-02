@@ -23,7 +23,7 @@ class UsersFriends extends Model
      *
      * @var array
      */
-    protected $fillable = ['user1','user2','active','status','agree_time','created_at'];
+    protected $fillable = ['user1','user2','active','status','agree_time','created_at','user1_remark','user2_remark'];
 
     /**
      * 表明模型是否应该被打上时间戳
