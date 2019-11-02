@@ -338,7 +338,7 @@ SQL;
      * @return array
      */
     public function getGroupDetail(int $user_id,int $group_id){
-        $groupInfo = UsersGroup::select(['id','user_id','group_name','people_num','avatarurl','created_at'])->where('id',1)->where('status',0)->first();
+        $groupInfo = UsersGroup::select(['id','user_id','group_name','people_num','avatarurl','created_at'])->where('id',$group_id)->where('status',0)->first();
         if(!$groupInfo){
             return [];
         }
