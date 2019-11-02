@@ -43,9 +43,9 @@ class UsersFriends extends Model
             SELECT lar_users.id,lar_users.nickname,lar_users.avatarurl,lar_users.gender,tmp_table.friend_remark from lar_users 
             INNER join
             (
-              SELECT rid,user2 as uid,user1_remark as friend_remark from lar_users_friends where user1 = {$uid} and `status` = 1
+              SELECT id as rid,user2 as uid,user1_remark as friend_remark from lar_users_friends where user1 = {$uid} and `status` = 1
                 UNION all 
-              SELECT rid,user1 as uid,user2_remark as friend_remark from lar_users_friends where user2 = {$uid} and `status` = 1
+              SELECT id as rid,user1 as uid,user2_remark as friend_remark from lar_users_friends where user2 = {$uid} and `status` = 1
             ) tmp_table on tmp_table.uid = lar_users.id  order by tmp_table.rid desc
 SQL;
 
