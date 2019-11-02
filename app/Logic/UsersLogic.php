@@ -53,7 +53,7 @@ class UsersLogic extends Logic
     public function getUserChatGroups(int $user_id){
         return UsersGroupMember::select(['users_group.id','users_group.group_name','users_group.avatarurl'])
             ->join('users_group','users_group.id','=','users_group_member.group_id')
-            ->where('users_group_member.user_id',$user_id)->where('users_group_member.status',0)->get()->toarray();
+            ->where('users_group_member.user_id',$user_id)->where('users_group_member.status',0)->orderBy('id','desc')->get()->toarray();
     }
 
     /**
