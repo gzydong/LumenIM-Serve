@@ -73,9 +73,9 @@ class ChatController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function launchGroupChat(){
-        $group_name = $this->request->post('group_name','');/**群聊名称*/
-        $group_profile = $this->request->post('group_profile','');/**群聊名称*/
-        $uids = $this->request->post('uids','');            /**群聊用户*/
+        $group_name = $this->request->post('group_name','');
+        $group_profile = $this->request->post('group_profile','');
+        $uids = $this->request->post('uids','');
 
         if(empty($group_name) || empty($uids)){
             return $this->ajaxParamError();
