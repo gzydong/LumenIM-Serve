@@ -1,18 +1,45 @@
 # Lumen IM 即时聊天系统
 
-
-[![License](https://poser.pugx.org/laravel/lumen-framework/license.svg)](https://packagist.org/packages/laravel/lumen-framework)
-
 本次项目是用采用 Laravel Lumen 框架，并使用了 Composer laravel-swoole 组件进行开发、利用 laravel-swoole 组件中 websocket 服务开发开发即时消息通讯。
 
-## Official Documentation
 
-Documentation for the framework can be found on the [Lumen website](https://lumen.laravel.com/docs).
 
-## Security Vulnerabilities
+###设置Nginx代理
+swoole在官网也提到过：swoole_http_server对Http协议的支持并不完整，建议仅作为应用服务器。并且在前端增加Nginx作为代理。
+那么，我们就增加需要配置nginx.conf里的server：
+```
+server {
+    listen 80;
+    server_name your.domain.com;
+    root /path/to/laravel/public;
+    index index.php;
 
-If you discover a security vulnerability within Lumen, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+    location = /index.php {
+        # Ensure that there is no such file named "not_exists"
+        # in your "public" directory.
+        try_files /not_exists @swoole;
+    }
 
-## License
+    location / {
+        try_files $uri $uri/ @swoole;
+    }
 
-The Lumen framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    location @swoole {
+        set $suffix "";
+
+        if ($uri = /index.php) {
+            set $suffix "/";
+        }
+
+        proxy_set_header Host $host;
+        proxy_set_header SERVER_PORT $server_port;
+        proxy_set_header REMOTE_ADDR $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # IF https
+        # proxy_set_header HTTPS "on";
+
+        proxy_pass http://127.0.0.1:1215$suffix;
+    }
+}
+```
