@@ -338,13 +338,13 @@ SQL;
      * @return array
      */
     public function getGroupDetail(int $user_id,int $group_id){
-        $groupInfo = UsersGroup::select(['id','user_id','group_name','people_num','avatarurl','created_at'])->where('id',$group_id)->where('status',0)->first();
+        $groupInfo = UsersGroup::select(['id','user_id','group_name','people_num','group_profile','avatarurl','created_at'])->where('id',$group_id)->where('status',0)->first();
         if(!$groupInfo){
             return [];
         }
 
         $members = UsersGroupMember::select([
-            'users_group_member.id','users_group_member.group_owner','users_group_member.group_profile',
+            'users_group_member.id','users_group_member.group_owner',
             'users_group_member.user_id','users.avatarurl','users.nickname','users.mobile'
         ])
         ->leftJoin('users','users.id','=','users_group_member.user_id')
@@ -357,6 +357,7 @@ SQL;
             'group_id'=>$group_id,
             'group_owner'=>User::where('id',$groupInfo->user_id)->value('nickname'),
             'group_name'=>$groupInfo->group_name,
+            'group_profile'=>$groupInfo->group_profile,
             'people_num'=>$groupInfo->people_num,
             'group_avatar'=>$groupInfo->avatarurl,
             'created_at'=>$groupInfo->created_at,
