@@ -5,6 +5,7 @@
 
 
 ###设置Nginx代理
+
 swoole在官网也提到过：swoole_http_server对Http协议的支持并不完整，建议仅作为应用服务器。并且在前端增加Nginx作为代理。
 那么，我们就增加需要配置nginx.conf里的server：
 ```
