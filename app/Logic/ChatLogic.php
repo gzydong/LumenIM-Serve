@@ -344,7 +344,8 @@ SQL;
         }
 
         $members = UsersGroupMember::select([
-            'users_group_member.id','users_group_member.group_owner','users_group_member.user_id','users.avatarurl','users.nickname','users.mobile'
+            'users_group_member.id','users_group_member.group_owner','users_group_member.group_profile',
+            'users_group_member.user_id','users.avatarurl','users.nickname','users.mobile'
         ])
         ->leftJoin('users','users.id','=','users_group_member.user_id')
         ->where([
