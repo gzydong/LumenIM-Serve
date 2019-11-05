@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 use Illuminate\Http\Request;
 use App\Logic\ChatLogic;
@@ -100,7 +101,7 @@ class ChatController extends CController
 
             if($fids){
                 $group_info = $data['group_info'];
-                WebSocketHelper::sendResponseMessage('join_group',$fids,$group_info);
+                WebSocketHelper::sendResponseMessage('join_group',$fids,['id'=>$group_info->id,'group_name'=>$group_info->group_name,'people_num'=>$group_info->people_num,'avatarurl'=>$group_info->avatarurl]);
             }
 
             return $this->ajaxSuccess('创建群聊成功...');
@@ -132,7 +133,8 @@ class ChatController extends CController
                 }
             }
 
-            WebSocketHelper::sendResponseMessage('join_group',$fids,['a']);
+            $groupInfo = UsersGroup::select(['id','group_name','people_num','avatarurl'])->where('id',$group_id)->first()->toArray();
+            WebSocketHelper::sendResponseMessage('join_group',$fids,$groupInfo);
         }
 
         return $isTrue ? $this->ajaxSuccess('好友已成功加入群聊...') : $this->ajaxError('邀请好友加入群聊失败...');
