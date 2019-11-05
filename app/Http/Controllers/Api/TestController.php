@@ -16,7 +16,7 @@ class TestController
 {
 
     public function index(){
-
+        dd('asd');
 
     }
 }

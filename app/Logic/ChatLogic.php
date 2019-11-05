@@ -217,6 +217,7 @@ SQL;
      */
     public function inviteFriendsGroupChat(int $user_id,int $group_id,$uids = []){
         $info = UsersGroupMember::select(['id','status'])->where('group_id',$group_id)->where('user_id',$user_id)->first();
+
         if(!$info && $info->status == 1){//判断主动邀请方是否属于聊天群成员
             return false;
         }
@@ -227,11 +228,8 @@ SQL;
 
         $updateArr = $insertArr = [];
         $members = UsersGroupMember::where('group_id',$group_id)->whereIn('user_id',$uids)->get(['id','user_id','status'])->toArray();
-        if(!$members){
-            return false;
-        }
-
         $members = replaceArrayKey('user_id',$members);
+
         foreach ($uids as $uid){
             if(isset($members[$uid])){//存在聊天群成员记录
                 if($members[$uid]['status'] == 0){
@@ -254,7 +252,7 @@ SQL;
                 DB::table('users_group_member')->insert($insertArr);
             }
 
-            UsersGroup::where('group_id',$group_id)->increment('people_num',count($uids));
+            UsersGroup::where('id',$group_id)->increment('people_num',count($uids));
             DB::commit();
         }catch (\Exception $e){
             DB::rollBack();
