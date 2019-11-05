@@ -101,7 +101,7 @@ class ChatController extends CController
 
             if($fids){
                 $group_info = $data['group_info'];
-                WebSocketHelper::sendResponseMessage('join_group',$fids,['id'=>$group_info['id'],'group_name'=>$group_info['group_name'],'people_num'=>$group_info['people_num'],'avatarurl'=>$group_info['avatarurl']]);
+                WebSocketHelper::sendResponseMessage('join_group',$fids,['id'=>$group_info['id'],'group_name'=>$group_info['group_name'],'people_num'=>$group_info['people_num'],'avatarurl'=>'']);
             }
 
             return $this->ajaxSuccess('创建群聊成功...');
