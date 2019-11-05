@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Models\UsersGroupMember;
 use Illuminate\Http\Request;
 use App\Logic\ChatLogic;
 use App\Facades\WebSocketHelper;
