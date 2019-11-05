@@ -46,6 +46,8 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->post('/chat/remove-group-chat', ['uses' => 'ChatController@removeGroupChat']);
     $router->post('/chat/dismiss-group-chat', ['uses' => 'ChatController@dismissGroupChat']);
 
+
+    $router->get('/chat/get-chat-member', ['uses' => 'ChatController@getChatMember']);
     $router->post('/chat/create-chat-list', ['uses' => 'ChatController@createChatList']);
 
 

@@ -32,4 +32,9 @@ class UsersGroupMember extends Model
      * @var bool
      */
     public $timestamps = false;
+
+
+    public static function getGroupMenberIds(int $group_id){
+        return UsersGroupMember::where('group_id',$group_id)->where('status',0)->pluck('user_id')->toArray();
+    }
 }

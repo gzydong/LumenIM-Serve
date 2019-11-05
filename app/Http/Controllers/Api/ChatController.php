@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Logic\ChatLogic;
 use App\Facades\WebSocketHelper;
+use App\Logic\UsersLogic;
 
 class ChatController extends CController
 {
@@ -187,5 +188,29 @@ class ChatController extends CController
 
         $data = $this->chatLogic->getGroupDetail($this->uid(),$group_id);
         return $this->ajaxSuccess('success',$data);
+    }
+
+
+    /**
+     * 获取用户聊天好友
+     *
+     * @param UsersLogic $usersLogic
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getChatMember(UsersLogic $usersLogic){
+        $group_id = $this->request->get('group_id',0);
+        $firends = $usersLogic->getUserFriends($this->uid());
+        if($group_id > 0){
+            $ids = UsersGroupMember::getGroupMenberIds(19);
+            if($firends && $ids){
+                foreach ($firends as $k=>$item){
+                    if(in_array($item->id,$ids)){
+                        unset($firends[$k]);
+                    }
+                }
+            }
+        }
+
+        return $this->ajaxSuccess('success',$firends);
     }
 }

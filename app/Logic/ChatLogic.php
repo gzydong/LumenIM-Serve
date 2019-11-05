@@ -215,7 +215,7 @@ SQL;
      * @return bool
      */
     public function inviteFriendsGroupChat(int $group_id,int $friends_id){
-        $info = UsersGroupMember::select(['id','status'])->where('group_id')->where('user_id',$friends_id)->first();
+        $info = UsersGroupMember::select(['id','status'])->where('group_id',$group_id)->where('user_id',$friends_id)->first();
         if($info && $info->status == 0){
             return false;
         }
