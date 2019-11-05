@@ -210,31 +210,57 @@ SQL;
     /**
      * 邀请好友加入群聊
      *
-     * @param int $group_id 群ID
-     * @param int $friends_id 好友ID
+     * @param int $user_id 用户ID
+     * @param int $group_id 聊天群ID
+     * @param array $uids  被邀请的用户ID
      * @return bool
      */
-    public function inviteFriendsGroupChat(int $group_id,int $friends_id){
-        $info = UsersGroupMember::select(['id','status'])->where('group_id',$group_id)->where('user_id',$friends_id)->first();
-        if($info && $info->status == 0){
+    public function inviteFriendsGroupChat(int $user_id,int $group_id,$uids = []){
+        $info = UsersGroupMember::select(['id','status'])->where('group_id',$group_id)->where('user_id',$user_id)->first();
+        if(!$info && $info->status == 1){//判断主动邀请方是否属于聊天群成员
             return false;
         }
 
-        try{
-            if($info){
-                $info->status = 1;$info->save();
-            }else{
-                if(!UsersGroupMember::create(['group_id'=>$group_id,'user_id'=>$friends_id,'group_owner'=>0,'status'=>0,'created_at'=>date('Y-m-d H:i:s')])){
-                    throw new \Exception('创建群成员信息失败');
+        if(empty($uids)){
+            return false;
+        }
+
+        $updateArr = $insertArr = [];
+        $members = UsersGroupMember::where('group_id',$group_id)->whereIn('user_id',$uids)->get(['id','user_id','status'])->toArray();
+        if(!$members){
+            return false;
+        }
+
+        $members = replaceArrayKey('user_id',$members);
+        foreach ($uids as $uid){
+            if(isset($members[$uid])){//存在聊天群成员记录
+                if($members[$uid]['status'] == 0){
+                    continue;
                 }
+                $updateArr[] = $members[$uid]['id'];
+            }else{
+                $insertArr[] = ['group_id'=>$group_id,'user_id'=>$uid,'group_owner'=>0,'status'=>0,'created_at'=>date('Y-m-d H:i:s')];
+            }
+        }
+
+        unset($members);
+
+        try{
+            if($updateArr){
+                UsersGroupMember::whereIn('id',$updateArr)->update(['status'=>0]);
             }
 
-            UsersGroup::where('group_id',$group_id)->increment('people_num');
+            if($insertArr){
+                DB::table('users_group_member')->insert($insertArr);
+            }
+
+            UsersGroup::where('group_id',$group_id)->increment('people_num',count($uids));
             DB::commit();
         }catch (\Exception $e){
             DB::rollBack();
             return false;
         }
+
         return true;
     }
 

@@ -116,13 +116,25 @@ class ChatController extends CController
      */
     public function inviteGroupChat(){
         $group_id = $this->request->post('group_id',0);
-        $friend_id = $this->request->post('friend_id',0);
+        $uids = array_filter(explode(',',$this->request->post('uids','')));
 
-        if(!checkNumber($group_id) || !checkNumber($friend_id)){
+        if(!checkNumber($group_id) || !checkIds($uids)){
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->chatLogic->inviteFriendsGroupChat($group_id,$friend_id);
+        $isTrue = $this->chatLogic->inviteFriendsGroupChat($this->uid(),$group_id,$uids);
+        if($isTrue){
+            $fids = [];
+            foreach ($uids as $uuid){
+                WebSocketHelper::bindUserGroupChat($uuid,$group_id);
+                if($ufds = WebSocketHelper::getUserFds($uuid)){
+                    $fids = array_merge($fids,$ufds);
+                }
+            }
+
+            WebSocketHelper::sendResponseMessage('join_group',$fids,['a']);
+        }
+
         return $isTrue ? $this->ajaxSuccess('好友已成功加入群聊...') : $this->ajaxError('邀请好友加入群聊失败...');
     }
 
