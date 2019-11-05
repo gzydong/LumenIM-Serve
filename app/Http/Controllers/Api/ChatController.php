@@ -202,7 +202,7 @@ class ChatController extends CController
         $group_id = $this->request->get('group_id',0);
         $firends = $usersLogic->getUserFriends($this->uid());
         if($group_id > 0){
-            $ids = UsersGroupMember::getGroupMenberIds(19);
+            $ids = UsersGroupMember::getGroupMenberIds($group_id);
             if($firends && $ids){
                 foreach ($firends as $k=>$item){
                     if(in_array($item->id,$ids)){
