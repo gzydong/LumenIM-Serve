@@ -57,4 +57,23 @@ class UploadController extends CController
         $path = Storage::disk('files')->put(date('Ymd'), $file);
         return $path ? $this->ajaxSuccess('文件上传成功...',['img'=>"/storage/{$path}"]) : $this->ajaxError('文件上传失败...');
     }
+
+    /**
+     * 图片文件流上传接口
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function fileStream(Request $request){
+        $fileStream = $request->post('fileStream','');
+
+        $data = base64_decode(str_replace(['data:image/png;base64,',' '],['','+'],$fileStream));
+        $path = 'avatar/'.date('Ymd').'/'.uniqid() . date('His') . '.png';
+        if(!Storage::disk('uploads')->put($path, $data)){
+            return $this->ajaxError('文件保存失败');
+        }
+
+        $avatar = config('config.upload.upload_domain','').'/'.$path;
+        return $this->ajaxSuccess('文件上传成功...',['avatar'=>$avatar]);
+    }
 }

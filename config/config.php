@@ -23,5 +23,10 @@ return [
                 'secretkey'=>'K9ESy3a7YEfk6kPK3dFC'
             ]
         ]
+    ],
+
+
+    'upload'=>[//上传文件相关配置
+        'upload_domain'=>'http://www.tf.com'//上传文件域名
     ]
 ];
