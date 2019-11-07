@@ -27,6 +27,6 @@ return [
 
 
     'upload'=>[//上传文件相关配置
-        'upload_domain'=>'http://www.tf.com'//上传文件域名
+        'upload_domain'=>'http://47.105.180.123:5000'//上传文件域名
     ]
 ];
