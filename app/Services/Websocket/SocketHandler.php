@@ -22,7 +22,6 @@ class SocketHandler  extends WebsocketHandler
      */
     public function onOpen($fd, Request $request)
     {
-        //echo date('Y-m-d H:i:s')." {$fd}连接了".PHP_EOL;
         $user_id = RsaMeans::decrypt($request->get('sid'));
         if($fd == 1){
             WebSocketHelper::clearRedisCache();
@@ -63,8 +62,6 @@ class SocketHandler  extends WebsocketHandler
 
         //发送消息
         WebSocketHelper::sendResponseMessage('chat_message',$receive,$msgData);
-
-        unset($msgData);unset($receive);
         return true;
     }
 
@@ -76,8 +73,6 @@ class SocketHandler  extends WebsocketHandler
      */
     public function onClose($fd, $reactorId)
     {
-        //echo date('Y-m-d H:i:s')." [{$fd}]关闭了连接".PHP_EOL;
-
         WebSocketHelper::clearFdCache($fd);
         return true;
     }
