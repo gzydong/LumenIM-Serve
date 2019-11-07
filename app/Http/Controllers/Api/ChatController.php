@@ -76,6 +76,7 @@ class ChatController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function launchGroupChat(){
+        $group_avatar = $this->request->post('group_avatar','');
         $group_name = $this->request->post('group_name','');
         $group_profile = $this->request->post('group_profile','');
         $uids = $this->request->post('uids','');
@@ -89,7 +90,7 @@ class ChatController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue,$data] = $this->chatLogic->launchGroupChat($this->uid(),$group_name,$group_profile,array_unique($uids));
+        [$isTrue,$data] = $this->chatLogic->launchGroupChat($this->uid(),$group_name,$group_avatar,$group_profile,array_unique($uids));
         if($isTrue){//群聊创建成功后需要创建聊天室并发送消息通知
             $fids = [];
             foreach ($data['uids'] as $uuid){

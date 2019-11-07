@@ -167,19 +167,20 @@ SQL;
 
     /**
      * 创建群聊
-     *
      * @param int $user_id 用户ID
      * @param string $group_name 群聊名称
-     * @param array $uids 群聊用户ID(不包括群成员)
+     * @param string $group_avatar 群聊头像
+     * @param string $group_profile 群聊用户ID(不包括群成员)
+     * @param array $uids
      * @return array
      */
-    public function launchGroupChat(int $user_id,string $group_name,string $group_profile,$uids = []){
+    public function launchGroupChat(int $user_id,string $group_name,string $group_avatar,string $group_profile,$uids = []){
         array_unshift($uids,$user_id);
         $groupMember = [];
 
         DB::beginTransaction();
         try{
-            $insRes = UsersGroup::create(['user_id'=>$user_id,'group_name'=>$group_name,'group_profile'=>$group_profile,'people_num'=>count($uids),'status'=>0,'created_at'=>date('Y-m-d H:i:s')]);
+            $insRes = UsersGroup::create(['user_id'=>$user_id,'group_name'=>$group_name,'avatarurl'=>$group_avatar,'group_profile'=>$group_profile,'people_num'=>count($uids),'status'=>0,'created_at'=>date('Y-m-d H:i:s')]);
             if(!$insRes){
                 throw new \Exception('创建群失败');
             }
