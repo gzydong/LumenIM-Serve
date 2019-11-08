@@ -7,6 +7,7 @@ use App\Models\UsersFriends;
 use App\Models\UsersGroup;
 use App\Models\UsersChatRecords;
 use App\Models\UsersChatList;
+use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\DB;
 use SwooleTW\Http\Websocket\Facades\Websocket;
 use App\Helpers\Cache\CacheHelper;
@@ -82,7 +83,6 @@ class ChatService
             return false;
         }
 
-
         //判断聊天消息类型
         if($receive_msg['sourceType'] == 1){
             //创建好友的聊天列表
@@ -94,11 +94,18 @@ class ChatService
                 UsersChatList::create(['type'=>1,'uid'=>$receive_msg['receiveUser'],'friend_id'=>$receive_msg['sendUser'],'status'=>1,'created_at'=>date('Y-m-d H:i:s')]);
             }
         }else if($receive_msg['sourceType'] == 2){//群聊
-
+            if($uids = UsersGroupMember::where('group_id',$receive_msg['receiveUser'])->where('status',0)->pluck('user_id')->toArray()){
+                UsersChatList::where('group_id',$receive_msg['receiveUser'])->whereIn('uid',$uids)->where('status',0)->update(['status'=>1]);
+            }
         }
 
         //缓存最后一条聊天记录
         CacheHelper::setLastChatCache($receive_msg['textMessage'],$receive_msg['receiveUser'],$receive_msg['sourceType'] == 1?$receive_msg['sendUser']:0);
         return true;
+    }
+
+
+    public function updateUserChat(){
+
     }
 }

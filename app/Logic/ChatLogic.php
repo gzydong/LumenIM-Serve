@@ -8,7 +8,6 @@ use App\Models\UsersFriends;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
 
 use App\Helpers\Cache\CacheHelper;
 class ChatLogic extends Logic
@@ -68,7 +67,6 @@ class ChatLogic extends Logic
                         $rows[$key2]['name'] = $info->user1_remark;
                     }
                 }
-
             }else{
                 $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatarurl'];
                 $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name'];
@@ -172,6 +170,7 @@ SQL;
     public function launchGroupChat(int $user_id,string $group_name,string $group_avatar,string $group_profile,$uids = []){
         array_unshift($uids,$user_id);
         $groupMember = [];
+        $chatList    = [];
 
         DB::beginTransaction();
         try{
@@ -188,10 +187,23 @@ SQL;
                     'status'=>0,
                     'created_at'=>date('Y-m-d H:i:s'),
                 ];
+
+                $chatList[] = [
+                    'type'=>2,
+                    'uid'=>$uid,
+                    'friend_id'=>0,
+                    'group_id'=>$insRes->id,
+                    'status'=>1,
+                    'created_at'=>date('Y-m-d H:i:s')
+                ];
             }
 
             if(!DB::table('users_group_member')->insert($groupMember)){
                 throw new \Exception('创建群成员信息失败');
+            }
+
+            if(!DB::table('users_chat_list')->insert($chatList)){
+                throw new \Exception('创建群成员的聊天列表失败');
             }
 
             DB::commit();
