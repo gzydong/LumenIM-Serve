@@ -69,45 +69,35 @@ class ChatService
             return true;
         }
 
-        DB::beginTransaction();
-        try{
-            $recordRes = UsersChatRecords::create([
-                'source'=>$receive_msg['sourceType'],
-                'msg_type'=>$receive_msg['msgType'],
-                'user_id'=>$receive_msg['sendUser'],
-                'receive_id'=>$receive_msg['receiveUser'],
-                'text_msg'=>$receive_msg['textMessage'],
-                'send_time'=>$receive_msg['send_time'],
-            ]);
+        $recordRes = UsersChatRecords::create([
+            'source'=>$receive_msg['sourceType'],
+            'msg_type'=>$receive_msg['msgType'],
+            'user_id'=>$receive_msg['sendUser'],
+            'receive_id'=>$receive_msg['receiveUser'],
+            'text_msg'=>$receive_msg['textMessage'],
+            'send_time'=>$receive_msg['send_time'],
+        ]);
 
-            if(!$recordRes){
-                throw new \Exception('聊天记录插入失败');
-            }
-
-            if($receive_msg['sourceType'] == 1){
-                //创建好友的聊天列表
-                $info2 = UsersChatList::where('type',1)->where('uid',$receive_msg['receiveUser'])->where('friend_id',$receive_msg['sendUser'])->first();
-                if($info2){
-                    if($info2->status == 0){
-                        $info2->status = 1;
-                        $info2->save();
-                    }
-                }else{
-                    UsersChatList::create(['type'=>1,'uid'=>$receive_msg['receiveUser'],'friend_id'=>$receive_msg['sendUser'],'status'=>1,'created_at'=>date('Y-m-d H:i:s')]);
-                }
-            }else if($receive_msg['sourceType'] == 2){//群聊
-
-            }
-
-            CacheHelper::setFriendsChatCache($receive_msg['sendUser'],$receive_msg['receiveUser'],$receive_msg['textMessage']);
-
-            DB::commit();
-        }catch (\Exception $e){
-            DB::rollBack();
+        if(!$recordRes){
             return false;
         }
 
-        unset($receive_msg);
+        if($receive_msg['sourceType'] == 1){
+            //创建好友的聊天列表
+            $info2 = UsersChatList::where('type',1)->where('uid',$receive_msg['receiveUser'])->where('friend_id',$receive_msg['sendUser'])->first();
+            if($info2){
+                if($info2->status == 0){
+                    $info2->status = 1;
+                    $info2->save();
+                }
+            }else{
+                UsersChatList::create(['type'=>1,'uid'=>$receive_msg['receiveUser'],'friend_id'=>$receive_msg['sendUser'],'status'=>1,'created_at'=>date('Y-m-d H:i:s')]);
+            }
+        }else if($receive_msg['sourceType'] == 2){//群聊
+            
+        }
+
+        CacheHelper::setFriendsChatCache($receive_msg['sendUser'],$receive_msg['receiveUser'],$receive_msg['textMessage']);
         return true;
     }
 }

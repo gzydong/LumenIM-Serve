@@ -24,7 +24,6 @@ class ChatLogic extends Logic
             ->where('users_chat_list.uid',$user_id)
             ->where('users_chat_list.status',1)->orderBy('id','desc')->get()->toArray();
 
-
         if(empty($rows)){
             return [];
         }
@@ -34,7 +33,7 @@ class ChatLogic extends Logic
             $rows[$key]['name'] = '';//对方昵称/群名称
             $rows[$key]['unread_num'] = 0;//未读消息数量
             $rows[$key]['msg_text'] = '......';//最新一条消息内容
-            $rows[$key]['avatar'] = 'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3987166397,2421475227&fm=26&gp=0.jpg';//默认头像
+            $rows[$key]['avatar'] = '';//默认头像
 
             if($v['type'] == 1){
                 $friend_ids[] = $v['friend_id'];
@@ -49,7 +48,6 @@ class ChatLogic extends Logic
             $groupInfos = replaceArrayKey('id',$groupInfos);
         }
 
-
         if($friend_ids){
             $friendInfos = User::whereIn('id',$friend_ids)->get(['id','nickname','avatarurl'])->toArray();
             $friendInfos = replaceArrayKey('id',$friendInfos);
@@ -57,7 +55,6 @@ class ChatLogic extends Logic
 
         foreach ($rows as $key2=>$v2){
             if($v2['type'] == 1){
-
                 $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatarurl'];
                 $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname'];
 
