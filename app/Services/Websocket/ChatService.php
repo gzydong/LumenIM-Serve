@@ -93,11 +93,17 @@ class ChatService
             }else{
                 UsersChatList::create(['type'=>1,'uid'=>$receive_msg['receiveUser'],'friend_id'=>$receive_msg['sendUser'],'status'=>1,'created_at'=>date('Y-m-d H:i:s')]);
             }
+
+            //设置未读消息
+            CacheHelper::setChatUnreadNum($receive_msg['receiveUser'],$receive_msg['sendUser']);
         }else if($receive_msg['sourceType'] == 2){//群聊
             if($uids = UsersGroupMember::where('group_id',$receive_msg['receiveUser'])->where('status',0)->pluck('user_id')->toArray()){
                 UsersChatList::where('group_id',$receive_msg['receiveUser'])->whereIn('uid',$uids)->where('status',0)->update(['status'=>1]);
             }
         }
+
+
+
 
         //缓存最后一条聊天记录
         CacheHelper::setLastChatCache($receive_msg['textMessage'],$receive_msg['receiveUser'],$receive_msg['sourceType'] == 1?$receive_msg['sendUser']:0);

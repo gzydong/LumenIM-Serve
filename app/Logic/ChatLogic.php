@@ -36,7 +36,8 @@ class ChatLogic extends Logic
 
             if($v['type'] == 1){
                 $friend_ids[] = $v['friend_id'];
-                $rows[$key]['msg_text'] = CacheHelper::getLastChatCache($v['friend_id'],$user_id) ? :'......';
+                $rows[$key]['msg_text']   = CacheHelper::getLastChatCache($v['friend_id'],$user_id) ? :'......';
+                $rows[$key]['unread_num'] = CacheHelper::getChatUnreadNum($user_id,$v['friend_id'])?:0;
             }else{
                 $group_ids[] = $v['group_id'];
                 $rows[$key]['msg_text'] = CacheHelper::getLastChatCache($v['group_id']) ? :'......';
