@@ -10,6 +10,7 @@ use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
+use App\Helpers\Cache\CacheHelper;
 class ChatLogic extends Logic
 {
 
@@ -32,13 +33,14 @@ class ChatLogic extends Logic
         foreach ($rows as $key=>$v){
             $rows[$key]['name'] = '';//对方昵称/群名称
             $rows[$key]['unread_num'] = 0;//未读消息数量
-            $rows[$key]['msg_text'] = '......';//最新一条消息内容
             $rows[$key]['avatar'] = '';//默认头像
 
             if($v['type'] == 1){
                 $friend_ids[] = $v['friend_id'];
+                $rows[$key]['msg_text'] = CacheHelper::getLastChatCache($v['friend_id'],$user_id) ? :'......';
             }else{
                 $group_ids[] = $v['group_id'];
+                $rows[$key]['msg_text'] = CacheHelper::getLastChatCache($v['group_id']) ? :'......';
             }
         }
 
@@ -59,8 +61,7 @@ class ChatLogic extends Logic
                 $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname'];
 
                 $info = UsersFriends::select('user1','user2','user1_remark','user2_remark')->where('user1',($user_id < $v2['friend_id'])? $user_id:$v2['friend_id'])->where('user2',($user_id < $v2['friend_id'])? $v2['friend_id'] : $user_id)->first();
-                //这个环节待优化
-                if($info){
+                if($info){//这个环节待优化
                     if($info->user1 == $v2['friend_id'] && !empty($info->user2_remark)){
                         $rows[$key2]['name'] = $info->user2_remark;
                     }else if($info->user2 == $v2['friend_id'] && !empty($info->user1_remark)){
@@ -68,12 +69,9 @@ class ChatLogic extends Logic
                     }
                 }
 
-                $flagKey = $user_id < $v2['friend_id'] ? "{$user_id}_{$v2['friend_id']}" : "{$v2['friend_id']}_{$user_id}";
-                $rows[$key2]['msg_text'] = Redis::hget('friends.chat.last.msg',$flagKey) ? : $v2['msg_text'];
             }else{
                 $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatarurl'];
                 $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name'];
-                $rows[$key2]['msg_text'] = Redis::hget('groups.chat.last.msg',$v2['group_id']) ? : $v2['msg_text'];
             }
         }
 

@@ -66,7 +66,7 @@ class ChatService
      */
     public static function saveChatRecord(array $receive_msg){
         if(!in_array($receive_msg['sourceType'],[1,2])){
-            return true;
+            return false;
         }
 
         $recordRes = UsersChatRecords::create([
@@ -82,22 +82,23 @@ class ChatService
             return false;
         }
 
+
+        //判断聊天消息类型
         if($receive_msg['sourceType'] == 1){
             //创建好友的聊天列表
-            $info2 = UsersChatList::where('type',1)->where('uid',$receive_msg['receiveUser'])->where('friend_id',$receive_msg['sendUser'])->first();
-            if($info2){
-                if($info2->status == 0){
-                    $info2->status = 1;
-                    $info2->save();
+            if($info = UsersChatList::select('id','status')->where('type',1)->where('uid',$receive_msg['receiveUser'])->where('friend_id',$receive_msg['sendUser'])->first()){
+                if($info->status == 0){
+                    UsersChatList::where('id',$info->id)->update(['status'=>1]);
                 }
             }else{
                 UsersChatList::create(['type'=>1,'uid'=>$receive_msg['receiveUser'],'friend_id'=>$receive_msg['sendUser'],'status'=>1,'created_at'=>date('Y-m-d H:i:s')]);
             }
         }else if($receive_msg['sourceType'] == 2){//群聊
-            
+
         }
 
-        CacheHelper::setFriendsChatCache($receive_msg['sendUser'],$receive_msg['receiveUser'],$receive_msg['textMessage']);
+        //缓存最后一条聊天记录
+        CacheHelper::setLastChatCache($receive_msg['textMessage'],$receive_msg['receiveUser'],$receive_msg['sourceType'] == 1?$receive_msg['sendUser']:0);
         return true;
     }
 }

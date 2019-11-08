@@ -8,11 +8,7 @@ namespace App\Helpers\Cache;
  */
 class CacheFlag
 {
-    public static function friendsChatKey(){
-        return 'friends.chat.last.msg';
-    }
-
-    public static function groupsChatKey(){
-        return 'groups.chat.last.msg';
+    public static function lastChatCacheKey($sender = 0){
+        return $sender == 0 ? 'groups.chat.last.msg' : 'friends.chat.last.msg';
     }
 }
