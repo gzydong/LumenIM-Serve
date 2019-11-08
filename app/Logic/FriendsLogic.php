@@ -138,7 +138,7 @@ class FriendsLogic extends Logic
         $count = $countSqlObj->count();
         $rows = [];
         if ($count > 0) {
-            $rows = $rowsSqlObj->orderBy('users_friends_apply.id','desc')->forPage($page, $page_size)->get()->toArray();
+            $rows = $rowsSqlObj->orderBy('users_friends_apply.status','asc')->orderBy('users_friends_apply.id','desc')->forPage($page, $page_size)->get()->toArray();
         }
 
         return $this->packData($rows, $count, $page, $page_size);
