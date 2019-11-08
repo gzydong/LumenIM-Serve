@@ -48,10 +48,13 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
 
 
     $router->get('/chat/get-chat-member', ['uses' => 'ChatController@getChatMember']);
+
     $router->post('/chat/create-chat-list', ['uses' => 'ChatController@createChatList']);
 
 
     $router->get('/chat/group-detail', ['uses' => 'ChatController@getGroupDetail']);
+
+    $router->get('/chat/update-chat-unread-num', ['uses' => 'ChatController@updateChatUnreadNum']);
 });
 
 //UploadController 上传文件控制器分组

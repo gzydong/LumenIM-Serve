@@ -54,4 +54,15 @@ class CacheHelper extends CacheFlag
     public static function getChatUnreadNum(int $receive,int $sender){
         return Redis::hget(self::chatUnreadNumCacheKey(),"{$receive}_$sender");
     }
+
+    /**
+     * 清空消息未读数
+     *
+     * @param int $receive 接收消息的用户ID
+     * @param int $sender  发送消息的用户ID
+     * @return mixed
+     */
+    public static function delChatUnreadNum(int $receive,int $sender){
+        return Redis::hdel(self::chatUnreadNumCacheKey(),"{$receive}_$sender");
+    }
 }

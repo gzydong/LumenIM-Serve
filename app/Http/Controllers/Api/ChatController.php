@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Cache\CacheHelper;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 use Illuminate\Http\Request;
@@ -228,5 +229,22 @@ class ChatController extends CController
         }
 
         return $this->ajaxSuccess('success',$firends);
+    }
+
+    /**
+     * 更新用户聊天信息未读数
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateChatUnreadNum(){
+        $type = $this->request->get('type',0);
+        $receive = $this->request->get('receive',0);
+        if($type == 1 && checkNumber($receive) && $receive > 0){
+            CacheHelper::delChatUnreadNum($this->uid(),$receive);
+        }else if($type == 2 && checkNumber($receive) && $receive > 0){
+            CacheHelper::delChatUnreadNum($this->uid(),$receive);
+        }
+
+        return $this->ajaxSuccess('success');
     }
 }
