@@ -41,8 +41,7 @@ class CacheHelper extends CacheFlag
      * @param int $sender  发送消息的用户ID
      */
     public static function setChatUnreadNum(int $receive,int $sender){
-        $key = "{$receive}_$sender";
-        Redis::hincrby(self::chatUnreadNumCacheKey(),$key,1);
+        Redis::hincrby(self::chatUnreadNumCacheKey(),"{$receive}_$sender",1);
     }
 
     /**
@@ -50,9 +49,9 @@ class CacheHelper extends CacheFlag
      *
      * @param int $receive 接收消息的用户ID
      * @param int $sender  发送消息的用户ID
+     * @return mixed
      */
     public static function getChatUnreadNum(int $receive,int $sender){
-        $key = "{$receive}_$sender";
-        Redis::hget(self::chatUnreadNumCacheKey(),$key);
+        return Redis::hget(self::chatUnreadNumCacheKey(),"{$receive}_$sender");
     }
 }
