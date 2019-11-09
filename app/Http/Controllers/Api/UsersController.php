@@ -167,7 +167,6 @@ class UsersController extends CController
         ]);
     }
 
-
     /**
      * 编辑好友备注信息
      *
