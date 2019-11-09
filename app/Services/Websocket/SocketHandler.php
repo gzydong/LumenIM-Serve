@@ -72,8 +72,8 @@ class SocketHandler  extends WebsocketHandler
     public function onClose($fd, $reactorId)
     {
 
-        $uid = WebSocketHelper::getFdUserId($fd);
-        echo "用户ID:{$uid},FD:{$fd}".date('Y-m-d H:i:s').PHP_EOL;
+//        $uid = WebSocketHelper::getFdUserId($fd);
+//        echo "用户ID:{$uid},FD:{$fd}".date('Y-m-d H:i:s').PHP_EOL;
 
         WebSocketHelper::clearFdCache($fd);
         return true;

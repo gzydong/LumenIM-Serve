@@ -44,7 +44,7 @@ return [
 
 
             //设置心跳检测
-            'heartbeat_idle_time' => 60*3,
+            'heartbeat_idle_time' => 150,
             'heartbeat_check_interval' => 60,
         ],
     ],
