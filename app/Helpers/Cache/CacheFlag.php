@@ -27,4 +27,12 @@ class CacheFlag
     public static function chatUnreadNumCacheKey(){
         return  'hash.chat.unread.num';
     }
+
+    /**
+     * 好友申请未读数，hash存储名
+     * @return string
+     */
+    public static function applyUnreadNumCacheKey(){
+        return 'friend.apply.unread.num';
+    }
 }

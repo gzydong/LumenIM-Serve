@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Cache\CacheHelper;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Logic\UsersLogic;
@@ -101,6 +102,7 @@ class UsersController extends CController
      */
     public function getFriendApplyRecords(Request $request,FriendsLogic $friendsLogic){
         $data = $friendsLogic->friendApplyRecords($this->uid(),intval($request->get('page',1)),1000);
+        CacheHelper::setFriendApplyUnreadNum($this->uid(),1);
         return $this->ajaxSuccess('success',$data);
     }
 
@@ -129,6 +131,7 @@ class UsersController extends CController
             WebSocketHelper::sendResponseMessage('friend_apply',$fd,[]);
         }
 
+        CacheHelper::setFriendApplyUnreadNum($friend_id);
         return $this->ajaxReturn(200,'发送好友申请成功...');
     }
 
@@ -153,6 +156,17 @@ class UsersController extends CController
         $isTrue = FriendsLogic::handleFriendApply($this->uid(),$apply_id,$type,$remarks);
         return $isTrue ? $this->ajaxSuccess('处理完成...') : $this->ajaxError('处理失败，请稍后再试...');
     }
+
+    /**
+     * 获取好友申请未读数
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getApplyUnreadNum(){
+        return $this->ajaxSuccess('success',[
+            'unread_num'=>CacheHelper::getFriendApplyUnreadNum($this->uid())
+        ]);
+    }
+
 
     /**
      * 编辑好友备注信息
@@ -201,7 +215,6 @@ class UsersController extends CController
 
         return $this->ajaxReturn(303,'success',[]);
     }
-
 
     /**
      * 获取用户群聊列表
