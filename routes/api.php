@@ -25,12 +25,13 @@ $router->group(['middleware'=>['jwt.auth']],function () use ($router) {
     $router->post('/user/edit-user-detail', ['uses' => 'UsersController@editUserDetail']);
     $router->post('/user/change-password', ['uses' => 'UsersController@changePassword']);
     $router->post('/user/edit-avatar', ['uses' => 'UsersController@editAvatar']);
+    $router->post('/user/search-user', ['uses' => 'UsersController@searchUserInfo']);
 
-    $router->get('/user/friend-apply-records', ['uses' => 'UsersController@getFriendApplyRecords']);
+    $router->post('/user/edit-friend-remark', ['uses' => 'UsersController@editFriendRemark']);
     $router->post('/user/send-friend-apply', ['uses' => 'UsersController@sendFriendApply']);
     $router->post('/user/handle-friend-apply', ['uses' => 'UsersController@handleFriendApply']);
-    $router->post('/user/edit-friend-remark', ['uses' => 'UsersController@editFriendRemark']);
-    $router->post('/user/search-user', ['uses' => 'UsersController@searchUserInfo']);
+    $router->get('/user/friend-apply-records', ['uses' => 'UsersController@getFriendApplyRecords']);
+    $router->get('/user/friend-apply-num', ['uses' => 'UsersController@getApplyUnreadNum']);
 });
 
 
