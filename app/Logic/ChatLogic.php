@@ -377,7 +377,7 @@ SQL;
         }
 
         $members = UsersGroupMember::select([
-            'users_group_member.id','users_group_member.group_owner',
+            'users_group_member.id','users_group_member.group_owner','users_group_member.visit_card',
             'users_group_member.user_id','users.avatarurl','users.nickname','users.mobile'
         ])
         ->leftJoin('users','users.id','=','users_group_member.user_id')
