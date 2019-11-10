@@ -388,6 +388,7 @@ SQL;
 
         return [
             'group_id'=>$group_id,
+            'user_id'=>$groupInfo->user_id,
             'group_owner'=>User::where('id',$groupInfo->user_id)->value('nickname'),
             'group_name'=>$groupInfo->group_name,
             'group_profile'=>$groupInfo->group_profile,
