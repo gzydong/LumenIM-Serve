@@ -13,7 +13,7 @@ $router->group([],function () use ($router) {
     $router->post('/auth/login', ['middleware'=>[],'uses' => 'AuthController@login']);
     $router->post('/auth/register', ['middleware'=>[],'uses' => 'AuthController@register']);
     $router->post('/auth/logout', ['middleware'=>['jwt.auth'],'uses' => 'AuthController@logout']);
-    $router->post('/auth/refresh-token', ['middleware'=>['jwt.auth'],'uses' => 'AuthController@refreshToken']);
+    $router->get('/auth/refresh-token', ['middleware'=>[],'uses' => 'AuthController@refreshToken']);
 });
 
 //UsersController 控制器分组
