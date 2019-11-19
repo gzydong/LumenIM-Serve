@@ -1,6 +1,7 @@
 <?php
 namespace App\Services\Websocket;
 
+use App\Models\UsersChatRecords;
 use Illuminate\Http\Request;
 use App\Facades\WebSocketHelper;
 use App\Facades\ChatService;
@@ -40,6 +41,19 @@ class SocketHandler  extends WebsocketHandler
     {
         $msgData = json_decode($frame->data,true);
         $msgData['send_time'] = date('Y-m-d H:i:s');
+
+        $recordRes = UsersChatRecords::create([
+            'source'=>$receive_msg['sourceType'],
+            'msg_type'=>$receive_msg['msgType'],
+            'user_id'=>$receive_msg['sendUser'],
+            'receive_id'=>$receive_msg['receiveUser'],
+
+            'send_time'=>$receive_msg['send_time'],
+        ]);
+
+        if($msgData['msgType'] == 1){
+            $msgData["text_msg"] = htmlspecialchars($receive_msg['textMessage']);
+        }
 
         //这里做消息处理
         if(!ChatService::check($msgData)){
