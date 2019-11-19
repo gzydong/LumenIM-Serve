@@ -118,6 +118,7 @@ function emojiReplace(string $text){
     ];
 
     $emojiReplace = [
+        "[微笑]" => "<img src='https://res.wx.qq.com/mpres/htmledition/images/icon/emotion/0.gif'>",
         "[撇嘴]" => "<img src='https://res.wx.qq.com/mpres/htmledition/images/icon/emotion/1.gif'>",
         "[色]" => "<img src='https://res.wx.qq.com/mpres/htmledition/images/icon/emotion/2.gif'>",
         "[发呆]" => "<img src='https://res.wx.qq.com/mpres/htmledition/images/icon/emotion/3.gif'>",
