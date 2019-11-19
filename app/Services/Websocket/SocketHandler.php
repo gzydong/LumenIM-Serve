@@ -42,7 +42,7 @@ class SocketHandler  extends WebsocketHandler
         $msgData = json_decode($frame->data,true);
         $msgData['send_time'] = date('Y-m-d H:i:s');
         if($msgData['msgType'] == 1){
-            $msgData["textMessage"] = htmlspecialchars($receive_msg['textMessage']);
+            $msgData["textMessage"] = htmlspecialchars($msgData['textMessage']);
         }
 
         //这里做消息处理
