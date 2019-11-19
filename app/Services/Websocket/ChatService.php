@@ -75,7 +75,7 @@ class ChatService
             'msg_type'=>$receive_msg['msgType'],
             'user_id'=>$receive_msg['sendUser'],
             'receive_id'=>$receive_msg['receiveUser'],
-            'text_msg'=>$receive_msg['textMessage'],
+            'text_msg'=>htmlspecialchars($receive_msg['textMessage']),
             'send_time'=>$receive_msg['send_time'],
         ]);
 
