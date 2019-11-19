@@ -223,6 +223,6 @@ function emojiReplace(string $text){
         "[左太极]" => "<img src='https://res.wx.qq.com/mpres/htmledition/images/icon/emotion/103.gif'>",
         "[右太极]" => "<img src='https://res.wx.qq.com/mpres/htmledition/images/icon/emotion/104.gif'>",
     ];
-    $text = str_replace($emojiSearch,array_values($emojiReplace),htmlspecialchars($text));
+    $text = str_replace($emojiSearch,array_values($emojiReplace),$text);
     return $text;
 }
