@@ -52,7 +52,7 @@ class SocketHandler  extends WebsocketHandler
         ]);
 
         if($msgData['msgType'] == 1){
-            $msgData["text_msg"] = htmlspecialchars($receive_msg['textMessage']);
+            $msgData["textMessage"] = htmlspecialchars($receive_msg['textMessage']);
         }
 
         //这里做消息处理
