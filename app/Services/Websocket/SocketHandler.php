@@ -55,6 +55,12 @@ class SocketHandler  extends WebsocketHandler
             info("聊天记录保存失败：".json_encode($msgData));
         }
 
+        //替换表情
+        if($msgData['msgType'] == 1){
+            $msgData["textMessage"] = emojiReplace($msgData['textMessage']);
+        }
+
+
         $receive = [];
         if($msgData['sourceType'] == 1){//私聊
             $receive = WebSocketHelper::getUserFds($msgData['receiveUser']);
