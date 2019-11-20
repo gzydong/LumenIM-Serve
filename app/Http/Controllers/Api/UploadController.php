@@ -31,9 +31,12 @@ class UploadController extends CController
         }
 
         //保存图片
-        $path = Storage::disk('public')->put('img/'.date('Ymd'), $file);
+        if(!$path = Storage::disk('uploads')->put('chatimg/'.date('Ymd'), $file)){
+            return $this->ajaxError('图片上传失败');
+        }
 
-        return $path ? $this->ajaxSuccess('图片上传成功...',['img'=>"/storage/{$path}"]) : $this->ajaxError('图片上传失败...');
+        $avatar = config('config.upload.upload_domain','').'/'.$path;
+        return $this->ajaxSuccess('图片上传成功...',['img'=>$avatar]);
     }
 
     /**
