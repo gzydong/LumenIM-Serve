@@ -98,4 +98,19 @@ class CController extends Controller
     {
         return $this->ajaxReturn(301, $msg, []);
     }
+
+
+    /**
+     * 获取用户JWT相关信息
+     *
+     * @param string $key
+     * @return mixed
+     */
+    protected function payload($key = ''){
+        if($key){
+            return $this->guard()->payload()->get($key);
+        }
+
+        return $this->guard()->payload()->getClaims()->toPlainArray();
+    }
 }
