@@ -76,7 +76,10 @@ class AuthController extends CController
 
         //判断系统是否在其他地方登录，若存在则将强制下线
         if ($fds = WebSocketHelper::getUserFds($user->id)) {
-            WebSocketHelper::disconnect($fds);
+            try{
+                WebSocketHelper::disconnect($fds);
+            }catch (\Exception $e){}
+            
         }
 
         return $this->ajaxReturn(200, '授权登录成功', [
