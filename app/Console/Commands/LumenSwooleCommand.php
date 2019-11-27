@@ -11,7 +11,7 @@ class LumenSwooleCommand extends HttpServerCommand
      *
      * @var string
      */
-    protected $signature = 'lumen:swoole {action : start|stop|restart|reload|infos}';
+    protected $signature = 'lumenim:swoole {action : start|stop|restart|reload|infos}';
 
     /**
      * The console command description.
