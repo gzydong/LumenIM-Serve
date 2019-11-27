@@ -61,12 +61,25 @@ class SocketHandler  extends WebsocketHandler
         }
 
 
+
+
+
         $receive = [];
         if($msgData['sourceType'] == 1){//私聊
             $receive = WebSocketHelper::getUserFds($msgData['receiveUser']);
         }else if($msgData['sourceType'] == 2){
             $receive = WebSocketHelper::getRoomGroupName($msgData['receiveUser']);
         }
+
+        $userInfo = [
+            'user_id'=>0,//用户ID
+            'avatar'=>'',//用户头像
+            'nickname'=>'',//用户昵称
+            'remark_nickname'=>''//好友备注或用户群名片
+        ];
+
+        //消息发送者用户信息
+        $msgData['sendUserInfo'] = $userInfo;
 
         //发送消息
         WebSocketHelper::sendResponseMessage('chat_message',$receive,$msgData);
