@@ -30,37 +30,10 @@ class LumenSwooleCommand extends HttpServerCommand
     {
         if ($this->isRunning()) {
             $this->error('Failed! swoole_http_server process is already running.');
-
             return;
         }
 
         WebSocketHelper::clearRedisCache();
-
-        $host = Arr::get($this->config, 'server.host');
-        $port = Arr::get($this->config, 'server.port');
-        $hotReloadEnabled = Arr::get($this->config, 'hot_reload.enabled');
-        $accessLogEnabled = Arr::get($this->config, 'server.access_log');
-
-        $this->info('Starting swoole http server...');
-        $this->info("Swoole http server started: <http://{$host}:{$port}>");
-        if ($this->isDaemon()) {
-            $this->info(
-                '> (You can run this command to ensure the ' .
-                'swoole_http_server process is running: ps aux|grep "swoole")'
-            );
-        }
-
-        $manager = $this->laravel->make(Manager::class);
-        $server = $this->laravel->make(Server::class);
-
-        if ($accessLogEnabled) {
-            $this->registerAccessLog();
-        }
-
-        if ($hotReloadEnabled) {
-            $manager->addProcess($this->getHotReloadProcess($server));
-        }
-
-        $manager->run();
+        parent::start();
     }
 }
