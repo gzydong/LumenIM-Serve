@@ -40,7 +40,7 @@ class UsersFriends extends Model
      */
     public static function getUserFriends(int $uid){
         $sql = <<<SQL
-            SELECT lar_users.id,lar_users.nickname,lar_users.avatarurl,lar_users.gender,tmp_table.friend_remark from lar_users 
+            SELECT lar_users.id,lar_users.nickname,lar_users.avatarurl,lar_users.motto,lar_users.gender,tmp_table.friend_remark from lar_users 
             INNER join
             (
               SELECT id as rid,user2 as uid,user1_remark as friend_remark from lar_users_friends where user1 = {$uid} and `status` = 1
