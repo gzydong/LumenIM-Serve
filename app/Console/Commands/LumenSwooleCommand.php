@@ -3,6 +3,9 @@ namespace App\Console\Commands;
 
 use SwooleTW\Http\Commands\HttpServerCommand;
 use App\Facades\WebSocketHelper;
+use Illuminate\Support\Arr;
+use SwooleTW\Http\Server\Manager;
+use SwooleTW\Http\Server\Facades\Server;
 
 class LumenSwooleCommand extends HttpServerCommand
 {
