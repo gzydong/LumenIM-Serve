@@ -8,7 +8,6 @@ use App\Models\UsersGroup;
 use App\Models\UsersChatRecords;
 use App\Models\UsersChatList;
 use App\Models\UsersGroupMember;
-use Illuminate\Support\Facades\DB;
 use SwooleTW\Http\Websocket\Facades\Websocket;
 use App\Helpers\Cache\CacheHelper;
 

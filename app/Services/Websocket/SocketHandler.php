@@ -2,6 +2,7 @@
 
 namespace App\Services\Websocket;
 
+use App\Models\UsersGroupMember;
 use Swoole\Websocket\Frame;
 use Illuminate\Http\Request;
 use App\Facades\WebSocketHelper;
@@ -26,6 +27,7 @@ class SocketHandler extends WebsocketHandler
         //这里处理用户登录后的逻辑
         WebSocketHelper::bindUserFd($user_id, $fd);   //绑定用户ID与fd的关系
         WebSocketHelper::bindGroupChats($user_id, $fd);//绑定群聊关系
+
         return true;
     }
 
@@ -73,6 +75,21 @@ class SocketHandler extends WebsocketHandler
             'remark_nickname' => ''//好友备注或用户群名片
         ];
 
+        //群聊消息
+        if($msgData['sourceType'] == 2){
+            $res = UsersGroupMember::from('users_group_member as ugm')
+                ->select(['users.nickname','users.avatarurl','ugm.visit_card'])
+                ->leftJoin('users','users.id','=','ugm.user_id')
+                ->where('ugm.group_id',$msgData['receiveUser'])->where('ugm.user_id',$msgData['receiveUser'])
+                ->first();
+
+            $userInfo['avatar'] = $res->avatarurl;
+            $userInfo['nickname'] = $res->nickname;
+            $userInfo['remark_nickname'] = $res->visit_card;
+        }else{//好友私聊消息
+
+        }
+
         //消息发送者用户信息
         $msgData['sendUserInfo'] = $userInfo;
 
@@ -90,6 +107,7 @@ class SocketHandler extends WebsocketHandler
     public function onClose($fd, $reactorId)
     {
         WebSocketHelper::clearFdCache($fd);
+
         return true;
     }
 }
