@@ -80,7 +80,7 @@ class SocketHandler extends WebsocketHandler
             $res = UsersGroupMember::from('users_group_member as ugm')
                 ->select(['users.nickname','users.avatarurl','ugm.visit_card'])
                 ->leftJoin('users','users.id','=','ugm.user_id')
-                ->where('ugm.group_id',$msgData['receiveUser'])->where('ugm.user_id',$msgData['receiveUser'])
+                ->where('ugm.group_id',$msgData['receiveUser'])->where('ugm.user_id',$msgData['sendUser'])
                 ->first();
 
             $userInfo['avatar'] = $res->avatarurl;
