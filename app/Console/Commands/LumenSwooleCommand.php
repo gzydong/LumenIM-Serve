@@ -18,7 +18,7 @@ class LumenSwooleCommand extends HttpServerCommand
      *
      * @var string
      */
-    protected $description = 'Set the application key';
+    protected $description = 'swoole:http 命令已被重写，请谨慎使用，请用本条命令代替';
 
     /**
      * Run swoole_http_server.
@@ -30,7 +30,9 @@ class LumenSwooleCommand extends HttpServerCommand
             return;
         }
 
+        //清除redis 缓存
         WebSocketHelper::clearRedisCache();
+
         parent::start();
     }
 }
