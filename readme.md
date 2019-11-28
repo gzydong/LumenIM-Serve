@@ -2,10 +2,11 @@
 
 本次项目是用采用 Lumen 框架，并使用了 Composer laravel-swoole 组件进行开发、利用 laravel-swoole 组件中 websocket 服务开发开发即时消息通讯。
 
-##### 环境依赖
+##### 项目环境依赖
 - PHP7.2+
 - Swoole4.4.4+
 - Redis 3.2+
+
 
 ##### 设置Nginx代理
 
