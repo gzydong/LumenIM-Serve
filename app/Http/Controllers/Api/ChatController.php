@@ -40,7 +40,7 @@ class ChatController extends CController
         $receive_id = $this->request->get('receive_id',0);
         $type       = $this->request->get('type',1);
         $page_size  = 20;
-        if(!isInt($record_id) || !isInt($receive_id) || !in_array($type,[1,2])){
+        if(!isInt($record_id,true) || !isInt($receive_id) || !in_array($type,[1,2])){
             return $this->ajaxParamError();
         }
 
