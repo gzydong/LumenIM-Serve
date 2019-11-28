@@ -110,17 +110,12 @@ $app->register(SwooleTW\Http\LumenServiceProvider::class);
 */
 
 //加载Web路由
-$app->router->group([
-    'namespace' => 'App\Http\Controllers',
-], function ($router) {
+$app->router->group(['namespace' => 'App\Http\Controllers'], function ($router) {
     require __DIR__.'/../routes/web.php';
 });
 
 //加载接口路由
-$app->router->group([
-    'prefix'=>'api',
-    'namespace' => 'App\Http\Controllers\Api',
-], function ($router) {
+$app->router->group(['prefix'=>'api','namespace' => 'App\Http\Controllers\Api'], function ($router) {
     require __DIR__.'/../routes/api.php';
 });
 
