@@ -8,6 +8,12 @@
 - Redis 3.2+
 
 
+#####  项目部署
+1. 使用git下载项目源码:  git clone git@github.com:gzydong/lumenim.git lumenim
+2. 切换到项目根目录 执行 composer install  安装项目composer依赖包
+3. 执行 chmod -R 755 storage 赋予storage目录权限
+4. 执行 php artisan lumenim:swoole start 启动项目
+
 ##### 设置Nginx代理
 
 swoole在官网也提到过：swoole_http_server对Http协议的支持并不完整，建议仅作为应用服务器。并且在前端增加Nginx作为代理。
