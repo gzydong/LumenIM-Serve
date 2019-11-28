@@ -41,25 +41,24 @@ class SocketHandler extends WebsocketHandler
     {
         $msgData = json_decode($frame->data, true);
         $msgData['send_time'] = date('Y-m-d H:i:s');
+
+        //验证消息类型 私聊|群聊
+        if (!in_array($msgData['sourceType'], [1, 2])) return true;
+
+        //验证发送消息用户与接受消息用户之间是否存在好友或群聊关系
+        if (!ChatService::check($msgData)) return true;
+
+        //处理文本消息
         if ($msgData['msgType'] == 1) {
             $msgData["textMessage"] = htmlspecialchars($msgData['textMessage']);
         }
 
-        //这里做消息处理
-        if (!ChatService::check($msgData)) {
-            return true;
-        }
-
         //将聊天记录保存到数据库(待优化：后面采用异步保存信息)
-        if ($packageData = ChatService::saveChatRecord($msgData)) {
+        if (!$packageData = ChatService::saveChatRecord($msgData)) {
             info("聊天记录保存失败：" . json_encode($msgData));
         }
 
-        //替换表情
-        if ($msgData['msgType'] == 1) {
-            $msgData["textMessage"] = emojiReplace($msgData['textMessage']);
-        }
-
+        //获取消息接收的客户端
         $receive = [];
         if ($msgData['sourceType'] == 1) {//私聊
             $receive = WebSocketHelper::getUserFds($msgData['receiveUser']);
@@ -76,22 +75,27 @@ class SocketHandler extends WebsocketHandler
         ];
 
         //群聊消息
-        if($msgData['sourceType'] == 2){
+        if ($msgData['sourceType'] == 2) {
             $res = UsersGroupMember::from('users_group_member as ugm')
-                ->select(['users.nickname','users.avatarurl','ugm.visit_card'])
-                ->leftJoin('users','users.id','=','ugm.user_id')
-                ->where('ugm.group_id',$msgData['receiveUser'])->where('ugm.user_id',$msgData['sendUser'])
+                ->select(['users.nickname', 'users.avatarurl', 'ugm.visit_card'])
+                ->leftJoin('users', 'users.id', '=', 'ugm.user_id')
+                ->where('ugm.group_id', $msgData['receiveUser'])->where('ugm.user_id', $msgData['sendUser'])
                 ->first();
 
             $userInfo['avatar'] = $res->avatarurl;
             $userInfo['nickname'] = $res->nickname;
             $userInfo['remark_nickname'] = $res->visit_card;
-        }else{//好友私聊消息
+        } else {//好友私聊消息
 
         }
 
         //消息发送者用户信息
         $msgData['sendUserInfo'] = $userInfo;
+
+        //替换表情
+        if ($msgData['msgType'] == 1) {
+            $msgData["textMessage"] = emojiReplace($msgData['textMessage']);
+        }
 
         //发送消息
         WebSocketHelper::sendResponseMessage('chat_message', $receive, $msgData);

@@ -24,7 +24,6 @@ class ChatService
     public function check(array $receive_msg)
     {
         //判断用户是否存在
-
         $receive = WebSocketHelper::getUserFds($receive_msg['sendUser']);
         if (!User::checkUserExist($receive_msg['sendUser'])) {
             $receive_msg['textMessage'] = '非法操作！';
@@ -59,10 +58,6 @@ class ChatService
      */
     public static function saveChatRecord(array $receive_msg)
     {
-        if (!in_array($receive_msg['sourceType'], [1, 2])) {
-            return false;
-        }
-
         $recordRes = UsersChatRecords::create([
             'source' => $receive_msg['sourceType'],
             'msg_type' => $receive_msg['msgType'],
@@ -94,7 +89,6 @@ class ChatService
                 UsersChatList::where('group_id', $receive_msg['receiveUser'])->whereIn('uid', $uids)->where('status', 0)->update(['status' => 1]);
             }
         }
-
 
         //缓存最后一条聊天记录
         CacheHelper::setLastChatCache($receive_msg['textMessage'], $receive_msg['receiveUser'], $receive_msg['sourceType'] == 1 ? $receive_msg['sendUser'] : 0);

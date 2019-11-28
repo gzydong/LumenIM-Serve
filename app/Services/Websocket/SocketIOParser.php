@@ -12,17 +12,22 @@ use SwooleTW\Http\Websocket\SocketIO\Packet;
 class SocketIOParser extends Parser
 {
 
-    public function execute($server, $frame)
+    /**
+     * 检测是否跳过消息处理(true:跳过消息处理  false:接收消息处理)
+     *
+     * @param \Swoole\WebSocket\Server $server
+     * @param \Swoole\WebSocket\Frame $frame
+     * @return bool
+     */
+    public function execute($server, $frame) :bool
     {
-        $data = $frame->data;
-        $skip = false;
-
-        //心跳过滤
-        if($data == 'heartbeat'){
+        //判断接收的消息是否为心跳检测
+        if($frame->data == 'heartbeat'){
             return true;
         }
 
-        $data = json_decode($data,true);
+        $skip = false;
+        $data = json_decode($frame->data,true);
         if(!$data || !array_has($data,['sourceType','receiveUser','sendUser','msgType','textMessage'])){
             return true;
         }
@@ -59,12 +64,10 @@ class SocketIOParser extends Parser
     public function decode($frame)
     {
         $payload = Packet::getPayload($frame->data);
-        unset($frame);
         return [
-
             //事件名称
             'event' => 'onMessage',
-            'data' => $payload['data'] ?? null,
+            'data' => $payload['data'] ?? null
         ];
     }
 }
