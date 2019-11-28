@@ -40,15 +40,7 @@ class ChatController extends CController
         $receive_id = $this->request->get('receive_id',0);
         $type       = $this->request->get('type',1);
         $page_size  = 20;
-        if(!checkNumber($record_id) || $record_id < 0){
-            return $this->ajaxParamError();
-        }
-
-        if(!checkNumber($receive_id) || $receive_id < 0){
-            return $this->ajaxParamError();
-        }
-
-        if(!in_array($type,[1,2])){
+        if(!isInt($record_id) || !isInt($receive_id) || !in_array($type,[1,2])){
             return $this->ajaxParamError();
         }
 
@@ -122,7 +114,7 @@ class ChatController extends CController
         $group_id = $this->request->post('group_id',0);
         $uids = array_filter(explode(',',$this->request->post('uids','')));
 
-        if(!checkNumber($group_id) || !checkIds($uids)){
+        if(!isInt($group_id) || !checkIds($uids)){
             return $this->ajaxParamError();
         }
 
@@ -152,7 +144,7 @@ class ChatController extends CController
         $group_id = $this->request->post('group_id',0);
         $member_id = $this->request->post('member_id',0);
 
-        if(!checkNumber($group_id) || !checkNumber($member_id)){
+        if(!isInt($group_id) || !isInt($member_id)){
             return $this->ajaxParamError();
         }
 
@@ -168,7 +160,7 @@ class ChatController extends CController
      */
     public function dismissGroupChat(){
         $group_id = $this->request->post('group_id',0);
-        if(!checkNumber($group_id)){
+        if(!isInt($group_id)){
             return $this->ajaxParamError();
         }
 
@@ -185,7 +177,7 @@ class ChatController extends CController
         $type = $this->request->post('type',1);//创建的类型
         $receive_id = $this->request->post('receive_id',0);//接收者ID
 
-        if(!in_array($type,[1,2]) || !checkNumber($receive_id) || $receive_id <= 0){
+        if(!in_array($type,[1,2]) || !isInt($receive_id)){
             return $this->ajaxParamError();
         }
 
@@ -200,7 +192,7 @@ class ChatController extends CController
      */
     public function getGroupDetail(){
         $group_id = $this->request->get('group_id',0);
-        if(!checkNumber($group_id) || $group_id <= 0){
+        if(!isInt($group_id)){
             return $this->ajaxParamError();
         }
 
@@ -240,9 +232,9 @@ class ChatController extends CController
     public function updateChatUnreadNum(){
         $type = $this->request->get('type',0);
         $receive = $this->request->get('receive',0);
-        if($type == 1 && checkNumber($receive) && $receive > 0){
+        if($type == 1 && isInt($receive)){
             CacheHelper::delChatUnreadNum($this->uid(),$receive);
-        }else if($type == 2 && checkNumber($receive) && $receive > 0){
+        }else if($type == 2 && isInt($receive)){
             CacheHelper::delChatUnreadNum($this->uid(),$receive);
         }
 
@@ -257,7 +249,7 @@ class ChatController extends CController
         $group_id = $this->request->post('group_id',0);
         $visit_card = $this->request->post('visit_card','');
 
-        if(!checkNumber($group_id) || $group_id <= 0 || empty($visit_card)){
+        if(!isInt($group_id) || empty($visit_card)){
             return $this->ajaxParamError();
         }
 

@@ -115,7 +115,7 @@ class UsersController extends CController
     public function sendFriendApply(Request $request){
         $friend_id = $request->post('friend_id',0);
         $remarks   = $request->post('remarks','');
-        if(!checkNumber($friend_id) || $friend_id <= 0){
+        if(!isInt($friend_id)){
             return $this->ajaxParamError();
         }
 
@@ -145,7 +145,7 @@ class UsersController extends CController
         $apply_id = $request->post('apply_id',0);
         $type     = $request->post('type',0);
         $remarks  = $request->post('remarks','');
-        if(!checkNumber($apply_id) || $apply_id <= 0 || !in_array($type,[1,2])){
+        if(!isInt($apply_id) || !in_array($type,[1,2])){
             return $this->ajaxParamError();
         }
 
@@ -177,7 +177,7 @@ class UsersController extends CController
         $friend_id = $request->post('friend_id',0);
         $remarks   = $request->post('remarks','');
 
-        if(!checkNumber($friend_id) || empty($remarks)){
+        if(!isInt($friend_id) || empty($remarks)){
             return $this->ajaxParamError();
         }
 
@@ -198,7 +198,7 @@ class UsersController extends CController
         $mobile = $request->post('mobile','');
         $where = [];
 
-        if(checkNumber($user_id) && $user_id > 0){
+        if(isInt($user_id)){
             $where['uid'] = $user_id;
         }else if(isMobile($mobile)){
             $where['mobile'] = $mobile;

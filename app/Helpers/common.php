@@ -227,3 +227,19 @@ function emojiReplace(string $text){
     $text = str_replace($emojiSearch,array_values($emojiReplace),$text);
     return $text;
 }
+
+
+/**
+ * 判断0或正整数
+ * @param string $int 验证字符串
+ * @param bool $isZero  判断是否可为0
+ * @return bool
+ */
+function isInt(string $int,$isZero = false){
+    if (!is_numeric($int)) {
+        return false;
+    }
+
+    $reg = $isZero ? '/^[1-9]\d*|0$/' :'/^[1-9]\d*$/';
+    return preg_match($reg, $int) ? true : false;
+}
