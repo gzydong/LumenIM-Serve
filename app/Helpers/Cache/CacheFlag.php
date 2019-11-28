@@ -35,4 +35,9 @@ class CacheFlag
     public static function applyUnreadNumCacheKey(){
         return 'friend.apply.unread.num';
     }
+
+
+    public static function userGroupVisitCardCacheKey(int $group_id){
+        return "users.group{$group_id}.visit.card";
+    }
 }

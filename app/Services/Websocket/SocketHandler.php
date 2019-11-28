@@ -2,13 +2,15 @@
 
 namespace App\Services\Websocket;
 
-use App\Models\UsersGroupMember;
 use Swoole\Websocket\Frame;
+use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
+
 use Illuminate\Http\Request;
+use App\Helpers\RsaMeans;
+use App\Models\UsersFriends;
+use App\Models\UsersGroup;
 use App\Facades\WebSocketHelper;
 use App\Facades\ChatService;
-use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
-use App\Helpers\RsaMeans;
 
 class SocketHandler extends WebsocketHandler
 {
@@ -42,11 +44,36 @@ class SocketHandler extends WebsocketHandler
         $msgData = json_decode($frame->data, true);
         $msgData['send_time'] = date('Y-m-d H:i:s');
 
+        //获取客户端绑定的用户ID
+        $uid = WebSocketHelper::getFdUserId($frame->fd);
+
+
+        //检测发送者与客户端是否是同一个用户
+        if ($uid != $msgData['sendUser']) {
+            WebSocketHelper::sendResponseMessage('notify', $frame->fd, ['notify' => '非法操作!!!']);
+            return true;
+        }
+
         //验证消息类型 私聊|群聊
-        if (!in_array($msgData['sourceType'], [1, 2])) return true;
+        if (!in_array($msgData['sourceType'], [1, 2])){
+            return true;
+        }
+
 
         //验证发送消息用户与接受消息用户之间是否存在好友或群聊关系
-        if (!ChatService::check($msgData)) return true;
+        if ($msgData['sourceType'] == 1) {//私信
+            //判断发送者和接受者是否是好友关系
+            if (!UsersFriends::checkFriends($msgData['sendUser'], $msgData['receiveUser'])) {
+                WebSocketHelper::sendResponseMessage('notify', $frame->fd, ['notify'=>'温馨提示:您当前与对方尚未成功好友！']);
+                return true;
+            }
+        } else if ($msgData['sourceType'] == 2) {//群聊
+            //判断是否属于群成员
+            if (!UsersGroup::checkGroupMember($msgData['receiveUser'], $msgData['sendUser'])) {
+                WebSocketHelper::sendResponseMessage('notify', $frame->fd, ['notify'=>'温馨提示:您还没有加入该聊天群！']);
+                return true;
+            }
+        }
 
         //处理文本消息
         if ($msgData['msgType'] == 1) {
@@ -59,14 +86,14 @@ class SocketHandler extends WebsocketHandler
         }
 
         //获取消息接收的客户端
-        $receive = [];
+        $clientFds = [];
         if ($msgData['sourceType'] == 1) {//私聊
-            $receive = WebSocketHelper::getUserFds($msgData['receiveUser']);
+            $clientFds = WebSocketHelper::getUserFds($msgData['receiveUser']);
         } else if ($msgData['sourceType'] == 2) {
-            $receive = WebSocketHelper::getRoomGroupName($msgData['receiveUser']);
+            $clientFds = WebSocketHelper::getRoomGroupName($msgData['receiveUser']);
         }
 
-        //这里获取缓存信息
+        //用户信息
         $userInfo = [
             'user_id' => $msgData['sendUser'],//用户ID
             'avatar' => '',//用户头像
@@ -74,19 +101,13 @@ class SocketHandler extends WebsocketHandler
             'remark_nickname' => ''//好友备注或用户群名片
         ];
 
-        //群聊消息
+        //获取群聊用户信息
         if ($msgData['sourceType'] == 2) {
-            $res = UsersGroupMember::from('users_group_member as ugm')
-                ->select(['users.nickname', 'users.avatarurl', 'ugm.visit_card'])
-                ->leftJoin('users', 'users.id', '=', 'ugm.user_id')
-                ->where('ugm.group_id', $msgData['receiveUser'])->where('ugm.user_id', $msgData['sendUser'])
-                ->first();
-
-            $userInfo['avatar'] = $res->avatarurl;
-            $userInfo['nickname'] = $res->nickname;
-            $userInfo['remark_nickname'] = $res->visit_card;
-        } else {//好友私聊消息
-
+            if ($info = ChatService::getUsersGroupMemberInfo($msgData['receiveUser'], $msgData['sendUser'])) {
+                $userInfo['avatar'] = $info['avatar'];
+                $userInfo['nickname'] = $info['nickname'];
+                $userInfo['remark_nickname'] = $info['visit_card'];
+            }
         }
 
         //消息发送者用户信息
@@ -98,7 +119,7 @@ class SocketHandler extends WebsocketHandler
         }
 
         //发送消息
-        WebSocketHelper::sendResponseMessage('chat_message', $receive, $msgData);
+        WebSocketHelper::sendResponseMessage('chat_message', $clientFds, $msgData);
         return true;
     }
 

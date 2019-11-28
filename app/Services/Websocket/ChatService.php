@@ -2,53 +2,14 @@
 
 namespace App\Services\Websocket;
 
-use App\Facades\WebSocketHelper;
-use App\Models\User;
-use App\Models\UsersFriends;
-use App\Models\UsersGroup;
+use App\Models\UsersGroupMember;
 use App\Models\UsersChatRecords;
 use App\Models\UsersChatList;
-use App\Models\UsersGroupMember;
-use SwooleTW\Http\Websocket\Facades\Websocket;
 use App\Helpers\Cache\CacheHelper;
 
 class ChatService
 {
 
-    /**
-     * 验证发送消息用户与接受消息用户之间是否存在好友或群聊关系
-     *
-     * @param array $receive_msg 接受的消息
-     * @return bool
-     */
-    public function check(array $receive_msg)
-    {
-        //判断用户是否存在
-        $receive = WebSocketHelper::getUserFds($receive_msg['sendUser']);
-        if (!User::checkUserExist($receive_msg['sendUser'])) {
-            $receive_msg['textMessage'] = '非法操作！';
-            Websocket::to($receive)->emit('notify', $receive_msg);
-            return false;
-        }
-
-        if ($receive_msg['sourceType'] == 1) {//私信
-            //判断发送者和接受者是否是好友关系
-            if (!UsersFriends::checkFriends($receive_msg['sendUser'], $receive_msg['receiveUser'])) {
-                $receive_msg['textMessage'] = '温馨提示:您当前与对方尚未成功好友！';
-                Websocket::to($receive)->emit('notify', $receive_msg);
-                return false;
-            }
-        } else if ($receive_msg['sourceType'] == 2) {//群聊
-            //判断是否属于群成员
-            if (!UsersGroup::checkGroupMember($receive_msg['receiveUser'], $receive_msg['sendUser'])) {
-                $receive_msg['textMessage'] = '温馨提示:您还没有加入该聊天群';
-                Websocket::to($receive)->emit('notify', $receive_msg);
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     /**
      * 保存聊天记录
@@ -93,5 +54,26 @@ class ChatService
         //缓存最后一条聊天记录
         CacheHelper::setLastChatCache($receive_msg['textMessage'], $receive_msg['receiveUser'], $receive_msg['sourceType'] == 1 ? $receive_msg['sendUser'] : 0);
         return true;
+    }
+
+
+    public static function getUsersGroupMemberInfo(int $group_id,int $user_id){
+        $info = CacheHelper::getUserGroupVisitCard($group_id, $user_id);
+        if (!$info) {
+            $res = UsersGroupMember::from('users_group_member as ugm')
+                ->select(['users.nickname', 'users.avatarurl', 'ugm.visit_card'])
+                ->leftJoin('users', 'users.id', '=', 'ugm.user_id')
+                ->where('ugm.group_id', $group_id)->where('ugm.user_id', $user_id)
+                ->first();
+
+            $info = [];
+            $info['avatar'] = $res->avatarurl;
+            $info['nickname'] = $res->nickname;
+            $info['visit_card'] = $res->visit_card;
+
+            CacheHelper::setUserGroupVisitCard($msgData['receiveUser'], $msgData['sendUser'], $info);
+        }
+
+        return $info;
     }
 }
