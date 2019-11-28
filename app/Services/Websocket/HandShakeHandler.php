@@ -4,7 +4,8 @@ namespace App\Services\Websocket;
 use App\Helpers\RsaMeans;
 
 /**
- * ebsocket 自定义挥手处理
+ * Websocket 自定义挥手处理
+ *
  * Class HandShakeHandler
  * @package App\Services\Websocket
  */

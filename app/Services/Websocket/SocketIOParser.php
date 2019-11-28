@@ -37,6 +37,7 @@ class SocketIOParser extends Parser
 
     /**
      * Encode output payload for websocket push.
+     * 消息推送给客户端时的数据加密方法
      *
      * @param string $event
      * @param mixed $data
@@ -63,11 +64,11 @@ class SocketIOParser extends Parser
      */
     public function decode($frame)
     {
-        $payload = Packet::getPayload($frame->data);
+        //$payload = Packet::getPayload($frame->data);
         return [
-            //事件名称
+            //事件名称请查看 App\Services\Websocket\SocketHandler 中自定义的方法
             'event' => 'onMessage',
-            'data' => $payload['data'] ?? null
+            'data' => $frame->data ?? null
         ];
     }
 }

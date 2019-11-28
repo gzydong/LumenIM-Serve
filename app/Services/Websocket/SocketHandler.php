@@ -104,6 +104,7 @@ class SocketHandler extends WebsocketHandler
 
     /**
      * 这里需要将fd关闭后的相关数据清除掉
+     *
      * @param int $fd
      * @param int $reactorId
      * @return bool|void

@@ -7,7 +7,7 @@ return [
     | Replace this handler if you want to customize your websocket handler
     |--------------------------------------------------------------------------
     */
-//    'handler' => SwooleTW\Http\Websocket\SocketIO\WebsocketHandler::class,
+    //'handler' => SwooleTW\Http\Websocket\SocketIO\WebsocketHandler::class,
     'handler' => App\Services\Websocket\SocketHandler::class,
 
     /*
@@ -16,7 +16,7 @@ return [
     | Replace it if you want to customize your websocket payload
     |--------------------------------------------------------------------------
     */
-//    'parser' => SwooleTW\Http\Websocket\SocketIO\SocketIOParser::class,
+    //'parser' => SwooleTW\Http\Websocket\SocketIO\SocketIOParser::class,
     'parser' => App\Services\Websocket\SocketIOParser::class,
 
     /*
@@ -44,7 +44,7 @@ return [
     */
     'handshake' => [
         'enabled' => true,
-//        'handler' => SwooleTW\Http\Websocket\HandShakeHandler::class,
+        //'handler' => SwooleTW\Http\Websocket\HandShakeHandler::class,
         'handler' => App\Services\Websocket\HandShakeHandler::class,
     ],
 
