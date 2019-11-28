@@ -50,7 +50,7 @@ server {
         # IF https
         # proxy_set_header HTTPS "on";
 
-        proxy_pass http://127.0.0.1:1215$suffix;
+        proxy_pass http://127.0.0.1:9501$suffix;
     }
 }
 ```
