@@ -142,7 +142,7 @@ class CacheHelper extends CacheFlag
      * @return mixed
      */
     public static function getFriendRelationCache(int $user_id, int $friend_id){
-        return Redis::get(self::lastChatCacheKey($user_id,$friend_id));
+        return Redis::get(self::friendRelationCacheKey($user_id,$friend_id));
     }
 
 
