@@ -122,4 +122,49 @@ class CacheHelper extends CacheFlag
         $data = Redis::hget(self::userGroupVisitCardCacheKey($group_id), $user_id);
         return $data ? json_decode($data, true) : [];
     }
+
+    /**
+     * 设置好友关系缓存
+     *
+     * @param int $user_id 用户ID
+     * @param int $friend_id 朋友ID
+     * @param int $isFriend 是否是好友关系 1:是 0:不是
+     */
+    public static function setFriendRelationCache(int $user_id, int $friend_id, $isFriend = 0)
+    {
+        Redis::setex(self::friendRelationCacheKey($user_id,$friend_id), 60*60*1, $isFriend);
+    }
+
+    /**
+     * 获取好友关系缓存
+     * @param int $user_id 用户ID
+     * @param int $friend_id 朋友ID
+     * @return mixed
+     */
+    public static function getFriendRelationCache(int $user_id, int $friend_id){
+        return Redis::get(self::lastChatCacheKey($user_id,$friend_id));
+    }
+
+
+    /**
+     * 设置好友关系缓存
+     *
+     * @param int $user_id 用户ID
+     * @param int $group_id 朋友ID
+     * @param int $isMember 是否是成员关系 1:是 0:不是
+     */
+    public static function setGroupRelationCache(int $user_id, int $group_id, $isMember = 0)
+    {
+        Redis::setex(self::groupRelationCacheKey($user_id,$group_id), 60*60*1, $isMember);
+    }
+
+    /**
+     * 获取好友关系缓存
+     * @param int $user_id 用户ID
+     * @param int $group_id 朋友ID
+     * @return mixed
+     */
+    public static function getGroupRelationCache(int $user_id, int $group_id){
+        return Redis::get(self::groupRelationCacheKey($user_id,$group_id));
+    }
 }

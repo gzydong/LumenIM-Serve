@@ -96,7 +96,9 @@ $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 $app->register(Barryvdh\Cors\ServiceProvider::class);
 
 //注册支持Swoole服务
-$app->register(SwooleTW\Http\LumenServiceProvider::class);
+//$app->register(SwooleTW\Http\LumenServiceProvider::class);
+$app->register(App\Providers\LumenIMServiceProvider::class);
+
 
 /*
 |--------------------------------------------------------------------------

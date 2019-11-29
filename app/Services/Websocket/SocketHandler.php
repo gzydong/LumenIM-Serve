@@ -7,8 +7,6 @@ use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 
 use Illuminate\Http\Request;
 use App\Helpers\RsaMeans;
-use App\Models\UsersFriends;
-use App\Models\UsersGroup;
 use App\Facades\WebSocketHelper;
 use App\Facades\ChatService;
 
@@ -59,17 +57,16 @@ class SocketHandler extends WebsocketHandler
             return true;
         }
 
-
         //验证发送消息用户与接受消息用户之间是否存在好友或群聊关系
         if ($msgData['sourceType'] == 1) {//私信
             //判断发送者和接受者是否是好友关系
-            if (!UsersFriends::checkFriends($msgData['sendUser'], $msgData['receiveUser'])) {
+            if (!ChatService::checkFriends($msgData['sendUser'], $msgData['receiveUser'])) {
                 WebSocketHelper::sendResponseMessage('notify', $frame->fd, ['notify'=>'温馨提示:您当前与对方尚未成功好友！']);
                 return true;
             }
         } else if ($msgData['sourceType'] == 2) {//群聊
             //判断是否属于群成员
-            if (!UsersGroup::checkGroupMember($msgData['receiveUser'], $msgData['sendUser'])) {
+            if (!ChatService::checkGroupMember($msgData['receiveUser'], $msgData['sendUser'])) {
                 WebSocketHelper::sendResponseMessage('notify', $frame->fd, ['notify'=>'温馨提示:您还没有加入该聊天群！']);
                 return true;
             }

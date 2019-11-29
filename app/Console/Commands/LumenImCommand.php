@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use App\Facades\WebSocketHelper;
 
-class LumenSwooleCommand extends HttpServerCommand
+class LumenImCommand extends HttpServerCommand
 {
     /**
      * The name and signature of the console command.
