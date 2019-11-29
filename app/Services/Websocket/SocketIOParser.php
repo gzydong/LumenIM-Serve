@@ -66,7 +66,7 @@ class SocketIOParser extends Parser
         $data['data']['fd'] = $frame->fd;
 
         return [
-            //事件名称请查看 App\Services\Websocket\SocketHandler 中自定义的方法
+            //事件名称请查看 websocket.php 中自定义的方法
             'event' => $data['event'],
             'data' => $data['data']
         ];

@@ -4,11 +4,9 @@ namespace App\Services\Websocket;
 
 use Swoole\Websocket\Frame;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
-
 use Illuminate\Http\Request;
 use App\Helpers\RsaMeans;
 use App\Facades\WebSocketHelper;
-use App\Facades\ChatService;
 
 class SocketHandler extends WebsocketHandler
 {
