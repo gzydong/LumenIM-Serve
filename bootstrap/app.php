@@ -84,21 +84,18 @@ $app->middleware([
 */
 
 $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
 
+//注册支持Swoole服务
+$app->register(App\Providers\LumenIMServiceProvider::class);
 
+//注册redis服务
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
-$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
+//注册JWT验证服务
+$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
 //注册支持跨域服务
 $app->register(Barryvdh\Cors\ServiceProvider::class);
-
-//注册支持Swoole服务
-//$app->register(SwooleTW\Http\LumenServiceProvider::class);
-$app->register(App\Providers\LumenIMServiceProvider::class);
-
 
 /*
 |--------------------------------------------------------------------------

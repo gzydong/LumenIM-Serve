@@ -4,6 +4,11 @@ namespace App\Console\Commands;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use App\Facades\WebSocketHelper;
 
+/**
+ * LumenImCommand 重写 laravel-swoole 的HttpServerCommand 命令行
+ *
+ * @package App\Console\Commands
+ */
 class LumenImCommand extends HttpServerCommand
 {
     /**
@@ -18,7 +23,7 @@ class LumenImCommand extends HttpServerCommand
      *
      * @var string
      */
-    protected $description = 'swoole:http 命令已被重写，请谨慎使用，请用本条命令代替';
+    protected $description = 'Swoole HTTP Server controller.';
 
     /**
      * Run swoole_http_server.
