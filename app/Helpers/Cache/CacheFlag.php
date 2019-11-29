@@ -62,4 +62,13 @@ class CacheFlag
     public static function groupRelationCacheKey(int $user_id,int $group_id){
         return "user.group.relation.{$user_id}_$group_id";
     }
+
+    /**
+     * 好友备注缓存key
+     *
+     * @return string
+     */
+    public static function friendRemarkCacheKey(){
+        return 'hash.user.friend.remark.cache';
+    }
 }

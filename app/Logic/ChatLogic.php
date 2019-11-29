@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Logic;
 
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\DB;
 
 use App\Helpers\Cache\CacheHelper;
+
 class ChatLogic extends Logic
 {
 
@@ -19,58 +21,66 @@ class ChatLogic extends Logic
      * @param int $user_id 用户ID
      * @return mixed
      */
-    public function getUserChatList(int $user_id){
-        $rows = UsersChatList::select(['users_chat_list.id','users_chat_list.type','users_chat_list.friend_id','users_chat_list.group_id','users_chat_list.created_at'])
-            ->where('users_chat_list.uid',$user_id)
-            ->where('users_chat_list.status',1)->orderBy('id','desc')->get()->toArray();
+    public function getUserChatList(int $user_id)
+    {
+        $rows = UsersChatList::select(['users_chat_list.id', 'users_chat_list.type', 'users_chat_list.friend_id', 'users_chat_list.group_id', 'users_chat_list.created_at'])
+            ->where('users_chat_list.uid', $user_id)
+            ->where('users_chat_list.status', 1)
+            ->orderBy('id', 'desc')->get()->toArray();
 
-        if(empty($rows)){
-            return [];
-        }
+        if (empty($rows)) return [];
 
         $friend_ids = $group_ids = [];
-        foreach ($rows as $key=>$v){
-            $rows[$key]['name'] = '';//对方昵称/群名称
-            $rows[$key]['unread_num'] = 0;//未读消息数量
-            $rows[$key]['avatar'] = '';//默认头像
+        $rows = array_map(function ($item) use ($user_id, &$friend_ids, &$group_ids) {
+            $item['name'] = '';//对方昵称/群名称
+            $item['unread_num'] = 0;//未读消息数量
+            $item['avatar'] = '';//默认头像
+            $item['remark_name'] = '';//好友备注
 
-            if($v['type'] == 1){
-                $friend_ids[] = $v['friend_id'];
-                $rows[$key]['msg_text']   = CacheHelper::getLastChatCache($v['friend_id'],$user_id) ? :'......';
-                $rows[$key]['unread_num'] = CacheHelper::getChatUnreadNum($user_id,$v['friend_id'])?:0;
-            }else{
-                $group_ids[] = $v['group_id'];
-                $rows[$key]['msg_text'] = CacheHelper::getLastChatCache($v['group_id']) ? :'......';
+            if ($item['type'] == 1) {
+                $friend_ids[] = $item['friend_id'];
+                $item['msg_text'] = CacheHelper::getLastChatCache($item['friend_id'], $user_id) ?: '......';
+                $item['unread_num'] = CacheHelper::getChatUnreadNum($user_id, $item['friend_id']) ?: 0;
+            } else {
+                $group_ids[] = $item['group_id'];
+                $item['msg_text'] = CacheHelper::getLastChatCache($item['group_id']) ?: '......';
             }
-        }
+            return $item;
+        }, $rows);
+
 
         $friendInfos = $groupInfos = [];
-        if($group_ids){
-            $groupInfos = UsersGroup::whereIn('id',$group_ids)->get(['id','group_name','people_num','avatarurl'])->toArray();
-            $groupInfos = replaceArrayKey('id',$groupInfos);
+        if ($group_ids) {
+            $groupInfos = UsersGroup::whereIn('id', $group_ids)->get(['id', 'group_name', 'people_num', 'avatarurl'])->toArray();
+            $groupInfos = replaceArrayKey('id', $groupInfos);
         }
 
-        if($friend_ids){
-            $friendInfos = User::whereIn('id',$friend_ids)->get(['id','nickname','avatarurl'])->toArray();
-            $friendInfos = replaceArrayKey('id',$friendInfos);
+        if ($friend_ids) {
+            $friendInfos = User::whereIn('id', $friend_ids)->get(['id', 'nickname', 'avatarurl'])->toArray();
+            $friendInfos = replaceArrayKey('id', $friendInfos);
         }
 
-        foreach ($rows as $key2=>$v2){
-            if($v2['type'] == 1){
-                $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatarurl'];
-                $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname'];
+        foreach ($rows as $key2 => $v2) {
+            if ($v2['type'] == 1) {
+                $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatarurl']??'';
+                $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname']??'';
 
-                $info = UsersFriends::select('user1','user2','user1_remark','user2_remark')->where('user1',($user_id < $v2['friend_id'])? $user_id:$v2['friend_id'])->where('user2',($user_id < $v2['friend_id'])? $v2['friend_id'] : $user_id)->first();
-                if($info){//这个环节待优化
-                    if($info->user1 == $v2['friend_id'] && !empty($info->user2_remark)){
-                        $rows[$key2]['name'] = $info->user2_remark;
-                    }else if($info->user2 == $v2['friend_id'] && !empty($info->user1_remark)){
-                        $rows[$key2]['name'] = $info->user1_remark;
-                    }
+                $remark = CacheHelper::getFriendRemarkCache($user_id, $v2['friend_id']);
+                if (!is_null($remark)) {
+                    $rows[$key2]['remark_name'] = $remark;
+                    continue;
                 }
-            }else{
-                $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatarurl'];
-                $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name'];
+
+                $info = UsersFriends::select('user1', 'user2', 'user1_remark', 'user2_remark')
+                    ->where('user1', ($user_id < $v2['friend_id']) ? $user_id : $v2['friend_id'])
+                    ->where('user2', ($user_id < $v2['friend_id']) ? $v2['friend_id'] : $user_id)->first();
+                if ($info) {//这个环节待优化
+                    $rows[$key2]['remark_name'] = ($info->user1 == $v2['friend_id']) ? $info->user2_remark : $info->user1_remark;
+                    CacheHelper::setFriendRemarkCache($user_id, $v2['friend_id'], $rows[$key2]['remark_name']);
+                }
+            } else {
+                $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatarurl']??'';
+                $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name']??'';
             }
         }
 
@@ -86,10 +96,11 @@ class ChatLogic extends Logic
      * @param int $page_size 分页大小
      * @return array
      */
-    public function getPrivateChatInfos(int $record_id,int $user_id,int $receive_id,$page_size = 20){
-        $infos = User::select('id','avatarurl')->find([$user_id,$receive_id])->toArray();
-        if($infos && count($infos) != 2){
-            return ['rows'=>[],'record_id'=>0];
+    public function getPrivateChatInfos(int $record_id, int $user_id, int $receive_id, $page_size = 20)
+    {
+        $infos = User::select('id', 'avatarurl')->find([$user_id, $receive_id])->toArray();
+        if ($infos && count($infos) != 2) {
+            return ['rows' => [], 'record_id' => 0];
         }
 
         $whereID = ($record_id == 0) ? '' : " and `id` < {$record_id}";
@@ -101,19 +112,19 @@ class ChatLogic extends Logic
                     ) tmp_table ORDER BY id desc  limit {$page_size}
 SQL;
 
-        $rows = array_map(function ($item) use($infos){
-            if($infos[0]['id'] == $item->user_id){
+        $rows = array_map(function ($item) use ($infos) {
+            if ($infos[0]['id'] == $item->user_id) {
                 $item->avatar = $infos[0]['avatarurl'];
-            }else{
+            } else {
                 $item->avatar = $infos[1]['avatarurl'];
             }
 
             $item->nickname = '';
             $item->nickname_remarks = '';
             return (array)$item;
-        },DB::select($sql));
+        }, DB::select($sql));
 
-        return ['rows'=>$rows,'record_id'=>end($rows)['id']];
+        return ['rows' => $rows, 'record_id' => end($rows)['id']];
     }
 
     /**
@@ -125,16 +136,17 @@ SQL;
      * @param int $page_size 分页大小
      * @return array
      */
-    public function getGroupChatInfos(int $record_id,int $receive_id,int $user_id,$page_size = 20){
-        $sqlObj = UsersChatRecords::where('receive_id',$receive_id)->where('source',2);
-        if($record_id > 0){
-            $sqlObj->where('id','<',$record_id);
+    public function getGroupChatInfos(int $record_id, int $receive_id, int $user_id, $page_size = 20)
+    {
+        $sqlObj = UsersChatRecords::where('receive_id', $receive_id)->where('source', 2);
+        if ($record_id > 0) {
+            $sqlObj->where('id', '<', $record_id);
         }
 
-        $rows = $sqlObj->orderBy('id','desc')->limit($page_size)->get()->toArray();
-        if($rows){
+        $rows = $sqlObj->orderBy('id', 'desc')->limit($page_size)->get()->toArray();
+        if ($rows) {
 
-            $uids = implode(',',array_unique(array_column($rows,'user_id')));
+            $uids = implode(',', array_unique(array_column($rows, 'user_id')));
 
             $sql = <<<SQL
             SELECT users.id,users.avatarurl as avatar,users.nickname,tmp_table.nickname_remarks from lar_users users
@@ -145,18 +157,20 @@ SQL;
             ) tmp_table on users.id = tmp_table.friend_id where users.id in ({$uids})
 SQL;
 
-            $userInfos = array_map(function ($item){return (array)$item;},DB::select($sql));
-            $userInfos = replaceArrayKey('id',$userInfos);
+            $userInfos = array_map(function ($item) {
+                return (array)$item;
+            }, DB::select($sql));
+            $userInfos = replaceArrayKey('id', $userInfos);
 
             $rows = array_map(function ($val) use ($userInfos) {
                 unset($userInfos[$val['user_id']]['id']);
-                return array_merge($val,$userInfos[$val['user_id']]);
-            },$rows);
+                return array_merge($val, $userInfos[$val['user_id']]);
+            }, $rows);
 
             unset($userInfos);
         }
 
-        return ['rows'=>$rows,'record_id'=>end($rows)['id']];
+        return ['rows' => $rows, 'record_id' => end($rows)['id']];
     }
 
     /**
@@ -168,52 +182,53 @@ SQL;
      * @param array $uids
      * @return array
      */
-    public function launchGroupChat(int $user_id,string $group_name,string $group_avatar,string $group_profile,$uids = []){
-        array_unshift($uids,$user_id);
+    public function launchGroupChat(int $user_id, string $group_name, string $group_avatar, string $group_profile, $uids = [])
+    {
+        array_unshift($uids, $user_id);
         $groupMember = [];
-        $chatList    = [];
+        $chatList = [];
 
         DB::beginTransaction();
-        try{
-            $insRes = UsersGroup::create(['user_id'=>$user_id,'group_name'=>$group_name,'avatarurl'=>$group_avatar,'group_profile'=>$group_profile,'people_num'=>count($uids),'status'=>0,'created_at'=>date('Y-m-d H:i:s')]);
-            if(!$insRes){
+        try {
+            $insRes = UsersGroup::create(['user_id' => $user_id, 'group_name' => $group_name, 'avatarurl' => $group_avatar, 'group_profile' => $group_profile, 'people_num' => count($uids), 'status' => 0, 'created_at' => date('Y-m-d H:i:s')]);
+            if (!$insRes) {
                 throw new \Exception('创建群失败');
             }
 
-            foreach ($uids as $k=>$uid){
+            foreach ($uids as $k => $uid) {
                 $groupMember[] = [
-                    'group_id'=>$insRes->id,
-                    'user_id'=>$uid,
-                    'group_owner'=>($k == 0) ? 1 : 0,
-                    'status'=>0,
-                    'created_at'=>date('Y-m-d H:i:s'),
+                    'group_id' => $insRes->id,
+                    'user_id' => $uid,
+                    'group_owner' => ($k == 0) ? 1 : 0,
+                    'status' => 0,
+                    'created_at' => date('Y-m-d H:i:s'),
                 ];
 
                 $chatList[] = [
-                    'type'=>2,
-                    'uid'=>$uid,
-                    'friend_id'=>0,
-                    'group_id'=>$insRes->id,
-                    'status'=>1,
-                    'created_at'=>date('Y-m-d H:i:s')
+                    'type' => 2,
+                    'uid' => $uid,
+                    'friend_id' => 0,
+                    'group_id' => $insRes->id,
+                    'status' => 1,
+                    'created_at' => date('Y-m-d H:i:s')
                 ];
             }
 
-            if(!DB::table('users_group_member')->insert($groupMember)){
+            if (!DB::table('users_group_member')->insert($groupMember)) {
                 throw new \Exception('创建群成员信息失败');
             }
 
-            if(!DB::table('users_chat_list')->insert($chatList)){
+            if (!DB::table('users_chat_list')->insert($chatList)) {
                 throw new \Exception('创建群成员的聊天列表失败');
             }
 
             DB::commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
-            return [false,[]];
+            return [false, []];
         }
 
-        return [true,['group_info'=>$insRes->toArray(),'uids'=>$uids]];
+        return [true, ['group_info' => $insRes->toArray(), 'uids' => $uids]];
     }
 
     /**
@@ -221,49 +236,50 @@ SQL;
      *
      * @param int $user_id 用户ID
      * @param int $group_id 聊天群ID
-     * @param array $uids  被邀请的用户ID
+     * @param array $uids 被邀请的用户ID
      * @return bool
      */
-    public function inviteFriendsGroupChat(int $user_id,int $group_id,$uids = []){
-        $info = UsersGroupMember::select(['id','status'])->where('group_id',$group_id)->where('user_id',$user_id)->first();
+    public function inviteFriendsGroupChat(int $user_id, int $group_id, $uids = [])
+    {
+        $info = UsersGroupMember::select(['id', 'status'])->where('group_id', $group_id)->where('user_id', $user_id)->first();
 
-        if(!$info && $info->status == 1){//判断主动邀请方是否属于聊天群成员
+        if (!$info && $info->status == 1) {//判断主动邀请方是否属于聊天群成员
             return false;
         }
 
-        if(empty($uids)){
+        if (empty($uids)) {
             return false;
         }
 
         $updateArr = $insertArr = [];
-        $members = UsersGroupMember::where('group_id',$group_id)->whereIn('user_id',$uids)->get(['id','user_id','status'])->toArray();
-        $members = replaceArrayKey('user_id',$members);
+        $members = UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $uids)->get(['id', 'user_id', 'status'])->toArray();
+        $members = replaceArrayKey('user_id', $members);
 
-        foreach ($uids as $uid){
-            if(isset($members[$uid])){//存在聊天群成员记录
-                if($members[$uid]['status'] == 0){
+        foreach ($uids as $uid) {
+            if (isset($members[$uid])) {//存在聊天群成员记录
+                if ($members[$uid]['status'] == 0) {
                     continue;
                 }
                 $updateArr[] = $members[$uid]['id'];
-            }else{
-                $insertArr[] = ['group_id'=>$group_id,'user_id'=>$uid,'group_owner'=>0,'status'=>0,'created_at'=>date('Y-m-d H:i:s')];
+            } else {
+                $insertArr[] = ['group_id' => $group_id, 'user_id' => $uid, 'group_owner' => 0, 'status' => 0, 'created_at' => date('Y-m-d H:i:s')];
             }
         }
 
         unset($members);
 
-        try{
-            if($updateArr){
-                UsersGroupMember::whereIn('id',$updateArr)->update(['status'=>0]);
+        try {
+            if ($updateArr) {
+                UsersGroupMember::whereIn('id', $updateArr)->update(['status' => 0]);
             }
 
-            if($insertArr){
+            if ($insertArr) {
                 DB::table('users_group_member')->insert($insertArr);
             }
 
-            UsersGroup::where('id',$group_id)->increment('people_num',count($uids));
+            UsersGroup::where('id', $group_id)->increment('people_num', count($uids));
             DB::commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             return false;
         }
@@ -276,23 +292,24 @@ SQL;
      *
      * @param int $group_id 群ID
      * @param int $group_owner_id 操作用户ID
-     * @param int $group_member_id  群成员ID
+     * @param int $group_member_id 群成员ID
      * @return bool
      */
-    public function removeGroupChat(int $group_id,int $group_owner_id,int $group_member_id,$group_owner = false){
-        if(!UsersGroup::where('id',$group_id)->where('user_id',$group_owner_id)->exists()){
+    public function removeGroupChat(int $group_id, int $group_owner_id, int $group_member_id, $group_owner = false)
+    {
+        if (!UsersGroup::where('id', $group_id)->where('user_id', $group_owner_id)->exists()) {
             return false;
         }
 
         DB::beginTransaction();
-        try{
-            if(!UsersGroupMember::where('group_id',$group_id)->where('user_id',$group_member_id)->where('group_owner',0)->update(['status'=>0])){
+        try {
+            if (!UsersGroupMember::where('group_id', $group_id)->where('user_id', $group_member_id)->where('group_owner', 0)->update(['status' => 0])) {
                 throw new \Exception('修改群成员状态失败');
             }
 
-            UsersGroup::where('group_id',$group_id)->decrement('people_num');
+            UsersGroup::where('group_id', $group_id)->decrement('people_num');
             DB::commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             return false;
         }
@@ -304,25 +321,26 @@ SQL;
      * 解散指定的群聊
      *
      * @param int $group_id 群ID
-     * @param int $user_id  用户ID
+     * @param int $user_id 用户ID
      * @return bool
      */
-    public function dismissGroupChat(int $group_id,int $user_id){
-        if(!UsersGroup::where('id',$group_id)->where('status',0)->exists()){
+    public function dismissGroupChat(int $group_id, int $user_id)
+    {
+        if (!UsersGroup::where('id', $group_id)->where('status', 0)->exists()) {
             return false;
         }
 
         //判断执行者是否属于群主
-        if(!UsersGroupMember::where('group_id',$group_id)->where('user_id',$user_id)->where('group_owner',1)->exists()){
+        if (!UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 1)->exists()) {
             return false;
         }
 
         DB::beginTransaction();
-        try{
-            UsersGroup::where('id',$group_id)->update(['status'=>1]);
-            UsersGroupMember::where('group_id',$group_id)->update(['status'=>1]);
+        try {
+            UsersGroup::where('id', $group_id)->update(['status' => 1]);
+            UsersGroupMember::where('group_id', $group_id)->update(['status' => 1]);
             DB::commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             return false;
         }
@@ -338,24 +356,25 @@ SQL;
      * @param int $type 创建类型 1:私聊  2:群聊
      * @return int
      */
-    public function createChatList(int $user_id,int $receive_id,int $type){
-        $result = UsersChatList::where('uid',$user_id)->where('type',$type)->where($type == 1 ? 'friend_id' : 'group_id',$receive_id)->first();
-        if($result){
-            if($result->status == 0){
+    public function createChatList(int $user_id, int $receive_id, int $type)
+    {
+        $result = UsersChatList::where('uid', $user_id)->where('type', $type)->where($type == 1 ? 'friend_id' : 'group_id', $receive_id)->first();
+        if ($result) {
+            if ($result->status == 0) {
                 $result->status = 1;
                 $result->save();
             }
-        }else{
+        } else {
             $data = [
-                'type'=>$type,
-                'uid'=>$user_id,
-                'status'=>1,
-                'friend_id'=>$type == 1 ? $receive_id :0,
-                'group_id'=>$type == 2 ? $receive_id :0,
-                'created_at'=>date('Y-m-d H:i:s')
+                'type' => $type,
+                'uid' => $user_id,
+                'status' => 1,
+                'friend_id' => $type == 1 ? $receive_id : 0,
+                'group_id' => $type == 2 ? $receive_id : 0,
+                'created_at' => date('Y-m-d H:i:s')
             ];
 
-            if(!$result = UsersChatList::create($data)){
+            if (!$result = UsersChatList::create($data)) {
                 return 0;
             }
         }
@@ -370,32 +389,33 @@ SQL;
      * @param int $group_id 聊天群ID
      * @return array
      */
-    public function getGroupDetail(int $user_id,int $group_id){
-        $groupInfo = UsersGroup::select(['id','user_id','group_name','people_num','group_profile','avatarurl','created_at'])->where('id',$group_id)->where('status',0)->first();
-        if(!$groupInfo){
+    public function getGroupDetail(int $user_id, int $group_id)
+    {
+        $groupInfo = UsersGroup::select(['id', 'user_id', 'group_name', 'people_num', 'group_profile', 'avatarurl', 'created_at'])->where('id', $group_id)->where('status', 0)->first();
+        if (!$groupInfo) {
             return [];
         }
 
         $members = UsersGroupMember::select([
-            'users_group_member.id','users_group_member.group_owner','users_group_member.visit_card',
-            'users_group_member.user_id','users.avatarurl','users.nickname','users.mobile','users.gender'
+            'users_group_member.id', 'users_group_member.group_owner', 'users_group_member.visit_card',
+            'users_group_member.user_id', 'users.avatarurl', 'users.nickname', 'users.mobile', 'users.gender'
         ])
-        ->leftJoin('users','users.id','=','users_group_member.user_id')
-        ->where([
-            ['users_group_member.group_id', '=', $group_id],
-            ['users_group_member.status', '=', 0],
-        ])->get()->toArray();
+            ->leftJoin('users', 'users.id', '=', 'users_group_member.user_id')
+            ->where([
+                ['users_group_member.group_id', '=', $group_id],
+                ['users_group_member.status', '=', 0],
+            ])->get()->toArray();
 
         return [
-            'group_id'=>$group_id,
-            'user_id'=>$groupInfo->user_id,
-            'group_owner'=>User::where('id',$groupInfo->user_id)->value('nickname'),
-            'group_name'=>$groupInfo->group_name,
-            'group_profile'=>$groupInfo->group_profile,
-            'people_num'=>$groupInfo->people_num,
-            'group_avatar'=>$groupInfo->avatarurl,
-            'created_at'=>$groupInfo->created_at,
-            'members'=>$members
+            'group_id' => $group_id,
+            'user_id' => $groupInfo->user_id,
+            'group_owner' => User::where('id', $groupInfo->user_id)->value('nickname'),
+            'group_name' => $groupInfo->group_name,
+            'group_profile' => $groupInfo->group_profile,
+            'people_num' => $groupInfo->people_num,
+            'group_avatar' => $groupInfo->avatarurl,
+            'created_at' => $groupInfo->created_at,
+            'members' => $members
         ];
     }
 }

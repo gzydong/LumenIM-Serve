@@ -132,7 +132,7 @@ class CacheHelper extends CacheFlag
      */
     public static function setFriendRelationCache(int $user_id, int $friend_id, $isFriend = 0)
     {
-        Redis::setex(self::friendRelationCacheKey($user_id,$friend_id), 60*60*1, $isFriend);
+        Redis::setex(self::friendRelationCacheKey($user_id, $friend_id), 60 * 60 * 1, $isFriend);
     }
 
     /**
@@ -141,8 +141,9 @@ class CacheHelper extends CacheFlag
      * @param int $friend_id 朋友ID
      * @return mixed
      */
-    public static function getFriendRelationCache(int $user_id, int $friend_id){
-        return Redis::get(self::friendRelationCacheKey($user_id,$friend_id));
+    public static function getFriendRelationCache(int $user_id, int $friend_id)
+    {
+        return Redis::get(self::friendRelationCacheKey($user_id, $friend_id));
     }
 
 
@@ -155,7 +156,7 @@ class CacheHelper extends CacheFlag
      */
     public static function setGroupRelationCache(int $user_id, int $group_id, $isMember = 0)
     {
-        Redis::setex(self::groupRelationCacheKey($user_id,$group_id), 60*60*1, $isMember);
+        Redis::setex(self::groupRelationCacheKey($user_id, $group_id), 60 * 60 * 1, $isMember);
     }
 
     /**
@@ -164,7 +165,54 @@ class CacheHelper extends CacheFlag
      * @param int $group_id 朋友ID
      * @return mixed
      */
-    public static function getGroupRelationCache(int $user_id, int $group_id){
-        return Redis::get(self::groupRelationCacheKey($user_id,$group_id));
+    public static function getGroupRelationCache(int $user_id, int $group_id)
+    {
+        return Redis::get(self::groupRelationCacheKey($user_id, $group_id));
+    }
+
+    /**
+     * 设置好友备注缓存
+     * @param int $user_id 用户ID
+     * @param int $friend_id 朋友ID
+     * @param string $friend_remark 朋友备注
+     */
+    public static function setFriendRemarkCache(int $user_id, int $friend_id, string $friend_remark)
+    {
+        $result = self::getFriendRemarkCache($user_id, $friend_id, 1);
+        $key = $user_id > $friend_id ? "{$friend_id}_$user_id" : "{$user_id}_$friend_id";
+        if (!$result) {
+            $result = [];
+        }
+
+        $result[$friend_id] = $friend_remark;
+        Redis::hset(self::friendRemarkCacheKey(), $key, json_encode($result));
+    }
+
+    /**
+     * 获取好友备注缓存
+     *
+     * @param int $user_id 用户ID
+     * @param int $friend_id 朋友ID
+     * @param int $isAll
+     * @return mixed|null
+     */
+    public static function getFriendRemarkCache(int $user_id, int $friend_id, $isAll = 0)
+    {
+        $key = $user_id > $friend_id ? "{$friend_id}_$user_id" : "{$user_id}_$friend_id";
+        $result = Redis::hget(self::friendRemarkCacheKey(), $key);
+
+        if (!$result) return null;
+
+        $result = json_decode($result, true);
+
+        if ($isAll) {
+            return $result;
+        }
+
+        if (array_has($result, $friend_id)) {
+            return $result[$friend_id];
+        }
+
+        return null;
     }
 }

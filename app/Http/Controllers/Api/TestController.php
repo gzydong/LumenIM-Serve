@@ -2,7 +2,13 @@
 namespace App\Http\Controllers\Api;
 
 
+use App\Models\User;
+use App\Models\UsersChatList;
+use App\Models\UsersFriends;
+use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
+
+use App\Helpers\Cache\CacheHelper;
 
 /**
  * 测试控制器
@@ -14,14 +20,7 @@ class TestController
 
     public function index(){
 
-
-        $res = UsersGroupMember::from('users_group_member as ugm')
-            ->select(['users.nickname','users.avatarurl','ugm.visit_card'])
-            ->leftJoin('users','users.id','=','ugm.user_id')
-            ->where('ugm.group_id',38)->where('ugm.user_id',2055)
-            ->first()->toArray();
-
-        dd($res);
-
+        $user_id = 2054;
+        
     }
 }
