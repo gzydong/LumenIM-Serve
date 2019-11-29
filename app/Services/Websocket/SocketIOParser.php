@@ -51,6 +51,7 @@ class SocketIOParser extends Parser
         return sprintf($format, $event, $data);
     }
 
+
     /**
      * Decode message from websocket client.
      * Define and return payload here.
@@ -61,12 +62,13 @@ class SocketIOParser extends Parser
      */
     public function decode($frame)
     {
-        [$event,$data] = json_encode($frame->data,true);
+        $data = json_decode($frame->data,true);
+        $data['data']['fd'] = $frame->fd;
 
         return [
             //事件名称请查看 App\Services\Websocket\SocketHandler 中自定义的方法
-            'event' => 'onMessage',
-            'data' => $frame->data ?? null
+            'event' => $data['event'],
+            'data' => $data['data']
         ];
     }
 }

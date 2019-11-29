@@ -23,6 +23,6 @@ use SwooleTW\Http\Websocket\Facades\Websocket;
 //    echo '连接断开了'.PHP_EOL;
 //});
 
-//Websocket::on('example', function ($websocket, $data) {
-//    $websocket->emit('message', $data);
-//});
+
+
+Websocket::on('event_chat_dialogue', 'App\Http\Controllers\SocketController@chatDialogue');
