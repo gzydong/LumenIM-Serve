@@ -2,7 +2,6 @@
 namespace App\Services\Websocket;
 
 use SwooleTW\Http\Websocket\Parser;
-use SwooleTW\Http\Websocket\SocketIO\Packet;
 
 /**
  * 消息接收过滤处理类
@@ -26,13 +25,12 @@ class SocketIOParser extends Parser
             return true;
         }
 
-        $skip = false;
         $data = json_decode($frame->data,true);
-        if(!$data || !array_has($data,['sourceType','receiveUser','sendUser','msgType','textMessage'])){
+        if(!$data || !array_has($data,['event','data'])){
             return true;
         }
 
-        return $skip;
+        return false;
     }
 
     /**
@@ -46,12 +44,11 @@ class SocketIOParser extends Parser
      */
     public function encode(string $event, $data)
     {
-        $packet = Packet::MESSAGE . Packet::EVENT;
         $shouldEncode = is_array($data) || is_object($data);
         $data = $shouldEncode ? json_encode($data) : $data;
         $format = $shouldEncode ? '["%s",%s]' : '["%s","%s"]';
 
-        return $packet . sprintf($format, $event, $data);
+        return sprintf($format, $event, $data);
     }
 
     /**
@@ -64,7 +61,8 @@ class SocketIOParser extends Parser
      */
     public function decode($frame)
     {
-        //$payload = Packet::getPayload($frame->data);
+        [$event,$data] = json_encode($frame->data,true);
+
         return [
             //事件名称请查看 App\Services\Websocket\SocketHandler 中自定义的方法
             'event' => 'onMessage',
