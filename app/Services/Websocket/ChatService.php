@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services\Websocket;
 
 use App\Models\UsersGroupMember;

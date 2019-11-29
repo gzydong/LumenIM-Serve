@@ -1,13 +1,14 @@
 <?php
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\Cache\CacheHelper;
+
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 use Illuminate\Http\Request;
 use App\Logic\ChatLogic;
 use App\Facades\WebSocketHelper;
 use App\Logic\UsersLogic;
+use App\Helpers\Cache\CacheHelper;
 
 class ChatController extends CController
 {
@@ -242,8 +243,9 @@ class ChatController extends CController
     }
 
     /**
-     *
      * 设置用户群名名片
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function setGroupCard(){
         $group_id = $this->request->post('group_id',0);
@@ -253,8 +255,16 @@ class ChatController extends CController
             return $this->ajaxParamError();
         }
 
-
         $isTrue = UsersGroupMember::where('group_id',$group_id)->where('user_id',$this->uid())->where('status',0)->update(['visit_card'=>$visit_card]);
+        if($isTrue){
+            $user = $this->getUser();
+            CacheHelper::setUserGroupVisitCard($group_id,$this->uid(),[
+                'avatar'=>$user->avatarurl,
+                'nickname'=>$user->nickname,
+                'visit_card'=>$visit_card
+            ]);
+        }
+
         return $isTrue ? $this->ajaxSuccess('设置成功') : $this->ajaxError('设置失败');
     }
 }
