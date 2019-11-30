@@ -121,7 +121,7 @@ class ChatService
         }else if($message['msg_type'] == 2){
             $text = "[文件消息]";
         }else{
-            $text = $message['text'];
+            $text = $message['content'];
         }
 
         CacheHelper::setLastChatCache(['send_time'=>$message['send_time'],'text'=>$text], $message['receive_user'], $message['source_type'] == 1 ? $message['send_user'] : 0);
