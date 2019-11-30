@@ -83,7 +83,6 @@ class ChatService
      */
     public static function saveChatRecord(array $message)
     {
-        var_dump($message);
         $recordRes = UsersChatRecords::create([
             'source' => $message['source_type'],
             'msg_type' => $message['msg_type'],
