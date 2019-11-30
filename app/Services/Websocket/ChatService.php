@@ -116,7 +116,15 @@ class ChatService
         }
 
         //缓存最后一条聊天记录
-        CacheHelper::setLastChatCache($message['content'], $message['receive_user'], $message['source_type'] == 1 ? $message['send_user'] : 0);
+
+        $text = $message['content'];
+        if($message['msg_type'] == 2){
+            $text = '[图片消息]';
+        }else if($message['msg_type'] == 2){
+            $text = '[文件消息]';
+        }
+
+        CacheHelper::setLastChatCache($text, $message['receive_user'], $message['source_type'] == 1 ? $message['send_user'] : 0);
         return true;
     }
 }
