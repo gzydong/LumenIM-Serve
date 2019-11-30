@@ -36,15 +36,21 @@ class ChatLogic extends Logic
             $item['unread_num'] = 0;//未读消息数量
             $item['avatar'] = '';//默认头像
             $item['remark_name'] = '';//好友备注
+            $item['msg_text'] = '......';
 
             if ($item['type'] == 1) {
                 $friend_ids[] = $item['friend_id'];
-                $item['msg_text'] = CacheHelper::getLastChatCache($item['friend_id'], $user_id) ?: '......';
                 $item['unread_num'] = CacheHelper::getChatUnreadNum($user_id, $item['friend_id']) ?: 0;
             } else {
                 $group_ids[] = $item['group_id'];
-                $item['msg_text'] = CacheHelper::getLastChatCache($item['group_id']) ?: '......';
             }
+
+            $records = CacheHelper::getLastChatCache($item['type'] == 1 ? $item['friend_id'] : $item['group_id'], $item['type'] == 1 ? $user_id : 0);
+            if ($records) {
+                $item['msg_text'] = $records['text'];
+                $item['created_at'] = $records['send_time'];
+            }
+
             return $item;
         }, $rows);
 
@@ -62,8 +68,8 @@ class ChatLogic extends Logic
 
         foreach ($rows as $key2 => $v2) {
             if ($v2['type'] == 1) {
-                $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatarurl']??'';
-                $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname']??'';
+                $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatarurl'] ?? '';
+                $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname'] ?? '';
 
                 $remark = CacheHelper::getFriendRemarkCache($user_id, $v2['friend_id']);
                 if (!is_null($remark)) {
@@ -79,8 +85,8 @@ class ChatLogic extends Logic
                     CacheHelper::setFriendRemarkCache($user_id, $v2['friend_id'], $rows[$key2]['remark_name']);
                 }
             } else {
-                $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatarurl']??'';
-                $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name']??'';
+                $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatarurl'] ?? '';
+                $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name'] ?? '';
             }
         }
 
