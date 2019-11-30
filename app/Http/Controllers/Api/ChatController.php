@@ -62,6 +62,7 @@ class ChatController extends CController
         if(count($data['rows']) > 0){
             $data['rows'] = array_map(function ($item) use ($uid){
                 $item['float'] = ($item['user_id'] == $uid) ? 'right' : 'left';
+                $item['text_msg'] = trim($item['text_msg']);
                 return $item;
             },$data['rows']);
         }
@@ -246,5 +247,22 @@ class ChatController extends CController
         }
 
         return $this->ajaxSuccess('success');
+    }
+
+    /**
+     *
+     * 设置用户群名名片
+     */
+    public function setGroupCard(){
+        $group_id = $this->request->post('group_id',0);
+        $visit_card = $this->request->post('visit_card','');
+
+        if(!checkNumber($group_id) || $group_id <= 0 || empty($visit_card)){
+            return $this->ajaxParamError();
+        }
+
+
+        $isTrue = UsersGroupMember::where('group_id',$group_id)->where('user_id',$this->uid())->where('status',0)->update(['visit_card'=>$visit_card]);
+        return $isTrue ? $this->ajaxSuccess('设置成功') : $this->ajaxError('设置失败');
     }
 }

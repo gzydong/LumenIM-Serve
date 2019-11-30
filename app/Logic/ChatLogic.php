@@ -377,8 +377,8 @@ SQL;
         }
 
         $members = UsersGroupMember::select([
-            'users_group_member.id','users_group_member.group_owner',
-            'users_group_member.user_id','users.avatarurl','users.nickname','users.mobile'
+            'users_group_member.id','users_group_member.group_owner','users_group_member.visit_card',
+            'users_group_member.user_id','users.avatarurl','users.nickname','users.mobile','users.gender'
         ])
         ->leftJoin('users','users.id','=','users_group_member.user_id')
         ->where([
@@ -388,6 +388,7 @@ SQL;
 
         return [
             'group_id'=>$group_id,
+            'user_id'=>$groupInfo->user_id,
             'group_owner'=>User::where('id',$groupInfo->user_id)->value('nickname'),
             'group_name'=>$groupInfo->group_name,
             'group_profile'=>$groupInfo->group_profile,
