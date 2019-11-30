@@ -120,7 +120,7 @@ class AuthController extends CController
         try {
             $token = $this->guard()->refresh();
         } catch (\Exception $e) {
-            return $this->ajaxReturn(401, $e->getMessage());
+            return $this->ajaxReturn(305, $e->getMessage());
         }
 
         if ($token) {
@@ -130,6 +130,11 @@ class AuthController extends CController
             ]);
         }
 
-        return $this->ajaxError(401, 'Refresh fail');
+        return $this->ajaxError(305, 'Token has expired and can no longer be refreshed');
+    }
+
+    public function test(){
+        sleep(8);
+        return $this->ajaxSuccess('success');
     }
 }

@@ -45,7 +45,7 @@ class Handler extends ExceptionHandler
     {
         //友好的出输出授权验证异常错误
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException) {
-            return response()->json(['code'=>401,'msg'=>$exception->getMessage()]);
+//            return response()->json(['code'=>401,'msg'=>$exception->getMessage()]);
         }
 
         return parent::render($request, $exception);
