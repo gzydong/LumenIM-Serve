@@ -79,7 +79,7 @@ class AuthController extends CController
             try{
                 WebSocketHelper::disconnect($fds);
             }catch (\Exception $e){}
-            
+
         }
 
         return $this->ajaxReturn(200, '授权登录成功', [
@@ -134,10 +134,5 @@ class AuthController extends CController
         }
 
         return $this->ajaxError(305, 'Token has expired and can no longer be refreshed');
-    }
-
-    public function test(){
-        sleep(8);
-        return $this->ajaxSuccess('success');
     }
 }

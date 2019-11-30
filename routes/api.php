@@ -14,7 +14,6 @@ $router->group([], function () use ($router) {
     $router->post('/auth/register', ['middleware' => [], 'uses' => 'AuthController@register']);
     $router->post('/auth/logout', ['middleware' => ['jwt.auth'], 'uses' => 'AuthController@logout']);
     $router->get('/auth/refresh-token', ['middleware' => [], 'uses' => 'AuthController@refreshToken']);
-    $router->get('/auth/test', ['middleware' => [], 'uses' => 'AuthController@test']);
 });
 
 //UsersController 控制器分组
