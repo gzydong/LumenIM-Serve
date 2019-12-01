@@ -12,11 +12,5 @@
 */
 
 $router->get('/', function () use ($router) {
-
-    $string = '2018-10-01 15:15:15,asfasfa';
-
-    dd($string);
-
-    exit;
     return '欢迎来到Lumen';
 });

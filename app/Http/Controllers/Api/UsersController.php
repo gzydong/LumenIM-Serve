@@ -183,6 +183,10 @@ class UsersController extends CController
 
         $isTrue = FriendsLogic::editFriendRemark($this->uid(),$friend_id,$remarks);
 
+        if($isTrue){
+            CacheHelper::setFriendRemarkCache($this->uid(), $friend_id, $remarks);
+        }
+
         return $isTrue ? $this->ajaxSuccess('备注修改成功...') : $this->ajaxError('备注修改失败，请稍后再试...');
     }
 
