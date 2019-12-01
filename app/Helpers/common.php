@@ -214,7 +214,7 @@ function emojiReplace(string $text){
         "[左太极]" => "<img src='https://res.wx.qq.com/mpres/htmledition/images/icon/emotion/103.gif'>",
         "[右太极]" => "<img src='https://res.wx.qq.com/mpres/htmledition/images/icon/emotion/104.gif'>",
     ];
-    
+
     return str_replace(array_keys($emojiReplace),array_values($emojiReplace),$text);
 }
 
