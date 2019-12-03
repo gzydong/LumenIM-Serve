@@ -100,7 +100,7 @@ class ChatController extends CController
                 WebSocketHelper::sendResponseMessage('join_group',$fids,['id'=>$group_info['id'],'group_name'=>$group_info['group_name'],'people_num'=>$group_info['people_num'],'avatarurl'=>'']);
             }
 
-            return $this->ajaxSuccess('创建群聊成功...');
+            return $this->ajaxSuccess('创建群聊成功...',$data);
         }
 
         return $this->ajaxError('创建群聊失败，请稍后再试...');
