@@ -355,6 +355,18 @@ SQL;
     }
 
     /**
+     * 用户主动退出群聊
+     *
+     * @param int $group_id 群聊ID
+     * @param int $user_id 用户ID
+     * @return bool
+     */
+    public function quitGroupChat(int $group_id, int $user_id){
+        return UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status'=>1])?true:false;
+    }
+
+
+    /**
      * 创建聊天列表记录
      *
      * @param int $user_id 用户ID

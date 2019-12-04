@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 
@@ -15,7 +16,7 @@ class ChatController extends CController
     public $request;
     public $chatLogic;
 
-    public function __construct(Request $request,ChatLogic $chatLogic)
+    public function __construct(Request $request, ChatLogic $chatLogic)
     {
         $this->request = $request;
         $this->chatLogic = $chatLogic;
@@ -26,9 +27,10 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getChatList(){
+    public function getChatList()
+    {
         $rows = $this->chatLogic->getUserChatList($this->uid());
-        return $this->ajaxSuccess('success',$rows);
+        return $this->ajaxSuccess('success', $rows);
     }
 
     /**
@@ -36,33 +38,34 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getChatRecords(){
-        $record_id  = $this->request->get('record_id',0);
-        $receive_id = $this->request->get('receive_id',0);
-        $type       = $this->request->get('type',1);
-        $page_size  = 20;
-        if(!isInt($record_id,true) || !isInt($receive_id) || !in_array($type,[1,2])){
+    public function getChatRecords()
+    {
+        $record_id = $this->request->get('record_id', 0);
+        $receive_id = $this->request->get('receive_id', 0);
+        $type = $this->request->get('type', 1);
+        $page_size = 20;
+        if (!isInt($record_id, true) || !isInt($receive_id) || !in_array($type, [1, 2])) {
             return $this->ajaxParamError();
         }
 
         $uid = $this->uid();
-        if($type == 1){
-            $data = $this->chatLogic->getPrivateChatInfos($record_id,$uid,$receive_id,$page_size);
-        }else{
-            $data = $this->chatLogic->getGroupChatInfos($record_id,$receive_id,$uid,$page_size);
+        if ($type == 1) {
+            $data = $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size);
+        } else {
+            $data = $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
         }
 
-        if(count($data['rows']) > 0){
-            $data['rows'] = array_map(function ($item) use ($uid){
+        if (count($data['rows']) > 0) {
+            $data['rows'] = array_map(function ($item) use ($uid) {
                 $item['float'] = ($item['user_id'] == $uid) ? 'right' : 'left';
                 $item['text_msg'] = emojiReplace($item['text_msg']);
                 return $item;
-            },$data['rows']);
+            }, $data['rows']);
         }
 
         $data['page_size'] = $page_size;
 
-        return $this->ajaxSuccess('success',$data);
+        return $this->ajaxSuccess('success', $data);
     }
 
     /**
@@ -70,37 +73,38 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function launchGroupChat(){
-        $group_avatar = $this->request->post('group_avatar','');
-        $group_name = $this->request->post('group_name','');
-        $group_profile = $this->request->post('group_profile','');
-        $uids = $this->request->post('uids','');
+    public function launchGroupChat()
+    {
+        $group_avatar = $this->request->post('group_avatar', '');
+        $group_name = $this->request->post('group_name', '');
+        $group_profile = $this->request->post('group_profile', '');
+        $uids = $this->request->post('uids', '');
 
-        if(empty($group_name) || empty($uids)){
+        if (empty($group_name) || empty($uids)) {
             return $this->ajaxParamError();
         }
 
-        $uids = array_filter(explode(',',$uids));
-        if(!checkIds($uids)){
+        $uids = array_filter(explode(',', $uids));
+        if (!checkIds($uids)) {
             return $this->ajaxParamError();
         }
 
-        [$isTrue,$data] = $this->chatLogic->launchGroupChat($this->uid(),$group_name,$group_avatar,$group_profile,array_unique($uids));
-        if($isTrue){//群聊创建成功后需要创建聊天室并发送消息通知
+        [$isTrue, $data] = $this->chatLogic->launchGroupChat($this->uid(), $group_name, $group_avatar, $group_profile, array_unique($uids));
+        if ($isTrue) {//群聊创建成功后需要创建聊天室并发送消息通知
             $fids = [];
-            foreach ($data['uids'] as $uuid){
-                WebSocketHelper::bindUserGroupChat($uuid,$data['group_info']['id']);
-                if($ufds = WebSocketHelper::getUserFds($uuid)){
-                    $fids = array_merge($fids,$ufds);
+            foreach ($data['uids'] as $uuid) {
+                WebSocketHelper::bindUserGroupChat($uuid, $data['group_info']['id']);
+                if ($ufds = WebSocketHelper::getUserFds($uuid)) {
+                    $fids = array_merge($fids, $ufds);
                 }
             }
 
-            if($fids){
+            if ($fids) {
                 $group_info = $data['group_info'];
-                WebSocketHelper::sendResponseMessage('join_group',$fids,['id'=>$group_info['id'],'group_name'=>$group_info['group_name'],'people_num'=>$group_info['people_num'],'avatarurl'=>'']);
+                WebSocketHelper::sendResponseMessage('join_group', $fids, ['id' => $group_info['id'], 'group_name' => $group_info['group_name'], 'people_num' => $group_info['people_num'], 'avatarurl' => '']);
             }
 
-            return $this->ajaxSuccess('创建群聊成功...',$data);
+            return $this->ajaxSuccess('创建群聊成功...', $data);
         }
 
         return $this->ajaxError('创建群聊失败，请稍后再试...');
@@ -111,26 +115,27 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function inviteGroupChat(){
-        $group_id = $this->request->post('group_id',0);
-        $uids = array_filter(explode(',',$this->request->post('uids','')));
+    public function inviteGroupChat()
+    {
+        $group_id = $this->request->post('group_id', 0);
+        $uids = array_filter(explode(',', $this->request->post('uids', '')));
 
-        if(!isInt($group_id) || !checkIds($uids)){
+        if (!isInt($group_id) || !checkIds($uids)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->chatLogic->inviteFriendsGroupChat($this->uid(),$group_id,$uids);
-        if($isTrue){
+        $isTrue = $this->chatLogic->inviteFriendsGroupChat($this->uid(), $group_id, $uids);
+        if ($isTrue) {
             $fids = [];
-            foreach ($uids as $uuid){
-                WebSocketHelper::bindUserGroupChat($uuid,$group_id);
-                if($ufds = WebSocketHelper::getUserFds($uuid)){
-                    $fids = array_merge($fids,$ufds);
+            foreach ($uids as $uuid) {
+                WebSocketHelper::bindUserGroupChat($uuid, $group_id);
+                if ($ufds = WebSocketHelper::getUserFds($uuid)) {
+                    $fids = array_merge($fids, $ufds);
                 }
             }
 
-            $groupInfo = UsersGroup::select(['id','group_name','people_num','avatarurl'])->where('id',$group_id)->first()->toArray();
-            WebSocketHelper::sendResponseMessage('join_group',$fids,$groupInfo);
+            $groupInfo = UsersGroup::select(['id', 'group_name', 'people_num', 'avatarurl'])->where('id', $group_id)->first()->toArray();
+            WebSocketHelper::sendResponseMessage('join_group', $fids, $groupInfo);
         }
 
         return $isTrue ? $this->ajaxSuccess('好友已成功加入群聊...') : $this->ajaxError('邀请好友加入群聊失败...');
@@ -141,15 +146,16 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function removeGroupChat(){
-        $group_id = $this->request->post('group_id',0);
-        $member_id = $this->request->post('member_id',0);
+    public function removeGroupChat()
+    {
+        $group_id = $this->request->post('group_id', 0);
+        $member_id = $this->request->post('member_id', 0);
 
-        if(!isInt($group_id) || !isInt($member_id)){
+        if (!isInt($group_id) || !isInt($member_id)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->chatLogic->removeGroupChat($group_id,$this->uid(),$member_id);
+        $isTrue = $this->chatLogic->removeGroupChat($group_id, $this->uid(), $member_id);
 
         return $isTrue ? $this->ajaxSuccess('群聊用户已被移除..') : $this->ajaxError('群聊用户移除失败...');
     }
@@ -159,13 +165,14 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function dismissGroupChat(){
-        $group_id = $this->request->post('group_id',0);
-        if(!isInt($group_id)){
+    public function dismissGroupChat()
+    {
+        $group_id = $this->request->post('group_id', 0);
+        if (!isInt($group_id)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->chatLogic->dismissGroupChat($group_id,$this->uid());
+        $isTrue = $this->chatLogic->dismissGroupChat($group_id, $this->uid());
         return $isTrue ? $this->ajaxSuccess('群聊已解散成功..') : $this->ajaxError('群聊解散失败...');
     }
 
@@ -174,16 +181,17 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function createChatList(){
-        $type = $this->request->post('type',1);//创建的类型
-        $receive_id = $this->request->post('receive_id',0);//接收者ID
+    public function createChatList()
+    {
+        $type = $this->request->post('type', 1);//创建的类型
+        $receive_id = $this->request->post('receive_id', 0);//接收者ID
 
-        if(!in_array($type,[1,2]) || !isInt($receive_id)){
+        if (!in_array($type, [1, 2]) || !isInt($receive_id)) {
             return $this->ajaxParamError();
         }
 
-        $id = $this->chatLogic->createChatList($this->uid(),$receive_id,$type);
-        return $id ? $this->ajaxSuccess('创建成功...',['list_id'=>$id]) : $this->ajaxError('创建失败...');
+        $id = $this->chatLogic->createChatList($this->uid(), $receive_id, $type);
+        return $id ? $this->ajaxSuccess('创建成功...', ['list_id' => $id]) : $this->ajaxError('创建失败...');
     }
 
     /**
@@ -191,14 +199,15 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getGroupDetail(){
-        $group_id = $this->request->get('group_id',0);
-        if(!isInt($group_id)){
+    public function getGroupDetail()
+    {
+        $group_id = $this->request->get('group_id', 0);
+        if (!isInt($group_id)) {
             return $this->ajaxParamError();
         }
 
-        $data = $this->chatLogic->getGroupDetail($this->uid(),$group_id);
-        return $this->ajaxSuccess('success',$data);
+        $data = $this->chatLogic->getGroupDetail($this->uid(), $group_id);
+        return $this->ajaxSuccess('success', $data);
     }
 
 
@@ -208,21 +217,22 @@ class ChatController extends CController
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getChatMember(UsersLogic $usersLogic){
-        $group_id = $this->request->get('group_id',0);
+    public function getChatMember(UsersLogic $usersLogic)
+    {
+        $group_id = $this->request->get('group_id', 0);
         $firends = $usersLogic->getUserFriends($this->uid());
-        if($group_id > 0){
+        if ($group_id > 0) {
             $ids = UsersGroupMember::getGroupMenberIds($group_id);
-            if($firends && $ids){
-                foreach ($firends as $k=>$item){
-                    if(in_array($item->id,$ids)){
+            if ($firends && $ids) {
+                foreach ($firends as $k => $item) {
+                    if (in_array($item->id, $ids)) {
                         unset($firends[$k]);
                     }
                 }
             }
         }
 
-        return $this->ajaxSuccess('success',$firends);
+        return $this->ajaxSuccess('success', $firends);
     }
 
     /**
@@ -230,13 +240,14 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateChatUnreadNum(){
-        $type = $this->request->get('type',0);
-        $receive = $this->request->get('receive',0);
-        if($type == 1 && isInt($receive)){
-            CacheHelper::delChatUnreadNum($this->uid(),$receive);
-        }else if($type == 2 && isInt($receive)){
-            CacheHelper::delChatUnreadNum($this->uid(),$receive);
+    public function updateChatUnreadNum()
+    {
+        $type = $this->request->get('type', 0);
+        $receive = $this->request->get('receive', 0);
+        if ($type == 1 && isInt($receive)) {
+            CacheHelper::delChatUnreadNum($this->uid(), $receive);
+        } else if ($type == 2 && isInt($receive)) {
+            CacheHelper::delChatUnreadNum($this->uid(), $receive);
         }
 
         return $this->ajaxSuccess('success');
@@ -247,24 +258,60 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function setGroupCard(){
-        $group_id = $this->request->post('group_id',0);
-        $visit_card = $this->request->post('visit_card','');
+    public function setGroupCard()
+    {
+        $group_id = $this->request->post('group_id', 0);
+        $visit_card = $this->request->post('visit_card', '');
 
-        if(!isInt($group_id) || empty($visit_card)){
+        if (!isInt($group_id) || empty($visit_card)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = UsersGroupMember::where('group_id',$group_id)->where('user_id',$this->uid())->where('status',0)->update(['visit_card'=>$visit_card]);
-        if($isTrue){
+        $isTrue = UsersGroupMember::where('group_id', $group_id)->where('user_id', $this->uid())->where('status', 0)->update(['visit_card' => $visit_card]);
+        if ($isTrue) {
             $user = $this->getUser();
-            CacheHelper::setUserGroupVisitCard($group_id,$this->uid(),[
-                'avatar'=>$user->avatarurl,
-                'nickname'=>$user->nickname,
-                'visit_card'=>$visit_card
+            CacheHelper::setUserGroupVisitCard($group_id, $this->uid(), [
+                'avatar' => $user->avatarurl,
+                'nickname' => $user->nickname,
+                'visit_card' => $visit_card
             ]);
         }
 
         return $isTrue ? $this->ajaxSuccess('设置成功') : $this->ajaxError('设置失败');
+    }
+
+    /**
+     * 用户退出群聊
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function quitGroupChat()
+    {
+        $group_id = $this->request->post('group_id', 0);
+        if (!isInt($group_id)) {
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->chatLogic->quitGroupChat($group_id, $this->uid());
+        if ($isTrue) {
+            //将用户移出聊天室
+            WebSocketHelper::quitGroupRoom($this->uid(),$group_id);
+
+            $user = $this->getUser();
+            $date = date('Y-m-d H:i');
+            $message = [
+                'msg_type'=>1,
+                'content'=>"{$user['nickname']} 于{$date} 退出群聊",
+                'receive_user'=>$group_id,
+                'send_user'=>0,
+                'send_time'=>date('Y-m-d H:i:s'),
+                'source_type'=>2
+            ];
+
+            //推送退群消息
+            WebSocketHelper::sendResponseMessage('chat_message', WebSocketHelper::getRoomGroupName($group_id), $message);
+        }
+
+        return $isTrue ? $this->ajaxSuccess('已成功退出群聊...') : $this->ajaxError('退出群聊失败...');
     }
 }

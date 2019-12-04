@@ -44,6 +44,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->post('/chat/invite-group-chat', ['uses' => 'ChatController@inviteGroupChat']);
     $router->post('/chat/remove-group-chat', ['uses' => 'ChatController@removeGroupChat']);
     $router->post('/chat/dismiss-group-chat', ['uses' => 'ChatController@dismissGroupChat']);
+    $router->post('/chat/quit-group-chat', ['uses' => 'ChatController@quitGroupChat']);
     $router->post('/chat/set-group-card', ['uses' => 'ChatController@setGroupCard']);
     $router->get('/chat/get-chat-member', ['uses' => 'ChatController@getChatMember']);
     $router->post('/chat/create-chat-list', ['uses' => 'ChatController@createChatList']);

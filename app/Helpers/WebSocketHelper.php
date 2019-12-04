@@ -179,4 +179,24 @@ class WebSocketHelper
             }
         }
     }
+
+    /**
+     * 退出指定的聊天室
+     *
+     * @param int $user_id 用户ID
+     * @param int $group_id 群聊ID
+     * @return bool
+     */
+    public function quitGroupRoom(int $user_id,int $group_id){
+        $room = $this->getRoomGroupName($group_id);
+        $fds = $this->getUserFds($user_id);
+
+        if(!$fds) return false;
+
+        foreach ($fds as $fd){
+            Room::delete($fd, $room);
+        }
+
+        return true;
+    }
 }
