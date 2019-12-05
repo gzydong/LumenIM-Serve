@@ -362,7 +362,20 @@ SQL;
      * @return bool
      */
     public function quitGroupChat(int $group_id, int $user_id){
-        return UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status'=>1])?true:false;
+        DB::beginTransaction();
+        try{
+            $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status'=>1]);
+            if($res){
+                UsersChatList::where('uid',$user_id)->where('type',2)->where('group_id',$group_id)->update(['status'=>0]);
+            }
+
+            DB::commit();
+        }catch (\Exception $e){
+            $res = false;
+            DB::rollBack();
+        }
+
+        return $res ? true : false;
     }
 
 
