@@ -40,7 +40,7 @@ class ChatLogic extends Logic
 
             if ($item['type'] == 1) {
                 $friend_ids[] = $item['friend_id'];
-                $item['unread_num'] = CacheHelper::getChatUnreadNum($user_id, $item['friend_id']) ?: 0;
+                $item['unread_num'] = intval(CacheHelper::getChatUnreadNum($user_id, $item['friend_id']));
             } else {
                 $group_ids[] = $item['group_id'];
             }
