@@ -283,6 +283,16 @@ SQL;
                 DB::table('users_group_member')->insert($insertArr);
             }
 
+            $uidsStr = implode(',',$uids);
+            UsersChatRecords::create([
+                'msg_type'=>5,
+                'source'=>2,
+                'user_id'=>0,
+                'receive_id'=>$group_id,
+                'text_msg'=>"{$user_id},{$uidsStr}",
+                'send_time'=>date('Y-m-d H:i;s')
+            ]);
+
             UsersGroup::where('id', $group_id)->increment('people_num', count($uids));
             DB::commit();
         } catch (\Exception $e) {

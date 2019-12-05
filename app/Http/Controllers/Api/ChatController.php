@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 
+use App\Models\User;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 use Illuminate\Http\Request;
@@ -126,16 +127,32 @@ class ChatController extends CController
 
         $isTrue = $this->chatLogic->inviteFriendsGroupChat($this->uid(), $group_id, $uids);
         if ($isTrue) {
-            $fids = [];
             foreach ($uids as $uuid) {
-                WebSocketHelper::bindUserGroupChat($uuid, $group_id);
                 if ($ufds = WebSocketHelper::getUserFds($uuid)) {
-                    $fids = array_merge($fids, $ufds);
+                    WebSocketHelper::bindUserGroupChat($uuid, $group_id);
                 }
             }
 
-            $groupInfo = UsersGroup::select(['id', 'group_name', 'people_num', 'avatarurl'])->where('id', $group_id)->first()->toArray();
-            WebSocketHelper::sendResponseMessage('join_group', $fids, $groupInfo);
+            $userInfo = $this->getUser(true);
+
+            $users = [
+                ['id' => $userInfo['id'], 'nickname' => $userInfo['nickname']]
+            ];
+
+            //推送退群消息
+            WebSocketHelper::sendResponseMessage('join_group', WebSocketHelper::getRoomGroupName($group_id), [
+                'message' => [
+                    'avatar' => '',
+                    'send_user' => 0,
+                    'receive_user' => $group_id,
+                    'source_type' => 2,
+                    'msg_type' => 5,
+                    'content' => array_merge($users, User::whereIn('id', $uids)->get('id', 'nickname')->toArray()),
+                    'send_time' => date('Y-m-d H:i:s'),
+                    'sendUserInfo' => []
+                ],
+                'group_info' => UsersGroup::select(['id', 'group_name', 'people_num', 'avatarurl'])->where('id', $group_id)->first()->toArray()
+            ]);
         }
 
         return $isTrue ? $this->ajaxSuccess('好友已成功加入群聊...') : $this->ajaxError('邀请好友加入群聊失败...');
@@ -295,17 +312,17 @@ class ChatController extends CController
         $isTrue = $this->chatLogic->quitGroupChat($group_id, $this->uid());
         if ($isTrue) {
             //将用户移出聊天室
-            WebSocketHelper::quitGroupRoom($this->uid(),$group_id);
+            WebSocketHelper::quitGroupRoom($this->uid(), $group_id);
 
             $user = $this->getUser();
             $date = date('Y-m-d H:i');
             $message = [
-                'msg_type'=>1,
-                'content'=>"{$user['nickname']} 于{$date} 退出群聊",
-                'receive_user'=>$group_id,
-                'send_user'=>0,
-                'send_time'=>date('Y-m-d H:i:s'),
-                'source_type'=>2
+                'msg_type' => 1,
+                'content' => "{$user['nickname']} 于{$date} 退出群聊",
+                'receive_user' => $group_id,
+                'send_user' => 0,
+                'send_time' => date('Y-m-d H:i:s'),
+                'source_type' => 2
             ];
 
             //推送退群消息
