@@ -147,7 +147,7 @@ class ChatController extends CController
                     'receive_user' => $group_id,
                     'source_type' => 2,
                     'msg_type' => 5,
-                    'content' => array_merge($users, User::whereIn('id', $uids)->get('id', 'nickname')->toArray()),
+                    'content' => array_merge($users, User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray()),
                     'send_time' => date('Y-m-d H:i:s'),
                     'sendUserInfo' => []
                 ],

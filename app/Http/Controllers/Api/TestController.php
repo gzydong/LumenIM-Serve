@@ -20,7 +20,8 @@ class TestController
 
     public function index(){
 
-        $user_id = 2054;
-        
+
+       $res =  User::select('id', 'nickname')->whereIn('id', [2054,2055])->get()->toArray();
+       dd($res);
     }
 }
