@@ -244,13 +244,10 @@ SQL;
     {
         $info = UsersGroupMember::select(['id', 'status'])->where('group_id', $group_id)->where('user_id', $user_id)->first();
 
-        if (!$info && $info->status == 1) {//判断主动邀请方是否属于聊天群成员
-            return false;
-        }
+        //判断主动邀请方是否属于聊天群成员
+        if (!$info && $info->status == 1) return false;
 
-        if (empty($uids)) {
-            return false;
-        }
+        if (empty($uids)) return false;
 
         $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
 
@@ -276,7 +273,6 @@ SQL;
 
         unset($members);
         unset($cahtArr);
-
         try {
             if ($updateArr) {
                 UsersGroupMember::whereIn('id', $updateArr)->update(['status' => 0]);
@@ -291,7 +287,7 @@ SQL;
             }
 
             if($insertArr1){
-                DB::table('users_chat_list')->insert($insertArr);
+                DB::table('users_chat_list')->insert($insertArr1);
             }
 
             $uidsStr = implode(',', $uids);
