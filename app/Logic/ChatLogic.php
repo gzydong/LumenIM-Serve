@@ -469,6 +469,15 @@ SQL;
                 ['users_group_member.group_id', '=', $group_id],
                 ['users_group_member.status', '=', 0],
             ])->get()->toArray();
+        $disturb = 0;
+
+        foreach ($members as $member){
+          if($member['user_id'] == $user_id){
+              $disturb = $member['not_disturb'];
+              break;
+          }
+        }
+
 
         return [
             'group_id' => $group_id,
@@ -478,7 +487,7 @@ SQL;
             'group_profile' => $groupInfo->group_profile,
             'people_num' => $groupInfo->people_num,
             'group_avatar' => $groupInfo->avatarurl,
-            'not_disturb' => $groupInfo->not_disturb,
+            'not_disturb' => $disturb,
             'created_at' => $groupInfo->created_at,
             'members' => $members
         ];
