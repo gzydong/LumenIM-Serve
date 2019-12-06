@@ -151,9 +151,7 @@ SQL;
 
         $rows = $sqlObj->orderBy('id', 'desc')->limit($page_size)->get()->toArray();
         if ($rows) {
-
             $uids = implode(',', array_unique(array_column($rows, 'user_id')));
-
             $sql = <<<SQL
             SELECT users.id,users.avatarurl as avatar,users.nickname,tmp_table.nickname_remarks from lar_users users
             left JOIN (
@@ -163,17 +161,14 @@ SQL;
             ) tmp_table on users.id = tmp_table.friend_id where users.id in ({$uids})
 SQL;
 
-            $userInfos = array_map(function ($item) {
+            $userInfos = replaceArrayKey('id', array_map(function ($item) {
                 return (array)$item;
-            }, DB::select($sql));
-            $userInfos = replaceArrayKey('id', $userInfos);
+            }, DB::select($sql)));
 
             $rows = array_map(function ($val) use ($userInfos) {
                 unset($userInfos[$val['user_id']]['id']);
-                return array_merge($val, $userInfos[$val['user_id']]);
+                return array_merge($val, $userInfos[$val['user_id']] ?? ['avatarurl' => '', 'nickname' => '', 'nickname_remarks' => '']);
             }, $rows);
-
-            unset($userInfos);
         }
 
         return ['rows' => $rows, 'record_id' => end($rows)['id']];
@@ -283,14 +278,14 @@ SQL;
                 DB::table('users_group_member')->insert($insertArr);
             }
 
-            $uidsStr = implode(',',$uids);
+            $uidsStr = implode(',', $uids);
             UsersChatRecords::create([
-                'msg_type'=>5,
-                'source'=>2,
-                'user_id'=>0,
-                'receive_id'=>$group_id,
-                'text_msg'=>"{$user_id},{$uidsStr}",
-                'send_time'=>date('Y-m-d H:i;s')
+                'msg_type' => 5,
+                'source' => 2,
+                'user_id' => 0,
+                'receive_id' => $group_id,
+                'text_msg' => "{$user_id},{$uidsStr}",
+                'send_time' => date('Y-m-d H:i;s')
             ]);
 
             UsersGroup::where('id', $group_id)->increment('people_num', count($uids));
@@ -371,16 +366,17 @@ SQL;
      * @param int $user_id 用户ID
      * @return bool
      */
-    public function quitGroupChat(int $group_id, int $user_id){
+    public function quitGroupChat(int $group_id, int $user_id)
+    {
         DB::beginTransaction();
-        try{
-            $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status'=>1]);
-            if($res){
-                UsersChatList::where('uid',$user_id)->where('type',2)->where('group_id',$group_id)->update(['status'=>0]);
+        try {
+            $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status' => 1]);
+            if ($res) {
+                UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->update(['status' => 0]);
             }
 
             DB::commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             $res = false;
             DB::rollBack();
         }

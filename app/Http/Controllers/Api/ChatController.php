@@ -50,16 +50,21 @@ class ChatController extends CController
         }
 
         $uid = $this->uid();
-        if ($type == 1) {
-            $data = $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size);
-        } else {
-            $data = $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
-        }
-
+        $data = $type == 1 ? $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size) : $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
         if (count($data['rows']) > 0) {
             $data['rows'] = array_map(function ($item) use ($uid) {
-                $item['float'] = ($item['user_id'] == $uid) ? 'right' : 'left';
-                $item['text_msg'] = emojiReplace($item['text_msg']);
+                if ($item['user_id'] != 0) {
+                    $item['float'] = $item['user_id'] == $uid ? 'right' : 'left';
+                } else {
+                    $item['float'] = 'center';
+                }
+
+                if ($item['msg_type'] == 1) {
+                    $item['text_msg'] = emojiReplace($item['text_msg']);
+                } else if (in_array($item['msg_type'], [5, 6])) {
+                    $item['text_msg'] = User::select('id', 'nickname')->whereIn('id', explode(',', $item['text_msg']))->get()->toArray();
+                }
+
                 return $item;
             }, $data['rows']);
         }
