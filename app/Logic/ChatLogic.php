@@ -503,7 +503,7 @@ SQL;
     public function setGroupDisturb(int $user_id, int $group_id, int $status)
     {
 
-        if (!is_array($status, [0, 1])) return false;
+        if (!in_array($status, [0, 1])) return false;
 
 
         return UsersGroupMember::where('user_id', $user_id)->where('group_id', $group_id)->update(['not_disturb' => $status]);
