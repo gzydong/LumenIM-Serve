@@ -252,22 +252,30 @@ SQL;
             return false;
         }
 
-        $updateArr = $insertArr = [];
+        $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
+
         $members = UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $uids)->get(['id', 'user_id', 'status'])->toArray();
         $members = replaceArrayKey('user_id', $members);
 
+        $cahtArr = UsersChatList::where('group_id', $group_id)->whereIn('uid', $uids)->get(['id', 'uid', 'status'])->toArray();
+        $cahtArr = $cahtArr ? replaceArrayKey('uid', $cahtArr):[];
+
         foreach ($uids as $uid) {
-            if (isset($members[$uid])) {//存在聊天群成员记录
-                if ($members[$uid]['status'] == 0) {
-                    continue;
-                }
-                $updateArr[] = $members[$uid]['id'];
-            } else {
+            if (!isset($members[$uid])) {//存在聊天群成员记录
                 $insertArr[] = ['group_id' => $group_id, 'user_id' => $uid, 'group_owner' => 0, 'status' => 0, 'created_at' => date('Y-m-d H:i:s')];
+            } else if($members[$uid]['status'] == 1){
+                $updateArr[] = $members[$uid]['id'];
+            }
+
+            if (!isset($cahtArr[$uid])) {
+                $insertArr1[] = ['type'=>2,'uid' => $uid,'friend_id'=>0,'group_id' => $group_id,'status' => 1,'created_at' => date('Y-m-d H:i:s')];
+            } else if($cahtArr[$uid]['status'] == 0) {
+                $updateArr1[] = $cahtArr[$uid]['id'];
             }
         }
 
         unset($members);
+        unset($cahtArr);
 
         try {
             if ($updateArr) {
@@ -276,6 +284,14 @@ SQL;
 
             if ($insertArr) {
                 DB::table('users_group_member')->insert($insertArr);
+            }
+
+            if($updateArr1){
+                UsersChatList::whereIn('id', $updateArr1)->update(['status' => 1,'created_at'=>date('Y-m-d H:i:s')]);
+            }
+
+            if($insertArr1){
+                DB::table('users_chat_list')->insert($insertArr);
             }
 
             $uidsStr = implode(',', $uids);
