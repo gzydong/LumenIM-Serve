@@ -21,7 +21,9 @@ class TestController
     public function index(){
 
 
-       $res =  User::select('id', 'nickname')->whereIn('id', [2054,2055])->get()->toArray();
-       dd($res);
+        $ids = explode(',','2054,2061,3063,3084,1149,2381');
+       $res =  User::select('id', 'nickname')->whereIn('id',$ids)->get()->toArray();
+
+        dd(customSort($res,$ids));
     }
 }

@@ -51,6 +51,9 @@ class ChatController extends CController
 
         $uid = $this->uid();
         $data = $type == 1 ? $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size) : $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
+
+
+
         if (count($data['rows']) > 0) {
             $data['rows'] = array_map(function ($item) use ($uid) {
                 if ($item['user_id'] != 0) {
@@ -62,7 +65,8 @@ class ChatController extends CController
                 if ($item['msg_type'] == 1) {
                     $item['text_msg'] = emojiReplace($item['text_msg']);
                 } else if (in_array($item['msg_type'], [5, 6])) {
-                    $item['text_msg'] = User::select('id', 'nickname')->whereIn('id', explode(',', $item['text_msg']))->get()->toArray();
+                    $uids = explode(',', $item['text_msg']);
+                    $item['text_msg'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(),$uids);
                 }
 
                 return $item;
@@ -109,7 +113,7 @@ class ChatController extends CController
                     'receive_user' => $data['group_info']['id'],
                     'source_type' => 2,
                     'msg_type' => 5,
-                    'content' => User::select('id', 'nickname')->whereIn('id', $data['uids'])->get()->toArray(),
+                    'content' => customSort(User::select('id', 'nickname')->whereIn('id', $data['uids'])->get()->toArray(),$data['uids']),
                     'send_time' => date('Y-m-d H:i:s'),
                     'sendUserInfo' => []
                 ],
