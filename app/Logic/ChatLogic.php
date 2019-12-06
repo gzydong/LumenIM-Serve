@@ -57,7 +57,13 @@ class ChatLogic extends Logic
 
         $friendInfos = $groupInfos = [];
         if ($group_ids) {
-            $groupInfos = UsersGroup::whereIn('id', $group_ids)->get(['id', 'group_name', 'people_num', 'avatarurl'])->toArray();
+
+            $groupInfos = UsersGroupMember::select(['users_group.id', 'users_group.group_name', 'users_group.people_num', 'users_group.avatarurl','users_group_member.not_disturb'])
+                ->join('users_group','users_group.id','=','users_group_member.group_id')
+                ->whereIn('users_group_member.group_id', $group_ids)
+                ->get()->toArray();
+
+//            $groupInfos = UsersGroup::whereIn('id', $group_ids)->get(['id', 'group_name', 'people_num', 'avatarurl'])->toArray();
             $groupInfos = replaceArrayKey('id', $groupInfos);
         }
 
