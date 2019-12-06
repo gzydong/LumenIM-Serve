@@ -53,7 +53,6 @@ class ChatController extends CController
         $data = $type == 1 ? $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size) : $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
 
 
-
         if (count($data['rows']) > 0) {
             $data['rows'] = array_map(function ($item) use ($uid) {
                 if ($item['user_id'] != 0) {
@@ -66,7 +65,7 @@ class ChatController extends CController
                     $item['text_msg'] = emojiReplace($item['text_msg']);
                 } else if (in_array($item['msg_type'], [5, 6])) {
                     $uids = explode(',', $item['text_msg']);
-                    $item['text_msg'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(),$uids);
+                    $item['text_msg'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(), $uids);
                 }
 
                 return $item;
@@ -113,7 +112,7 @@ class ChatController extends CController
                     'receive_user' => $data['group_info']['id'],
                     'source_type' => 2,
                     'msg_type' => 5,
-                    'content' => customSort(User::select('id', 'nickname')->whereIn('id', $data['uids'])->get()->toArray(),$data['uids']),
+                    'content' => customSort(User::select('id', 'nickname')->whereIn('id', $data['uids'])->get()->toArray(), $data['uids']),
                     'send_time' => date('Y-m-d H:i:s'),
                     'sendUserInfo' => []
                 ],
@@ -345,11 +344,20 @@ class ChatController extends CController
         return $isTrue ? $this->ajaxSuccess('已成功退出群聊...') : $this->ajaxError('退出群聊失败...');
     }
 
-
     /**
-     * 更新群免打扰状态接口
+     * 设置群聊免打扰状态接口
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function startDisturb(){
+    public function setGroupDisturb()
+    {
+        $group_id = $this->request->post('group_id', 0);
+        $status = $this->request->post('status', null);
+        if (!isInt($group_id) || !in_array($status, [0, 1])) {
+            return $this->ajaxParamError();
+        }
 
+        $isTrue = $this->chatLogic->setGroupDisturb($this->uid(), $group_id, $status);
+        return $isTrue ? $this->ajaxSuccess('设置成功...') : $this->ajaxError('设置失败...');
     }
 }

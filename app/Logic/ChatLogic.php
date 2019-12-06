@@ -58,11 +58,10 @@ class ChatLogic extends Logic
 
         $friendInfos = $groupInfos = [];
         if ($group_ids) {
-            $groupInfos = UsersGroupMember::select(['users_group.id', 'users_group.group_name', 'users_group.people_num', 'users_group.avatarurl','users_group_member.not_disturb'])
-                ->join('users_group','users_group.id','=','users_group_member.group_id')
-                ->where('users_group_member.user_id',$user_id)
+            $groupInfos = UsersGroupMember::select(['users_group.id', 'users_group.group_name', 'users_group.people_num', 'users_group.avatarurl', 'users_group_member.not_disturb'])
+                ->join('users_group', 'users_group.id', '=', 'users_group_member.group_id')
+                ->where('users_group_member.user_id', $user_id)
                 ->whereIn('users_group_member.group_id', $group_ids)
-
                 ->get()->toArray();
             $groupInfos = replaceArrayKey('id', $groupInfos);
         }
@@ -271,18 +270,18 @@ SQL;
         $members = replaceArrayKey('user_id', $members);
 
         $cahtArr = UsersChatList::where('group_id', $group_id)->whereIn('uid', $uids)->get(['id', 'uid', 'status'])->toArray();
-        $cahtArr = $cahtArr ? replaceArrayKey('uid', $cahtArr):[];
+        $cahtArr = $cahtArr ? replaceArrayKey('uid', $cahtArr) : [];
 
         foreach ($uids as $uid) {
             if (!isset($members[$uid])) {//存在聊天群成员记录
                 $insertArr[] = ['group_id' => $group_id, 'user_id' => $uid, 'group_owner' => 0, 'status' => 0, 'created_at' => date('Y-m-d H:i:s')];
-            } else if($members[$uid]['status'] == 1){
+            } else if ($members[$uid]['status'] == 1) {
                 $updateArr[] = $members[$uid]['id'];
             }
 
             if (!isset($cahtArr[$uid])) {
-                $insertArr1[] = ['type'=>2,'uid' => $uid,'friend_id'=>0,'group_id' => $group_id,'status' => 1,'created_at' => date('Y-m-d H:i:s')];
-            } else if($cahtArr[$uid]['status'] == 0) {
+                $insertArr1[] = ['type' => 2, 'uid' => $uid, 'friend_id' => 0, 'group_id' => $group_id, 'status' => 1, 'created_at' => date('Y-m-d H:i:s')];
+            } else if ($cahtArr[$uid]['status'] == 0) {
                 $updateArr1[] = $cahtArr[$uid]['id'];
             }
         }
@@ -296,11 +295,11 @@ SQL;
                 DB::table('users_group_member')->insert($insertArr);
             }
 
-            if($updateArr1){
-                UsersChatList::whereIn('id', $updateArr1)->update(['status' => 1,'created_at'=>date('Y-m-d H:i:s')]);
+            if ($updateArr1) {
+                UsersChatList::whereIn('id', $updateArr1)->update(['status' => 1, 'created_at' => date('Y-m-d H:i:s')]);
             }
 
-            if($insertArr1){
+            if ($insertArr1) {
                 DB::table('users_chat_list')->insert($insertArr1);
             }
 
@@ -471,11 +470,11 @@ SQL;
             ])->get()->toArray();
         $disturb = 0;
 
-        foreach ($members as $member){
-          if($member['user_id'] == $user_id){
-              $disturb = $member['not_disturb'];
-              break;
-          }
+        foreach ($members as $member) {
+            if ($member['user_id'] == $user_id) {
+                $disturb = $member['not_disturb'];
+                break;
+            }
         }
 
 
@@ -491,5 +490,22 @@ SQL;
             'created_at' => $groupInfo->created_at,
             'members' => $members
         ];
+    }
+
+    /**
+     * 设置群聊免打扰
+     *
+     * @param int $user_id 用户ID
+     * @param int $group_id 群聊ID
+     * @param int $status 免打扰状态 0:正常 1:接收但不提示
+     * @return bool
+     */
+    public function setGroupDisturb(int $user_id, int $group_id, int $status)
+    {
+
+        if (!is_array($status, [0, 1])) return false;
+
+
+        return UsersGroupMember::where('user_id', $user_id)->where('group_id', $group_id)->update(['not_disturb' => $status]);
     }
 }
