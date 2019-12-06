@@ -137,8 +137,6 @@ class ChatController extends CController
                 ['id' => $userInfo['id'], 'nickname' => $userInfo['nickname']]
             ];
 
-            echo implode(',',$uids).PHP_EOL;
-
             //推送退群消息
             WebSocketHelper::sendResponseMessage('join_group', WebSocketHelper::getRoomGroupName($group_id), [
                 'message' => [
