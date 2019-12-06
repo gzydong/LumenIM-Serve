@@ -97,7 +97,7 @@ class ChatController extends CController
 
         [$isTrue, $data] = $this->chatLogic->launchGroupChat($this->uid(), $group_name, $group_avatar, $group_profile, array_unique($uids));
         if ($isTrue) {//群聊创建成功后需要创建聊天室并发送消息通知
-            foreach ($data['group_info']['uids'] as $uuid) {
+            foreach ($data['uids'] as $uuid) {
                 WebSocketHelper::bindUserGroupChat($uuid, $data['group_info']['id']);
             }
 
@@ -109,7 +109,7 @@ class ChatController extends CController
                     'receive_user' => $data['group_info']['id'],
                     'source_type' => 2,
                     'msg_type' => 5,
-                    'content' => User::select('id', 'nickname')->whereIn('id', $data['group_info']['uids'])->get()->toArray(),
+                    'content' => User::select('id', 'nickname')->whereIn('id', $data['uids'])->get()->toArray(),
                     'send_time' => date('Y-m-d H:i:s'),
                     'sendUserInfo' => []
                 ],
