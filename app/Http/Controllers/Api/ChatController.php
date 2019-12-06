@@ -128,9 +128,7 @@ class ChatController extends CController
         $isTrue = $this->chatLogic->inviteFriendsGroupChat($this->uid(), $group_id, $uids);
         if ($isTrue) {
             foreach ($uids as $uuid) {
-                if ($ufds = WebSocketHelper::getUserFds($uuid)) {
-                    WebSocketHelper::bindUserGroupChat($uuid, $group_id);
-                }
+                WebSocketHelper::bindUserGroupChat($uuid, $group_id);
             }
 
             $userInfo = $this->getUser(true);
@@ -138,6 +136,8 @@ class ChatController extends CController
             $users = [
                 ['id' => $userInfo['id'], 'nickname' => $userInfo['nickname']]
             ];
+
+            echo implode(',',$uids).PHP_EOL;
 
             //推送退群消息
             WebSocketHelper::sendResponseMessage('join_group', WebSocketHelper::getRoomGroupName($group_id), [
