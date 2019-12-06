@@ -21,7 +21,11 @@ class CacheHelper extends CacheFlag
     public static function setLastChatCache(array $message, int $receive, $sender = 0)
     {
         $key = $receive < $sender ? "{$receive}_{$sender}" : "{$sender}_{$receive}";
+        $len = Redis::hlen(self::lastChatCacheKey($sender));
         Redis::hset(self::lastChatCacheKey($sender), $key, serialize($message));
+        if($len == 0){
+            Redis::expire(self::lastChatCacheKey($sender),60*60*60);
+        }
     }
 
     /**

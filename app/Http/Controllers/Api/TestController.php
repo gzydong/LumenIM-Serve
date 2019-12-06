@@ -10,6 +10,7 @@ use App\Models\UsersGroupMember;
 
 use App\Helpers\Cache\CacheHelper;
 
+use Illuminate\Support\Facades\Redis;
 /**
  * 测试控制器
  * Class TestController
@@ -19,11 +20,7 @@ class TestController
 {
 
     public function index(){
-
-
-        $ids = explode(',','2054,2061,3063,3084,1149,2381');
-       $res =  User::select('id', 'nickname')->whereIn('id',$ids)->get()->toArray();
-
-        dd(customSort($res,$ids));
+        dd(Redis::hlen('hash.user.friend.remark.cache'));
+        dd(Redis::expire('hash.user.friend.remark.cache',60));
     }
 }
