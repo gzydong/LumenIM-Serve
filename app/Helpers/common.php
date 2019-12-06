@@ -218,3 +218,16 @@ function emojiReplace(string $text){
     return str_replace(array_keys($emojiReplace),array_values($emojiReplace),$text);
 }
 
+
+
+function customSort($arr,$sort = []){
+    $tmp1 = [];
+    foreach ($arr as $val){
+        $tmp1[$val['id']] = $val;
+    }
+
+    foreach ($sort as $k=>$v){
+        $sort[$k] = $tmp1[$v];
+    }
+    return $sort;
+}

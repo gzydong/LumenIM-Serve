@@ -50,16 +50,25 @@ class ChatController extends CController
         }
 
         $uid = $this->uid();
-        if ($type == 1) {
-            $data = $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size);
-        } else {
-            $data = $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
-        }
+        $data = $type == 1 ? $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size) : $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
+
+
 
         if (count($data['rows']) > 0) {
             $data['rows'] = array_map(function ($item) use ($uid) {
-                $item['float'] = ($item['user_id'] == $uid) ? 'right' : 'left';
-                $item['text_msg'] = emojiReplace($item['text_msg']);
+                if ($item['user_id'] != 0) {
+                    $item['float'] = $item['user_id'] == $uid ? 'right' : 'left';
+                } else {
+                    $item['float'] = 'center';
+                }
+
+                if ($item['msg_type'] == 1) {
+                    $item['text_msg'] = emojiReplace($item['text_msg']);
+                } else if (in_array($item['msg_type'], [5, 6])) {
+                    $uids = explode(',', $item['text_msg']);
+                    $item['text_msg'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(),$uids);
+                }
+
                 return $item;
             }, $data['rows']);
         }
@@ -92,18 +101,24 @@ class ChatController extends CController
 
         [$isTrue, $data] = $this->chatLogic->launchGroupChat($this->uid(), $group_name, $group_avatar, $group_profile, array_unique($uids));
         if ($isTrue) {//群聊创建成功后需要创建聊天室并发送消息通知
-            $fids = [];
             foreach ($data['uids'] as $uuid) {
                 WebSocketHelper::bindUserGroupChat($uuid, $data['group_info']['id']);
-                if ($ufds = WebSocketHelper::getUserFds($uuid)) {
-                    $fids = array_merge($fids, $ufds);
-                }
             }
 
-            if ($fids) {
-                $group_info = $data['group_info'];
-                WebSocketHelper::sendResponseMessage('join_group', $fids, ['id' => $group_info['id'], 'group_name' => $group_info['group_name'], 'people_num' => $group_info['people_num'], 'avatarurl' => '']);
-            }
+            //推送退群消息
+            WebSocketHelper::sendResponseMessage('join_group', WebSocketHelper::getRoomGroupName($data['group_info']['id']), [
+                'message' => [
+                    'avatar' => '',
+                    'send_user' => 0,
+                    'receive_user' => $data['group_info']['id'],
+                    'source_type' => 2,
+                    'msg_type' => 5,
+                    'content' => customSort(User::select('id', 'nickname')->whereIn('id', $data['uids'])->get()->toArray(),$data['uids']),
+                    'send_time' => date('Y-m-d H:i:s'),
+                    'sendUserInfo' => []
+                ],
+                'group_info' => UsersGroup::select(['id', 'group_name', 'people_num', 'avatarurl'])->where('id', $data['group_info']['id'])->first()->toArray()
+            ]);
 
             return $this->ajaxSuccess('创建群聊成功...', $data);
         }
@@ -128,9 +143,7 @@ class ChatController extends CController
         $isTrue = $this->chatLogic->inviteFriendsGroupChat($this->uid(), $group_id, $uids);
         if ($isTrue) {
             foreach ($uids as $uuid) {
-                if ($ufds = WebSocketHelper::getUserFds($uuid)) {
-                    WebSocketHelper::bindUserGroupChat($uuid, $group_id);
-                }
+                WebSocketHelper::bindUserGroupChat($uuid, $group_id);
             }
 
             $userInfo = $this->getUser(true);

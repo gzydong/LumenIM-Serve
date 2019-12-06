@@ -151,9 +151,7 @@ SQL;
 
         $rows = $sqlObj->orderBy('id', 'desc')->limit($page_size)->get()->toArray();
         if ($rows) {
-
             $uids = implode(',', array_unique(array_column($rows, 'user_id')));
-
             $sql = <<<SQL
             SELECT users.id,users.avatarurl as avatar,users.nickname,tmp_table.nickname_remarks from lar_users users
             left JOIN (
@@ -163,17 +161,14 @@ SQL;
             ) tmp_table on users.id = tmp_table.friend_id where users.id in ({$uids})
 SQL;
 
-            $userInfos = array_map(function ($item) {
+            $userInfos = replaceArrayKey('id', array_map(function ($item) {
                 return (array)$item;
-            }, DB::select($sql));
-            $userInfos = replaceArrayKey('id', $userInfos);
+            }, DB::select($sql)));
 
             $rows = array_map(function ($val) use ($userInfos) {
                 unset($userInfos[$val['user_id']]['id']);
-                return array_merge($val, $userInfos[$val['user_id']]);
+                return array_merge($val, $userInfos[$val['user_id']] ?? ['avatarurl' => '', 'nickname' => '', 'nickname_remarks' => '']);
             }, $rows);
-
-            unset($userInfos);
         }
 
         return ['rows' => $rows, 'record_id' => end($rows)['id']];
@@ -228,6 +223,15 @@ SQL;
                 throw new \Exception('创建群成员的聊天列表失败');
             }
 
+            UsersChatRecords::create([
+                'msg_type' => 5,
+                'source' => 2,
+                'user_id' => 0,
+                'receive_id' => $insRes->id,
+                'text_msg' => implode(',', $uids),
+                'send_time' => date('Y-m-d H:i;s')
+            ]);
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -249,30 +253,32 @@ SQL;
     {
         $info = UsersGroupMember::select(['id', 'status'])->where('group_id', $group_id)->where('user_id', $user_id)->first();
 
-        if (!$info && $info->status == 1) {//判断主动邀请方是否属于聊天群成员
-            return false;
-        }
+        //判断主动邀请方是否属于聊天群成员
+        if (!$info && $info->status == 1) return false;
 
-        if (empty($uids)) {
-            return false;
-        }
+        if (empty($uids)) return false;
 
-        $updateArr = $insertArr = [];
+        $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
+
         $members = UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $uids)->get(['id', 'user_id', 'status'])->toArray();
         $members = replaceArrayKey('user_id', $members);
 
+        $cahtArr = UsersChatList::where('group_id', $group_id)->whereIn('uid', $uids)->get(['id', 'uid', 'status'])->toArray();
+        $cahtArr = $cahtArr ? replaceArrayKey('uid', $cahtArr):[];
+
         foreach ($uids as $uid) {
-            if (isset($members[$uid])) {//存在聊天群成员记录
-                if ($members[$uid]['status'] == 0) {
-                    continue;
-                }
-                $updateArr[] = $members[$uid]['id'];
-            } else {
+            if (!isset($members[$uid])) {//存在聊天群成员记录
                 $insertArr[] = ['group_id' => $group_id, 'user_id' => $uid, 'group_owner' => 0, 'status' => 0, 'created_at' => date('Y-m-d H:i:s')];
+            } else if($members[$uid]['status'] == 1){
+                $updateArr[] = $members[$uid]['id'];
+            }
+
+            if (!isset($cahtArr[$uid])) {
+                $insertArr1[] = ['type'=>2,'uid' => $uid,'friend_id'=>0,'group_id' => $group_id,'status' => 1,'created_at' => date('Y-m-d H:i:s')];
+            } else if($cahtArr[$uid]['status'] == 0) {
+                $updateArr1[] = $cahtArr[$uid]['id'];
             }
         }
-
-        unset($members);
 
         try {
             if ($updateArr) {
@@ -283,14 +289,22 @@ SQL;
                 DB::table('users_group_member')->insert($insertArr);
             }
 
-            $uidsStr = implode(',',$uids);
+            if($updateArr1){
+                UsersChatList::whereIn('id', $updateArr1)->update(['status' => 1,'created_at'=>date('Y-m-d H:i:s')]);
+            }
+
+            if($insertArr1){
+                DB::table('users_chat_list')->insert($insertArr1);
+            }
+
+            $uidsStr = implode(',', $uids);
             UsersChatRecords::create([
-                'msg_type'=>5,
-                'source'=>2,
-                'user_id'=>0,
-                'receive_id'=>$group_id,
-                'text_msg'=>"{$user_id},{$uidsStr}",
-                'send_time'=>date('Y-m-d H:i;s')
+                'msg_type' => 5,
+                'source' => 2,
+                'user_id' => 0,
+                'receive_id' => $group_id,
+                'text_msg' => "{$user_id},{$uidsStr}",
+                'send_time' => date('Y-m-d H:i;s')
             ]);
 
             UsersGroup::where('id', $group_id)->increment('people_num', count($uids));
@@ -371,16 +385,17 @@ SQL;
      * @param int $user_id 用户ID
      * @return bool
      */
-    public function quitGroupChat(int $group_id, int $user_id){
+    public function quitGroupChat(int $group_id, int $user_id)
+    {
         DB::beginTransaction();
-        try{
-            $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status'=>1]);
-            if($res){
-                UsersChatList::where('uid',$user_id)->where('type',2)->where('group_id',$group_id)->update(['status'=>0]);
+        try {
+            $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status' => 1]);
+            if ($res) {
+                UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->update(['status' => 0]);
             }
 
             DB::commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             $res = false;
             DB::rollBack();
         }
