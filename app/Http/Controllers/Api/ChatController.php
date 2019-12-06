@@ -344,4 +344,12 @@ class ChatController extends CController
 
         return $isTrue ? $this->ajaxSuccess('已成功退出群聊...') : $this->ajaxError('退出群聊失败...');
     }
+
+
+    /**
+     * 更新群免打扰状态接口
+     */
+    public function startDisturb(){
+
+    }
 }

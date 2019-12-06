@@ -461,7 +461,8 @@ SQL;
 
         $members = UsersGroupMember::select([
             'users_group_member.id', 'users_group_member.group_owner', 'users_group_member.visit_card',
-            'users_group_member.user_id', 'users.avatarurl', 'users.nickname', 'users.mobile', 'users.gender'
+            'users_group_member.user_id', 'users.avatarurl', 'users.nickname', 'users.mobile', 'users.gender',
+            'users_group_member.not_disturb'
         ])
             ->leftJoin('users', 'users.id', '=', 'users_group_member.user_id')
             ->where([
@@ -477,6 +478,7 @@ SQL;
             'group_profile' => $groupInfo->group_profile,
             'people_num' => $groupInfo->people_num,
             'group_avatar' => $groupInfo->avatarurl,
+            'not_disturb' => $groupInfo->not_disturb,
             'created_at' => $groupInfo->created_at,
             'members' => $members
         ];
