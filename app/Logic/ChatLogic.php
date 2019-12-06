@@ -34,6 +34,7 @@ class ChatLogic extends Logic
         $rows = array_map(function ($item) use ($user_id, &$friend_ids, &$group_ids) {
             $item['name'] = '';//对方昵称/群名称
             $item['unread_num'] = 0;//未读消息数量
+            $item['not_disturb'] = 0;//未读消息数量
             $item['avatar'] = '';//默认头像
             $item['remark_name'] = '';//好友备注
             $item['msg_text'] = '......';
@@ -93,6 +94,7 @@ class ChatLogic extends Logic
             } else {
                 $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatarurl'] ?? '';
                 $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name'] ?? '';
+                $rows[$key2]['not_disturb'] = $groupInfos[$v2['group_id']]['not_disturb'] ?? 0;
             }
         }
 
