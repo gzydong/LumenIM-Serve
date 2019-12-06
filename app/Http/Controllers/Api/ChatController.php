@@ -97,18 +97,24 @@ class ChatController extends CController
 
         [$isTrue, $data] = $this->chatLogic->launchGroupChat($this->uid(), $group_name, $group_avatar, $group_profile, array_unique($uids));
         if ($isTrue) {//群聊创建成功后需要创建聊天室并发送消息通知
-            $fids = [];
-            foreach ($data['uids'] as $uuid) {
+            foreach ($data['group_info']['uids'] as $uuid) {
                 WebSocketHelper::bindUserGroupChat($uuid, $data['group_info']['id']);
-                if ($ufds = WebSocketHelper::getUserFds($uuid)) {
-                    $fids = array_merge($fids, $ufds);
-                }
             }
 
-            if ($fids) {
-                $group_info = $data['group_info'];
-                WebSocketHelper::sendResponseMessage('join_group', $fids, ['id' => $group_info['id'], 'group_name' => $group_info['group_name'], 'people_num' => $group_info['people_num'], 'avatarurl' => '']);
-            }
+            //推送退群消息
+            WebSocketHelper::sendResponseMessage('join_group', WebSocketHelper::getRoomGroupName($data['group_info']['id']), [
+                'message' => [
+                    'avatar' => '',
+                    'send_user' => 0,
+                    'receive_user' => $data['group_info']['id'],
+                    'source_type' => 2,
+                    'msg_type' => 5,
+                    'content' => User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(),
+                    'send_time' => date('Y-m-d H:i:s'),
+                    'sendUserInfo' => []
+                ],
+                'group_info' => UsersGroup::select(['id', 'group_name', 'people_num', 'avatarurl'])->where('id', $data['group_info']['id'])->first()->toArray()
+            ]);
 
             return $this->ajaxSuccess('创建群聊成功...', $data);
         }

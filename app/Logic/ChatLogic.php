@@ -223,6 +223,15 @@ SQL;
                 throw new \Exception('创建群成员的聊天列表失败');
             }
 
+            UsersChatRecords::create([
+                'msg_type' => 5,
+                'source' => 2,
+                'user_id' => 0,
+                'receive_id' => $insRes->id,
+                'text_msg' => implode(',', $uids),
+                'send_time' => date('Y-m-d H:i;s')
+            ]);
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -271,8 +280,6 @@ SQL;
             }
         }
 
-        unset($members);
-        unset($cahtArr);
         try {
             if ($updateArr) {
                 UsersGroupMember::whereIn('id', $updateArr)->update(['status' => 0]);
