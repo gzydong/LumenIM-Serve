@@ -9,7 +9,7 @@ use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 
 use App\Helpers\Cache\CacheHelper;
-
+use App\Logic\ChatLogic;
 use Illuminate\Support\Facades\Redis;
 /**
  * 测试控制器
@@ -19,7 +19,12 @@ use Illuminate\Support\Facades\Redis;
 class TestController
 {
 
-    public function index(){
+    public function index(ChatLogic $chatLogic){
+
+
+        $uses = $chatLogic->getUserChatList(2061);
+        dd($uses);
+        exit;
         dd(Redis::hlen('hash.user.friend.remark.cache'));
         dd(Redis::expire('hash.user.friend.remark.cache',60));
     }
