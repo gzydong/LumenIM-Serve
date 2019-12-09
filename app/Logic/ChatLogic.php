@@ -408,25 +408,16 @@ SQL;
             $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status' => 1]);
             if ($res) {
                 UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->update(['status' => 0]);
-                
+
                 UsersChatRecords::create([
                     'msg_type' => 6,
                     'source' => 2,
-                    'user_id' => $user_id,
+                    'user_id' => 0,
                     'receive_id' => $group_id,
-                    'text_msg' => "{$user_id}",
+                    'text_msg' => $user_id,
                     'send_time' => date('Y-m-d H:i;s')
                 ]);
             }
-
-            UsersChatRecords::create([
-                'msg_type' => 6,
-                'source' => 2,
-                'user_id' => 0,
-                'receive_id' => $group_id,
-                'text_msg' => $user_id,
-                'send_time' => date('Y-m-d H:i;s')
-            ]);
 
             DB::commit();
         } catch (\Exception $e) {
