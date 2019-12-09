@@ -24,7 +24,7 @@ class CacheHelper extends CacheFlag
         $len = Redis::hlen(self::lastChatCacheKey($sender));
         Redis::hset(self::lastChatCacheKey($sender), $key, serialize($message));
         if($len == 0){
-            Redis::expire(self::lastChatCacheKey($sender),60*60*60);
+            Redis::expire(self::lastChatCacheKey($sender),60*60*1);
         }
     }
 
@@ -113,7 +113,12 @@ class CacheHelper extends CacheFlag
      */
     public static function setUserGroupVisitCard(int $group_id, int $user_id, array $data)
     {
-        Redis::hset(self::userGroupVisitCardCacheKey($group_id), $user_id, json_encode($data));
+        $key = self::userGroupVisitCardCacheKey($group_id);
+        $len = Redis::hlen($key);
+        Redis::hset($key, $user_id, json_encode($data));
+        if($len == 0){
+            Redis::expire($key,60*60*1);
+        }
     }
 
     /**
@@ -190,8 +195,13 @@ class CacheHelper extends CacheFlag
             $result = [];
         }
 
+        $len = Redis::hlen(self::friendRemarkCacheKey());
         $result[$friend_id] = $friend_remark;
+
         Redis::hset(self::friendRemarkCacheKey(), $key, json_encode($result));
+        if($len == 0){
+            Redis::expire(self::friendRemarkCacheKey(),60*60*1);
+        }
     }
 
     /**

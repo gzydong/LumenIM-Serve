@@ -331,7 +331,7 @@ SQL;
      * @param int $group_member_id 群成员ID
      * @return bool
      */
-    public function removeGroupChat(int $group_id, int $group_owner_id, int $group_member_id, $group_owner = false)
+    public function removeGroupChat(int $group_id, int $group_owner_id, int $group_member_id)
     {
         if (!UsersGroup::where('id', $group_id)->where('user_id', $group_owner_id)->exists()) {
             return false;
@@ -344,6 +344,16 @@ SQL;
             }
 
             UsersGroup::where('group_id', $group_id)->decrement('people_num');
+
+            UsersChatRecords::create([
+                'msg_type' => 6,
+                'source' => 2,
+                'user_id' => 0,
+                'receive_id' => $group_id,
+                'text_msg' => "{$group_owner_id},{$group_member_id}",
+                'send_time' => date('Y-m-d H:i;s')
+            ]);
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -408,6 +418,15 @@ SQL;
                     'send_time' => date('Y-m-d H:i;s')
                 ]);
             }
+
+            UsersChatRecords::create([
+                'msg_type' => 6,
+                'source' => 2,
+                'user_id' => 0,
+                'receive_id' => $group_id,
+                'text_msg' => $user_id,
+                'send_time' => date('Y-m-d H:i;s')
+            ]);
 
             DB::commit();
         } catch (\Exception $e) {

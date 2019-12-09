@@ -185,7 +185,32 @@ class ChatController extends CController
         }
 
         $isTrue = $this->chatLogic->removeGroupChat($group_id, $this->uid(), $member_id);
+        if($isTrue){
+            //将用户移出聊天室
+            WebSocketHelper::quitGroupRoom($member_id, $group_id);
 
+            $user = $this->getUser();
+            $message = [
+                'msg_type' => 6,
+                'content' => [
+                    [
+                        'id'=>$user['id'],
+                        'nickname'=>$user['nickname']
+                    ],
+                    [
+                        'id'=>$member_id,
+                        'nickname'=>User::where('id',$member_id)->value('nickname')
+                    ]
+                ],
+                'receive_user' => $group_id,
+                'send_user' => 0,
+                'send_time' => date('Y-m-d H:i:s'),
+                'source_type' => 2
+            ];
+
+            //推送退群消息
+            WebSocketHelper::sendResponseMessage('chat_message', WebSocketHelper::getRoomGroupName($group_id), $message);
+        }
         return $isTrue ? $this->ajaxSuccess('群聊用户已被移除..') : $this->ajaxError('群聊用户移除失败...');
     }
 
@@ -327,10 +352,14 @@ class ChatController extends CController
             WebSocketHelper::quitGroupRoom($this->uid(), $group_id);
 
             $user = $this->getUser();
-            $date = date('Y-m-d H:i');
             $message = [
-                'msg_type' => 1,
-                'content' => "{$user['nickname']} 于{$date} 退出群聊",
+                'msg_type' => 6,
+                'content' => [
+                    [
+                        'id'=>$user['id'],
+                        'nickname'=>$user['nickname']
+                    ]
+                ],
                 'receive_user' => $group_id,
                 'send_user' => 0,
                 'send_time' => date('Y-m-d H:i:s'),
