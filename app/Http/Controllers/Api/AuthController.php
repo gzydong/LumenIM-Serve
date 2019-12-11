@@ -37,7 +37,7 @@ class AuthController extends CController
         }
 
         if ($params['invite_code'] == '000000') {
-            //return $this->ajaxParamError('注册邀请码不正确...');
+            return $this->ajaxParamError('注册邀请码不正确...');
         }
 
         $isTrue = $usersLogic->register([
