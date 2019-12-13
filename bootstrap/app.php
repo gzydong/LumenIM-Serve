@@ -22,6 +22,7 @@ $app = new Laravel\Lumen\Application(dirname(__DIR__));
 $app->configure('config');
 $app->configure('database');
 $app->configure('cors');
+$app->configure('mail');
 
 //允许使用门面
 $app->withFacades();
@@ -96,6 +97,9 @@ $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
 //注册支持跨域服务
 $app->register(Barryvdh\Cors\ServiceProvider::class);
+
+//注册邮件服务提供者
+$app->register(Illuminate\Mail\MailServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------
