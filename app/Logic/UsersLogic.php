@@ -15,7 +15,6 @@ use Illuminate\Support\Str;
  */
 class UsersLogic extends Logic
 {
-
     /**
      * 账号注册逻辑
      * @param array $data
@@ -32,6 +31,17 @@ class UsersLogic extends Logic
         }
 
         return $isTrue;
+    }
+
+    /**
+     * 账号重置密码
+     *
+     * @param string $mobile 用户手机好
+     * @param string $password 新密码
+     * @return mixed
+     */
+    public function resetPassword(string $mobile,string $password){
+        return User::where('mobile',$mobile)->update(['password'=>Hash::make($password)]);
     }
 
     /**

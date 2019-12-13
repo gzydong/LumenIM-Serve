@@ -25,7 +25,7 @@
                 <div style="line-height:1.5;font-size:14px;margin-bottom:25px;color:#4d4d4d;">
                     <strong style="display:block;margin-bottom:15px;">尊敬的用户：<span style="color:#f60;font-size: 16px;"></span>您好！</strong>
                     <strong style="display:block;margin-bottom:15px;">
-                        您正在进行<span style="color: red">{{$service_name}}</span>操作，请在验证码输入框中输入：<span style="color:#f60;font-size: 24px">{{$sms_code}}</span>，以完成操作。
+                        您正在进行<span style="color: red">{{$service_name}}</span>操作，请在验证码输入框中输入：<span style="color:#f60;font-size: 24px">{{$sms_code}}</span>，以完成操作,验证码有效期15分钟。
                     </strong>
                 </div>
                 <div style="margin-bottom:30px;">

@@ -231,3 +231,96 @@ function customSort($arr,$sort = []){
     }
     return $sort;
 }
+
+/**
+ * 字符串编码转换
+ */
+function transcode($content){
+    $encode = mb_detect_encoding($content, ["ASCII","UTF-8","GB2312","GBK","BIG5"]);
+    return $content = mb_convert_encoding($content, "UTF-8", $encode);
+}
+
+/**
+ * 获取手机号相关信息
+ *
+ * @param string $mobile
+ * @return array|string
+ */
+function getMobileInfo(string $mobile){
+    try{
+        $baiduResult = file_get_contents("http://sp0.baidu.com/8aQDcjqpAAV3otqbppnN2DJv/api.php?query={{$mobile}}&resource_id=6004&ie=utf8&oe=utf8&format=json");
+        if($baiduResult && $baiduResult = json_decode($baiduResult,true)){
+            return [
+                'mobile'=>$mobile,
+                'type'=>$baiduResult['data'][0]['type'],
+                'location'=>!empty($baiduResult['data'][0]['prov'])?$baiduResult['data'][0]['prov']: $baiduResult['data'][0]['city']
+            ];
+        }
+
+        $taobaoResult = file_get_contents("https://tcc.taobao.com/cc/json/mobile_tel_segment.htm?tel={$mobile}");
+        preg_match_all("/(\w+):'([^']+)/", $taobaoResult, $m);
+        $result = array_combine($m[1], $m[2]);
+        return [
+            'mobile'=>transcode($result['telString']),
+            'type'=> transcode($result['catName']),
+            'location'=> transcode($result['province']),
+        ];
+    }catch (\Exception $e){}
+
+    return [];
+}
+
+
+/**
+ * 获取随机字符串
+ * @param number $length 长度
+ * @param string $type 类型
+ * @param number $convert 转换大小写
+ * @return string 随机字符串
+ */
+function random($length = 6, $type = 'string', $convert = 0)
+{
+    $config = array(
+        'number' => '1234567890',
+        'letter' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        'string' => 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789',
+        'all' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+    );
+
+    if (!isset($config[$type]))
+        $type = 'string';
+    $string = $config[$type];
+
+    $code = '';
+    $strlen = strlen($string) - 1;
+    for ($i = 0; $i < $length; $i++) {
+        $code .= $string{mt_rand(0, $strlen)};
+    }
+    if (!empty($convert)) {
+        $code = ($convert > 0) ? strtoupper($code) : strtolower($code);
+    }
+    return $code;
+}
+
+/**
+ * 生成6位字符的短码字符串
+ * @param string $string
+ * @return string
+ */
+function shortCode(string $string)
+{
+    $result= sprintf("%u",crc32($string));
+    $show = '';
+    while($result>0){
+        $s = $result % 62;
+        if ($s  >35){
+            $s = chr($s+61);
+        }elseif($s>9 && $s <= 35){
+            $s = chr($s+55);
+        }
+        $show.=$s;
+        $result=floor($result/62);
+    }
+
+    return $show;
+}
