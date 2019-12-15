@@ -159,23 +159,24 @@ class AuthController extends CController
         $email = '';
         $mobileInfo = getMobileInfo($mobile);
         if($mobileInfo['type'] == '中国电信'){
-            $tips['tips'] = '验证吗已发至您的电信189邮箱，请注意查收...';
+            $tips['tips'] = '验证码已发至您的电信189邮箱，请注意查收 ...';
             $tips['url'] = 'https://webmail30.189.cn/w2';
             $email = $mobile.'@189.com';
         }else if($mobileInfo['type'] == '中国移动'){
-            $tips['tips'] = '验证吗已发至您的139邮箱，请注意查收...';
+            $tips['tips'] = '验证码已发至您的139邮箱，请注意查收 ...';
             $tips['url'] = 'https://mail.10086.cn/';
             $email = $mobile.'@139.com';
         }else if($mobileInfo['type'] == '中国联通'){
-            $tips['tips'] = '验证吗已发至您的联通沃邮箱，请注意查收...';
+            $tips['tips'] = '验证码已发至您的联通沃邮箱，请注意查收 ...';
             $tips['url'] = 'https://mail.wo.cn';
             $email = $mobile.'@wo.cn';
         }
 
-        $sms_code = random(6,'number');
+        if(!$sms_code = Redis::get("str:forget_password:{$mobile}")){
+            $sms_code = random(6,'number');
+        }
 
         Redis::setex("str:forget_password:{$mobile}", 60 * 15, $sms_code);
-
         Mail::send('emails.verify-code',['service_name'=>'重置密码','sms_code'=>$sms_code,'domain'=>'http://47.105.180.123:83/forget'], function($message) use($email){
             $message->to($email)->subject('On-line IM 重置密码(验证码)');
         });
@@ -195,7 +196,7 @@ class AuthController extends CController
         $code = $request->post('sms_code','');
         $password = $request->post('password','');
 
-        if(!isMobile($password) || empty($code) || empty($password)){
+        if(!isMobile($mobile) || empty($code) || empty($password)){
             return $this->ajaxParamError();
         }
 

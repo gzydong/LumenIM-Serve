@@ -15,8 +15,8 @@ $router->group([], function () use ($router) {
     $router->post('/auth/logout', ['middleware' => ['jwt.auth'], 'uses' => 'AuthController@logout']);
     $router->get('/auth/refresh-token', ['middleware' => [], 'uses' => 'AuthController@refreshToken']);
 
-    $router->get('/auth/send-verify-code', ['middleware' => [], 'uses' => 'AuthController@sendVerifyCode']);
-    $router->get('/auth/forget-password', ['middleware' => [], 'uses' => 'AuthController@forgetPassword']);
+    $router->post('/auth/send-verify-code', ['middleware' => [], 'uses' => 'AuthController@sendVerifyCode']);
+    $router->post('/auth/forget-password', ['middleware' => [], 'uses' => 'AuthController@forgetPassword']);
 
 });
 
