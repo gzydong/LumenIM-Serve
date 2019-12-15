@@ -38,7 +38,7 @@ class AuthController extends CController
             return $this->ajaxParamError('手机号格式不正确...');
         }
 
-        if ($params['invite_code'] == '000000') {
+        if ($params['invite_code'] !== '000000') {
             return $this->ajaxParamError('注册邀请码不正确...');
         }
 
