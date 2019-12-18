@@ -35,6 +35,9 @@ class SocketHandler extends WebsocketHandler
             //获取所有好友的用户ID
             if($uids = UsersFriends::getFriendIds($user_id)){
                 $ffds = [];//所有好友的客户端ID
+
+                echo '朋友ID:'.PHP_EOL;
+                var_dump($ffds);
                 foreach ($uids as $friends_id){
                     $ffds = array_merge($ffds,WebSocketHelper::getUserFds($friends_id));
                 }
