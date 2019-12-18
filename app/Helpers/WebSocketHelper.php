@@ -157,7 +157,9 @@ class WebSocketHelper
      */
     public function sendResponseMessage(string $event,$receive,$data){
         if(isset(self::EVENTS[$event])){
-            if(!empty($receive)){
+            if($event == 'login_notify'){
+                Websocket::broadcast()->to($receive)->emit(self::EVENTS[$event], $data);
+            }else if(!empty($receive)){
                 Websocket::to($receive)->emit(self::EVENTS[$event], $data);
             }else{
                 Websocket::emit(self::EVENTS[$event], $data);
