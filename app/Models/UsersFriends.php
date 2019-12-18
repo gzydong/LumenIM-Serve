@@ -68,4 +68,16 @@ SQL;
 
         return DB::select($sql) ? true :false;
     }
+
+    /**
+     * 获取指定用户的所有朋友的用户ID
+     * @param int $user_id 指定用户ID
+     * @return array
+     */
+    public static function getFriendIds(int $user_id){
+        $sql = "SELECT user2 as uid from lar_users_friends where user1 = {$user_id} and `status` = 1 UNION all SELECT user1 as uid from lar_users_friends where user2 = {$user_id} and `status` = 1";
+        return array_map(function ($item){
+            return $item->uid;
+        },DB::select($sql));
+    }
 }

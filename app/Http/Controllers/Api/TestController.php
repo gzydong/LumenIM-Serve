@@ -2,6 +2,10 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Support\Facades\Mail;
+
+
+use App\Models\UsersFriends;
+
 /**
  * 测试控制器
  * Class TestController
@@ -10,17 +14,8 @@ use Illuminate\Support\Facades\Mail;
 class TestController
 {
 
-
-
-
-
-
     public function index(){
-        //return view('emails.verify-code',['service_name'=>'重置密码','sms_code'=>654852,'domain'=>'http://47.105.180.123:83']);
-        $res = Mail::send('emails.verify-code',['service_name'=>'重置密码','sms_code'=>654852,'domain'=>'http://47.105.180.123:83/forget'], function($message){
-            $message->to('17521019841@wo.cn', '我')->subject('On-line IM 重置密码(验证码)');
-        });
-
-        dd($res);
+        $ids = UsersFriends::getFriendIds(2054);
+        dd($ids);
     }
 }
