@@ -62,7 +62,7 @@ class WebSocketHelper
     }
 
     /**
-     * 根据fd获取对应的用户ID
+     * 根据fd获取对应的用户IDclearFdCache
      *
      * @param int $fd Websocket 连接标识[fd]
      * @return int

@@ -36,16 +36,12 @@ class SocketHandler extends WebsocketHandler
             if($uids = UsersFriends::getFriendIds($user_id)){
                 $ffds = [];//所有好友的客户端ID
 
-                echo '朋友ID:'.PHP_EOL;
-                var_dump($uids);
                 foreach ($uids as $friends_id){
                     $ffds = array_merge($ffds,WebSocketHelper::getUserFds($friends_id));
                 }
 
-                var_dump($ffds);
-
                 if($ffds){
-                    WebSocketHelper::sendResponseMessage('login_notify',$ffds,['user_id'=>$user_id,'notify'=>'好友上线通知...']);
+                    WebSocketHelper::sendResponseMessage('login_notify',$ffds,['user_id'=>$user_id,'status'=>1,'notify'=>'好友上线通知...']);
                 }
             }
         }
@@ -73,7 +69,26 @@ class SocketHandler extends WebsocketHandler
      */
     public function onClose($fd, $reactorId)
     {
+        //获取客户端对应的用户ID
+        $user_id = WebSocketHelper::getFdUserId($fd);
+
+        //清除$fd 客户端相关信息及缓存
         WebSocketHelper::clearFdCache($fd);
+
+        //多平台登录处理
+        if(!WebSocketHelper::getUserFds($user_id)){
+            //获取所有好友的用户ID
+            if($uids = UsersFriends::getFriendIds($user_id)){
+                $ffds = [];//所有好友的客户端ID
+                foreach ($uids as $friends_id){
+                    $ffds = array_merge($ffds,WebSocketHelper::getUserFds($friends_id));
+                }
+
+                if($ffds){
+                    WebSocketHelper::sendResponseMessage('login_notify',$ffds,['user_id'=>$user_id,'status'=>0,'notify'=>'好友离线通知通知...']);
+                }
+            }
+        }
 
         return true;
     }
