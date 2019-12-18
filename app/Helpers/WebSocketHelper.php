@@ -24,6 +24,7 @@ class WebSocketHelper
         'chat_message'=>'chat_message',//用户聊天消息
         'friend_apply'=>'friend_apply',//好友添加申请消息
         'join_group'=>'join_group',    //入群消息
+        'login_notify'=>'login_notify',//好友登录消息通知
     ];
 
     /**

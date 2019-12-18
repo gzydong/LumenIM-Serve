@@ -39,6 +39,8 @@ class SocketHandler extends WebsocketHandler
                     $ffds = array_merge($ffds,WebSocketHelper::getUserFds($friends_id));
                 }
 
+                var_dump($ffds);
+
                 if($ffds){
                     WebSocketHelper::sendResponseMessage('login_notify',$ffds,['user_id'=>$user_id,'notify'=>'好友上线通知...']);
                 }
