@@ -63,6 +63,9 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->post('/upload/img', ['uses' => 'UploadController@img']);
     $router->post('/upload/file', ['uses' => 'UploadController@file']);
     $router->post('/upload/file-stream', ['uses' => 'UploadController@fileStream']);
+
+
+    $router->post('/upload/file-subarea-upload', ['uses' => 'UploadController@fileSubareaUpload']);
 });
 
 //TestController 控制器分组

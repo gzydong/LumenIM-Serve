@@ -21,6 +21,7 @@ class WebSocketHelper
 
     //消息事件类型
     const EVENTS = [
+        //别名 =》 事件名
         'chat_message'=>'chat_message',//用户聊天消息
         'friend_apply'=>'friend_apply',//好友添加申请消息
         'join_group'=>'join_group',    //入群消息

@@ -79,4 +79,30 @@ class UploadController extends CController
         $avatar = config('config.upload.upload_domain','').'/'.$path;
         return $this->ajaxSuccess('文件上传成功...',['avatar'=>$avatar]);
     }
+
+    /**
+     * 文件分区上传
+     *
+     * @param Request $request
+     */
+    public function fileSubareaUpload(Request $request){
+        $file = $request->file('file');
+        if (!$file->isValid()) {
+            return $this->ajaxParamError('请求参数错误');
+        }
+
+
+        //保存图片
+        if(!$path = Storage::disk('uploads')->put('tmp/'.date('Ymd'), $file)){
+            return $this->ajaxError('图片上传失败');
+        }
+    }
+
+    /**
+     * 分区文件请求合并操作
+     * @param Request $request
+     */
+    public function fileMerge(Request $request){
+
+    }
 }
