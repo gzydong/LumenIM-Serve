@@ -66,7 +66,15 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 
 
     $router->post('/upload/file-subarea-upload', ['uses' => 'UploadController@fileSubareaUpload']);
+    $router->get('/upload/file-merge', ['uses' => 'UploadController@fileMerge']);
+    $router->get('/upload/download', ['uses' => 'UploadController@download']);
 });
+
+
+$router->group(['middleware' => []], function () use ($router) {
+    $router->get('/download/user-chat-file', ['uses' => 'DownloadController@userChatFile']);
+});
+
 
 //TestController 控制器分组
 $router->group([], function () use ($router) {

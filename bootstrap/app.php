@@ -23,6 +23,7 @@ $app->configure('config');
 $app->configure('database');
 $app->configure('cors');
 $app->configure('mail');
+$app->configure('filesystems');
 
 //允许使用门面
 $app->withFacades();

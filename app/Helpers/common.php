@@ -324,3 +324,8 @@ function shortCode(string $string)
 
     return $show;
 }
+
+
+function getSaveFile($ext){
+    return uniqid('im-').'-'.uniqid().'.'.$ext;
+}
