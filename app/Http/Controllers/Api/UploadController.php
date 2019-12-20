@@ -126,7 +126,7 @@ class UploadController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function fileMerge(Request $request){
-        $hash_name = $request->post('hash_name','15768256985459719064252992027');
+        $hash_name = $request->post('hash_name','157684637009024014557555796912');
 
         $files = FileSplitUpload::where('user_id',$this->uid())->where('hash_name',$hash_name)->orderBy('index','asc')->get(['index','original_name','save_dir','is_delete','total_index','file_size','file_ext'])->toArray();
         if(!$files){
@@ -146,7 +146,7 @@ class UploadController extends CController
             $file_size += $file['file_size'];
         }
 
-        $save_dir = "user-file/".date('Ymd').'/'.getSaveFile('zip');
+        $save_dir = "user-file/".date('Ymd').'/'.getSaveFile($files[0]['file_ext'].'.tmp');
         if(Storage::disk('uploads')->move($fileMerge,$save_dir)){
             $res = UsersChatFiles::create([
                 'user_id'=>$this->uid(),

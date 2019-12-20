@@ -63,15 +63,12 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->post('/upload/img', ['uses' => 'UploadController@img']);
     $router->post('/upload/file', ['uses' => 'UploadController@file']);
     $router->post('/upload/file-stream', ['uses' => 'UploadController@fileStream']);
-
-
     $router->post('/upload/file-subarea-upload', ['uses' => 'UploadController@fileSubareaUpload']);
     $router->get('/upload/file-merge', ['uses' => 'UploadController@fileMerge']);
-    $router->get('/upload/download', ['uses' => 'UploadController@download']);
 });
 
-
-$router->group(['middleware' => []], function () use ($router) {
+//DownloadController 下载文件控制器分组
+$router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/download/user-chat-file', ['uses' => 'DownloadController@userChatFile']);
 });
 
