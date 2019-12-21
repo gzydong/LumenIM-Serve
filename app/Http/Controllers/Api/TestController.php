@@ -1,10 +1,8 @@
 <?php
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Support\Facades\Mail;
+use App\Logic\FileSplitUploadLogic;
 
-
-use App\Models\UsersFriends;
 
 /**
  * 测试控制器
@@ -15,7 +13,10 @@ class TestController
 {
 
     public function index(){
-        $ids = UsersFriends::getFriendIds(2054);
-        dd($ids);
+        $logic = new FileSplitUploadLogic();
+//        2097152 101144293 49
+
+        $data = $logic->createSplitInfo(1520,'redream-shop.zip','101144293');
+        dd($data);
     }
 }

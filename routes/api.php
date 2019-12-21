@@ -64,8 +64,10 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->post('/upload/file', ['uses' => 'UploadController@file']);
     $router->post('/upload/file-stream', ['uses' => 'UploadController@fileStream']);
     $router->post('/upload/file-subarea-upload', ['uses' => 'UploadController@fileSubareaUpload']);
-    $router->get('/upload/file-merge', ['uses' => 'UploadController@fileMerge']);
+    $router->get('/upload/get-file-split-info', ['uses' => 'UploadController@getFileSplitInfo']);
 });
+
+$router->get('/upload/test', ['uses' => 'UploadController@test']);
 
 //DownloadController 下载文件控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {

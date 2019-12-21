@@ -23,8 +23,7 @@ class FileSplitUpload extends Model
      *
      * @var array
      */
-    protected $fillable = ['user_id','hash_name','original_name','index','total_index','save_dir','file_ext','file_size','is_delete','upload_at'];
-
+    protected $fillable = ['user_id','hash_name','original_name','split_index','split_num','save_dir','file_ext','file_size','is_delete','upload_at','file_type'];
 
     /**
      * 表明模型是否应该被打上时间戳

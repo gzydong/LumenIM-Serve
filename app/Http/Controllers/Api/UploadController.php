@@ -2,11 +2,13 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 use App\Models\FileSplitUpload;
 use App\Models\UsersChatFiles;
+
+
+use App\Logic\FileSplitUploadLogic;
 
 /**
  * 上传文件控制器
@@ -85,6 +87,20 @@ class UploadController extends CController
     }
 
     /**
+     * 获取拆分文件信息
+     */
+    public function getFileSplitInfo(Request $request){
+        if(!$request->filled(['file_name','file_size'])){
+            return $this->ajaxParamError();
+        }
+
+        $logic = new FileSplitUploadLogic($this->uid());
+        $data = $logic->createSplitInfo($request->post('file_name'),$request->post('file_size'));
+
+        return $data?$this->ajaxSuccess('success',$data):$this->ajaxError('获取文件拆分信息失败...');
+    }
+
+    /**
      * 文件分区上传
      *
      * @param Request $request
@@ -92,80 +108,47 @@ class UploadController extends CController
      */
     public function fileSubareaUpload(Request $request){
         $file = $request->file('file');
-        $params = ['name','hash','index','ext','size','index','total_index'];
+        $params = ['name','hash','ext','size','split_index','split_num'];
         if(!$request->filled($params) || !$file){
             return $this->ajaxParamError();
         }
 
         $info = $request->only($params);
-        $save_dir = "tmp/{$info['hash']}";
-        $save_file_name = "{$info['hash']}_{$info['index']}_{$info['ext']}.tmp";
-        if(!$path = Storage::disk('uploads')->putFileAs($save_dir, $file,$save_file_name)){
+        $fileSize = $file->getClientSize();
+
+        $logic = new FileSplitUploadLogic($this->uid());
+
+
+        if(!$uploadRes = $logic->saveSplitFile($file,$info['hash'],$info['split_index'],$fileSize)){
             return $this->ajaxError('上传文件失败...');
         }
 
-        DB::table('file_split_upload')->insertGetId([
-            'user_id'=>$this->uid(),
-            'hash_name'=>$info['hash'],
-            'original_name'=>$info['name'],
-            'index'=>$info['index'],
-            'total_index'=>$info['total_index'],
-            'save_dir'=>"{$save_dir}/{$save_file_name}",
-            'file_ext'=>$info['ext'],
-            'file_size'=>$info['size'],
-            'upload_at'=>time(),
-        ]);
 
-        return $this->ajaxSuccess('上传文件成功...');
+        $progress = ceil(($info['split_index'] + 1)/ $info['split_num'] * 100);
+        if($progress == 100){
+            $fileInfo = $logic->fileMerge($info['hash']);
+            if(!$fileInfo){
+                return $this->ajaxError('上传文件失败...');
+            }
+
+            $save_dir = "user-file/".date('Ymd').'/'.$fileInfo['tmp_file_name'];
+            if(Storage::disk('uploads')->copy($fileInfo['path'],$save_dir)){
+                $ext = pathinfo($fileInfo['original_name'], PATHINFO_EXTENSION);
+                $res = UsersChatFiles::create([
+                    'user_id'=>$this->uid(),
+                    'file_type'=>UsersChatFiles::getFileType($ext),
+                    'file_suffix'=>$ext,
+                    'file_size'=>$fileInfo['file_size'],
+                    'save_dir'=>$save_dir,
+                    'original_name'=>$fileInfo['original_name'],
+                    'created_at'=>date('Y-m-d H:i:s')
+                ]);
+
+                return $this->ajaxSuccess('文件上传成功...');
+            }
+        }
+
+        return $this->ajaxSuccess('文件上传成功...');
     }
 
-    /**
-     * 分区文件请求合并操作
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function fileMerge(Request $request){
-        $hash_name = $request->post('hash_name','157684637009024014557555796912');
-
-        $files = FileSplitUpload::where('user_id',$this->uid())->where('hash_name',$hash_name)->orderBy('index','asc')->get(['index','original_name','save_dir','is_delete','total_index','file_size','file_ext'])->toArray();
-        if(!$files){
-            return $this->ajaxError('文件信息不存在...');
-        }
-
-        $count = count($files);
-        if($files[0]['total_index'] != $count){
-            return $this->ajaxReturn('文件还在上传中...');
-        }
-
-        $dir = base_path('uploads');
-        $fileMerge =  "tmp/{$hash_name}/{$files[0]['original_name']}";
-        $file_size = 0;
-        foreach ($files as $file){
-            file_put_contents($dir.'/'.$fileMerge, file_get_contents($dir.'/'.$file['save_dir']), FILE_APPEND);
-            $file_size += $file['file_size'];
-        }
-
-        $save_dir = "user-file/".date('Ymd').'/'.getSaveFile($files[0]['file_ext'].'.tmp');
-        if(Storage::disk('uploads')->move($fileMerge,$save_dir)){
-            $res = UsersChatFiles::create([
-                'user_id'=>$this->uid(),
-                'file_type'=>UsersChatFiles::getFileType($files[0]['file_ext']),
-                'file_suffix'=>$files[0]['file_ext'],
-                'file_size'=>$file_size,
-                'save_dir'=>$save_dir,
-                'original_name'=>$files[0]['original_name'],
-                'created_at'=>date('Y-m-d H:i:s')
-            ]);
-
-            dd($res);
-
-            echo '文件合并成功...';
-        }
-    }
-
-
-    public function download(){
-        return Storage::disk('uploads')->download('user-file/20191220/im-5dfc87baad1b0-5dfc87baad1b3.zip');
-    }
 }
