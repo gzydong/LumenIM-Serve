@@ -9,6 +9,7 @@ use App\Models\UsersChatFiles;
 
 
 use App\Logic\FileSplitUploadLogic;
+use Illuminate\Support\Str;
 
 /**
  * 上传文件控制器
@@ -117,21 +118,20 @@ class UploadController extends CController
         $fileSize = $file->getClientSize();
 
         $logic = new FileSplitUploadLogic($this->uid());
-
-
         if(!$uploadRes = $logic->saveSplitFile($file,$info['hash'],$info['split_index'],$fileSize)){
             return $this->ajaxError('上传文件失败...');
         }
 
-
-        $progress = ceil(($info['split_index'] + 1)/ $info['split_num'] * 100);
-        if($progress == 100){
+        if(($info['split_index'] + 1) == $info['split_num']){
             $fileInfo = $logic->fileMerge($info['hash']);
             if(!$fileInfo){
                 return $this->ajaxError('上传文件失败...');
             }
 
-            $save_dir = "user-file/".date('Ymd').'/'.$fileInfo['tmp_file_name'];
+
+
+            $file_hahs_name = uniqid().Str::random().'.'.$info['ext'];
+            $save_dir = "user-file/".date('Ymd').'/'.$file_hahs_name;
             if(Storage::disk('uploads')->copy($fileInfo['path'],$save_dir)){
                 $ext = pathinfo($fileInfo['original_name'], PATHINFO_EXTENSION);
                 $res = UsersChatFiles::create([
@@ -144,11 +144,18 @@ class UploadController extends CController
                     'created_at'=>date('Y-m-d H:i:s')
                 ]);
 
-                return $this->ajaxSuccess('文件上传成功...');
+                return $this->ajaxSuccess('文件上传成功...',[
+                    'is_file_merge'=>true,
+                    'file_info'=> encrypt($res->id)
+                ]);
             }
         }
 
-        return $this->ajaxSuccess('文件上传成功...');
+        unset($logic);
+        unset($file);
+        unset($request);
+
+        return $this->ajaxSuccess('文件上传成功...',['is_file_merge'=>false]);
     }
 
 }

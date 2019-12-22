@@ -90,6 +90,7 @@ class ChatService
             'receive_id' => $message['receive_user'],
             'text_msg' => $message['content'],
             'send_time' => $message['send_time'],
+            'file_id' => $message['file_id']??0
         ]);
 
         if (!$recordRes) {

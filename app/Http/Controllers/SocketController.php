@@ -56,6 +56,14 @@ class SocketController extends Controller
         //处理文本消息
         if ($msgData['msg_type'] == 1) {
             $msgData["content"] = htmlspecialchars($msgData['content']);
+        }else if($msgData['msg_type'] == 3){
+            $fileId = decrypt($msgData["content"]);
+            if(!$fileId){
+                return true;
+            }
+
+            $msgData["content"] = '';
+            $msgData['file_id']= $fileId;
         }
 
         //将聊天记录保存到数据库(待优化：后面采用异步保存信息)
