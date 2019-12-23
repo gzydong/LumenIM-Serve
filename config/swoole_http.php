@@ -29,7 +29,7 @@ return [
             'worker_num' => env('SWOOLE_HTTP_WORKER_NUM', swoole_cpu_num()),
             'task_worker_num' => env('SWOOLE_HTTP_TASK_WORKER_NUM', swoole_cpu_num()),
             // The data to receive can't be larger than buffer_output_size.
-            'package_max_length' => 20 * 1024 * 1024,
+            'package_max_length' => 5 * 1024 * 1024,
             // The data to send can't be larger than buffer_output_size.
             'buffer_output_size' => 10 * 1024 * 1024,
             // Max buffer size for socket connections

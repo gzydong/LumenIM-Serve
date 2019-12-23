@@ -78,6 +78,10 @@ class FileSplitUploadLogic
             return false;
         }
 
+        try{
+            Storage::disk('uploads')->delete("tmp/{$hashName}/{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp");
+        }catch (\Exception $e){}
+
         if (!$save_path = Storage::disk('uploads')->putFileAs("tmp/{$hashName}", $file, "{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp")) {
             return false;
         }

@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Facades\WebSocketHelper;
 use App\Facades\ChatService;
+use App\Models\UsersChatFiles;
 
 /**
  *
@@ -56,7 +57,7 @@ class SocketController extends Controller
         //处理文本消息
         if ($msgData['msg_type'] == 1) {
             $msgData["content"] = htmlspecialchars($msgData['content']);
-        }else if($msgData['msg_type'] == 3){
+        }else if($msgData['msg_type'] == 2){
             $fileId = decrypt($msgData["content"]);
             if(!$fileId){
                 return true;
@@ -65,6 +66,7 @@ class SocketController extends Controller
             $msgData["content"] = '';
             $msgData['file_id']= $fileId;
         }
+
 
         //将聊天记录保存到数据库(待优化：后面采用异步保存信息)
         if (!$packageData = ChatService::saveChatRecord($msgData)) {
@@ -98,10 +100,23 @@ class SocketController extends Controller
 
         //消息发送者用户信息
         $msgData['sendUserInfo'] = $userInfo;
+        $msgData["fileInfo"] = [];
 
         //替换表情
         if ($msgData['msg_type'] == 1) {
             $msgData["content"] = emojiReplace($msgData['content']);
+        }else{
+            $msgData["content"] = emojiReplace($msgData['content']);
+            $fileInfo = UsersChatFiles::where('id',$msgData['file_id'])->first(['file_type','file_suffix','file_size','save_dir','original_name']);
+            if($fileInfo){
+                $msgData["fileInfo"]['file_type'] = $fileInfo->file_type;
+                $msgData["fileInfo"]['file_suffix'] = $fileInfo->file_suffix;
+                $msgData["fileInfo"]['file_size'] = $fileInfo->file_size;
+                $msgData["fileInfo"]['original_name'] = $fileInfo->original_name;
+                $msgData["fileInfo"]['url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) :'';
+            }
+
+            unset($msgData['file_id']);
         }
 
         unset($msgData['fd']);

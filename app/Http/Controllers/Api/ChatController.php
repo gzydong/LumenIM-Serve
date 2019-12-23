@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-
 use App\Models\User;
+use App\Models\UsersChatFiles;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 use Illuminate\Http\Request;
@@ -11,6 +11,8 @@ use App\Logic\ChatLogic;
 use App\Facades\WebSocketHelper;
 use App\Logic\UsersLogic;
 use App\Helpers\Cache\CacheHelper;
+
+use Illuminate\Support\Facades\Storage;
 
 class ChatController extends CController
 {
@@ -51,10 +53,14 @@ class ChatController extends CController
 
         $uid = $this->uid();
         $data = $type == 1 ? $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size) : $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
+        $data['page_size'] = $page_size;
+
 
 
         if (count($data['rows']) > 0) {
             $data['rows'] = array_map(function ($item) use ($uid) {
+                $item['fileInfo'] = [];
+
                 if ($item['user_id'] != 0) {
                     $item['float'] = $item['user_id'] == $uid ? 'right' : 'left';
                 } else {
@@ -62,17 +68,25 @@ class ChatController extends CController
                 }
 
                 if ($item['msg_type'] == 1) {
-                    $item['text_msg'] = emojiReplace($item['text_msg']);
-                } else if (in_array($item['msg_type'], [5, 6])) {
-                    $uids = explode(',', $item['text_msg']);
-                    $item['text_msg'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(), $uids);
+                    $item['content'] = emojiReplace($item['content']);
+                } else if ($item['msg_type'] == 2) {
+                    $fileInfo = UsersChatFiles::where('id',$item['file_id'])->first(['file_type','file_suffix','file_size','save_dir','original_name']);
+                    if($fileInfo){
+                        $item["fileInfo"]['file_type'] = $fileInfo->file_type;
+                        $item["fileInfo"]['file_suffix'] = $fileInfo->file_suffix;
+                        $item["fileInfo"]['file_size'] = $fileInfo->file_size;
+                        $item["fileInfo"]['original_name'] = $fileInfo->original_name;
+                        $item["fileInfo"]['url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) :'';
+                    }
+                } else if (in_array($item['msg_type'], [3, 4])) {
+                    $item['content'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(), explode(',', $item['content']));
                 }
 
+                unset($item['file_id']);
                 return $item;
             }, $data['rows']);
         }
 
-        $data['page_size'] = $page_size;
 
         return $this->ajaxSuccess('success', $data);
     }
@@ -388,5 +402,39 @@ class ChatController extends CController
 
         $isTrue = $this->chatLogic->setGroupDisturb($this->uid(), $group_id, $status);
         return $isTrue ? $this->ajaxSuccess('设置成功...') : $this->ajaxError('设置失败...');
+    }
+
+    /**
+     * 发送聊天图片
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadImage(){
+        $file = $this->request->file('img');
+        if (!$file->isValid()) {
+            return $this->ajaxParamError('请求参数错误');
+        }
+
+        //图片格式验证
+        if (!in_array($file->getClientOriginalExtension(), ['jpg', 'png', 'jpeg', 'gif','webp'])) {
+            return $this->ajaxParamError('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
+        }
+
+        //保存图片
+        if(!$save_path = Storage::disk('uploads')->put('chatimg/'.date('Ymd'), $file)){
+            return $this->ajaxError('图片上传失败');
+        }
+
+        $result = UsersChatFiles::create([
+            'user_id'=>$this->uid(),
+            'file_type'=>1,
+            'file_suffix'=>$file->getClientOriginalExtension(),
+            'file_size'=>$file->getSize(),
+            'save_dir'=>$save_path,
+            'original_name'=>$file->getClientOriginalName(),
+            'created_at'=>date('Y-m-d H:i:s')
+        ]);
+
+        return $result ? $this->ajaxSuccess('图片上传成功...',['file_info'=> encrypt($result->id)]) :$this->ajaxError('图片上传失败');
     }
 }

@@ -42,7 +42,6 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/chat/chat-list', ['uses' => 'ChatController@getChatList']);
     $router->get('/chat/chat-records', ['uses' => 'ChatController@getChatRecords']);
 
-
     //群聊相关接口
     $router->post('/chat/launch-group-chat', ['uses' => 'ChatController@launchGroupChat']);
     $router->post('/chat/invite-group-chat', ['uses' => 'ChatController@inviteGroupChat']);
@@ -54,26 +53,24 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->post('/chat/create-chat-list', ['uses' => 'ChatController@createChatList']);
     $router->get('/chat/group-detail', ['uses' => 'ChatController@getGroupDetail']);
     $router->get('/chat/update-chat-unread-num', ['uses' => 'ChatController@updateChatUnreadNum']);
-
     $router->post('/chat/set-group-disturb', ['uses' => 'ChatController@setGroupDisturb']);
+
+
+    //发送聊天图片
+    $router->post('/chat/send-image', ['uses' => 'ChatController@uploadImage']);
 });
 
 //UploadController 上传文件控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
-    $router->post('/upload/img', ['uses' => 'UploadController@img']);
-    $router->post('/upload/file', ['uses' => 'UploadController@file']);
     $router->post('/upload/file-stream', ['uses' => 'UploadController@fileStream']);
     $router->post('/upload/file-subarea-upload', ['uses' => 'UploadController@fileSubareaUpload']);
     $router->get('/upload/get-file-split-info', ['uses' => 'UploadController@getFileSplitInfo']);
 });
 
-$router->get('/upload/test', ['uses' => 'UploadController@test']);
-
 //DownloadController 下载文件控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/download/user-chat-file', ['uses' => 'DownloadController@userChatFile']);
 });
-
 
 //TestController 控制器分组
 $router->group([], function () use ($router) {

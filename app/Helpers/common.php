@@ -329,3 +329,13 @@ function shortCode(string $string)
 function getSaveFile($ext){
     return uniqid('im-').'-'.uniqid().'.'.$ext;
 }
+
+
+/**
+ * 获取文件url
+ * @param string $path 文件相对路径
+ * @return string
+ */
+function getFileUrl(string $path){
+    return config('config.upload.upload_domain','').'/'.$path;
+}

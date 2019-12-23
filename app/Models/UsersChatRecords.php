@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+
 class UsersChatRecords extends Model
 {
     /**
@@ -23,7 +24,7 @@ class UsersChatRecords extends Model
      *
      * @var array
      */
-    protected $fillable = ['source','msg_type','user_id','receive_id','send_time','text_msg','file_id'];
+    protected $fillable = ['source','msg_type','user_id','receive_id','file_id','content','send_time'];
 
     /**
      * 表明模型是否应该被打上时间戳

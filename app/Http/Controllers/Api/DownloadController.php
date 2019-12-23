@@ -30,6 +30,7 @@ class DownloadController extends CController
         }
 
         $recordsInfo = UsersChatRecords::select(['msg_type','source','user_id','receive_id','file_id'])->where('id',$crId)->first();
+
         if(!$recordsInfo){
             return $this->ajaxError('文件不存在...');
         }

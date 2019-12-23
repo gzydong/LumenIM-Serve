@@ -1,6 +1,7 @@
 <?php
 namespace App\Services\Websocket;
 
+use App\Models\UsersChatFiles;
 use App\Models\UsersGroupMember;
 use App\Models\UsersChatRecords;
 use App\Models\UsersChatList;
@@ -88,13 +89,17 @@ class ChatService
             'msg_type' => $message['msg_type'],
             'user_id' => $message['send_user'],
             'receive_id' => $message['receive_user'],
-            'text_msg' => $message['content'],
+            'content' => $message['content'],
             'send_time' => $message['send_time'],
             'file_id' => $message['file_id']??0
         ]);
 
         if (!$recordRes) {
             return false;
+        }
+
+        if(isset($message['file_id']) && $message['file_id']){
+            UsersChatFiles::where('id',$message['file_id'])->update(['chat_records_id'=>$recordRes->id]);
         }
 
         //判断聊天消息类型
