@@ -1,10 +1,7 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
-use App\Logic\FileSplitUploadLogic;
-use App\Models\UsersChatFiles;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * 测试控制器
@@ -14,8 +11,8 @@ use Illuminate\Support\Facades\Storage;
 class TestController
 {
 
-    public function index(){
-
+    public function index()
+    {
 
     }
 }

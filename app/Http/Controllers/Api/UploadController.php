@@ -2,13 +2,10 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-
-use App\Models\FileSplitUpload;
 use App\Models\UsersChatFiles;
-
 use App\Logic\FileSplitUploadLogic;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * 上传文件控制器
@@ -39,6 +36,10 @@ class UploadController extends CController
 
     /**
      * 获取拆分文件信息
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getFileSplitInfo(Request $request){
         if(!$request->filled(['file_name','file_size'])){

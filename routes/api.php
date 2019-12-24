@@ -41,6 +41,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/chat/chat-list', ['uses' => 'ChatController@getChatList']);
     $router->get('/chat/chat-records', ['uses' => 'ChatController@getChatRecords']);
+    $router->get('/chat/chat-files', ['uses' => 'ChatController@getChatFiles']);
 
     //群聊相关接口
     $router->post('/chat/launch-group-chat', ['uses' => 'ChatController@launchGroupChat']);
@@ -54,7 +55,6 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/chat/group-detail', ['uses' => 'ChatController@getGroupDetail']);
     $router->get('/chat/update-chat-unread-num', ['uses' => 'ChatController@updateChatUnreadNum']);
     $router->post('/chat/set-group-disturb', ['uses' => 'ChatController@setGroupDisturb']);
-
 
     //发送聊天图片
     $router->post('/chat/send-image', ['uses' => 'ChatController@uploadImage']);

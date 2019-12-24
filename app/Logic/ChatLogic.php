@@ -529,7 +529,59 @@ SQL;
 
         if (!in_array($status, [0, 1])) return false;
 
-
         return UsersGroupMember::where('user_id', $user_id)->where('group_id', $group_id)->update(['not_disturb' => $status]);
+    }
+
+    /**
+     * 获取聊天文件
+     *
+     * @param int $user_id 用户ID
+     * @param int $receive_id 接受对象ID
+     * @param int $type 聊天类型
+     * @param int $page 分页
+     * @param int $page_size 分页大小(默认15)
+     */
+    public function getChatFiles(int $user_id,int $receive_id,int $type,int $page,$page_size = 15){
+        $countSqlObj = UsersChatRecords::select();
+        $rowsSqlObj = UsersChatRecords::select([
+            'users_chat_records.id','users_chat_records.send_time','users_chat_files.file_type','users_chat_files.file_suffix','users_chat_files.file_size','users_chat_files.original_name','users_chat_files.save_dir',
+
+            'users_chat_records.user_id','users_chat_records.receive_id'
+        ]);
+
+        if($type == 1){//好友私信
+            $where1 = [
+                ['users_chat_records.msg_type','=',2],
+                ['users_chat_records.user_id','=',$user_id],
+                ['users_chat_records.receive_id','=',$receive_id]
+            ];
+
+            $where2 = [
+                ['users_chat_records.msg_type','=',2],
+                ['users_chat_records.user_id','=',$receive_id],
+                ['users_chat_records.receive_id','=',$user_id]
+            ];
+
+            $countSqlObj->where($where1)->orWhere($where2);
+            $rowsSqlObj->where($where1)->orWhere($where2);
+        }else{//群聊消息
+            $countSqlObj->where('users_chat_records.msg_type',2);
+            $rowsSqlObj->where('users_chat_records.msg_type',2);
+
+            $countSqlObj->where('users_chat_records.receive_id',$receive_id);
+            $rowsSqlObj->where('users_chat_records.receive_id',$receive_id);
+        }
+
+
+        $countSqlObj->leftJoin('users_chat_files', 'users_chat_files.id', '=', 'users_chat_records.file_id');
+        $rowsSqlObj->leftJoin('users_chat_files', 'users_chat_files.id', '=', 'users_chat_records.file_id');
+
+        $count = $countSqlObj->count();
+        $rows = [];
+        if ($count > 0) {
+            $rows = $rowsSqlObj->forPage($page, $page_size)->orderBy('users_chat_records.id', 'desc')->get()->toArray();
+        }
+
+        return $rows;
     }
 }

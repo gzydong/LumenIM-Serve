@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Auth\Authenticatable;
@@ -9,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Support\Facades\Hash;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract ,JWTSubject
 {
@@ -21,7 +19,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var string
      */
     protected $table = 'users';
-
 
     /**
      * The attributes that are mass assignable.
@@ -76,31 +73,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     public static function checkUserExist(int $user_id){
         return self::where('id',$user_id)->exists() ? true :false;
-    }
-
-    /**
-     * 用户修改密码
-     *
-     * @param int $user_id  用户ID
-     * @param string $old_password  旧密码
-     * @param $new_password  新密码
-     * @return array
-     */
-    public static function changePassword(int $user_id,string $old_password,$new_password){
-        $info = self::select(['id','password'])->where('id',$user_id)->first();
-        if(!$info){
-            return [false,'用户不存在'];
-        }
-
-        if(!Hash::check($old_password,$info->password)){
-            return [false,'旧密码验证失败'];
-        }
-
-        if(!self::where('id',$user_id)->update(['password'=>Hash::make($new_password)])){
-            return [false,'密码修改失败'];
-        }
-
-        return [true,'密码修改成功'];
     }
 
     /**

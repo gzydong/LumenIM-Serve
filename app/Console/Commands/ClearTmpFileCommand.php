@@ -27,17 +27,17 @@ class ClearTmpFileCommand extends Command
     protected $description = '清除拆分上传的临时文件';
 
     public function handle(){
-        FileSplitUpload::select(['id','save_dir'])->where('is_delete',0)->where('upload_at','<',time())->chunk(200, function ($rows) {
-            $ids = [];
-            try{
-                foreach ($rows as $row){
-                    $ids[] = $row->id;
-                    Storage::disk('uploads')->delete($row->save_dir);
+        FileSplitUpload::select(['id', 'save_dir', 'hash_name'])->where('file_type', 1)->where('is_delete', 0)->where('upload_at', '<', time())->chunk(200, function ($rows) {
+            $hash_name = [];
+            try {
+                foreach ($rows as $row) {
+                    $hash_name[] = $row->hash_name;
+                    $dir = pathinfo($row->save_dir, PATHINFO_DIRNAME);
+                    Storage::disk('uploads')->deleteDirectory($dir);
                 }
-            }catch (\Exception $e){}
 
-
-            FileSplitUpload::whereIn('id',$ids)->update(['is_delete'=>1]);
+                FileSplitUpload::whereIn('hash_name', $hash_name)->update(['is_delete' => 1]);
+            } catch (\Exception $e) {}
         });
     }
 }

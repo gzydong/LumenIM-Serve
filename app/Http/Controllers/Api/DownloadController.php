@@ -30,7 +30,6 @@ class DownloadController extends CController
         }
 
         $recordsInfo = UsersChatRecords::select(['msg_type','source','user_id','receive_id','file_id'])->where('id',$crId)->first();
-
         if(!$recordsInfo){
             return $this->ajaxError('文件不存在...');
         }
@@ -48,7 +47,7 @@ class DownloadController extends CController
             }
         }
 
-        $fileInfo = UsersChatFiles::select(['save_dir','original_name'])->where('chat_records_id',$recordsInfo->file_id)->first();
+        $fileInfo = UsersChatFiles::select(['save_dir','original_name'])->where('id',$recordsInfo->file_id)->first();
         if(!$fileInfo){
             return $this->ajaxError('文件不存在或没有下载权限...');
         }

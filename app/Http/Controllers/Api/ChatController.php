@@ -92,6 +92,20 @@ class ChatController extends CController
     }
 
     /**
+     * 获取私信或群聊的聊天记录
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getChatFiles()
+    {
+        $page = $this->request->get('page', 1);
+        $receive_id = $this->request->get('receive_id', 4070);
+        $type = $this->request->get('type', 1);
+
+        $this->chatLogic->getChatFiles($this->uid(),$receive_id,$type,$page,15);
+    }
+
+    /**
      * 创建群聊
      *
      * @return \Illuminate\Http\JsonResponse
@@ -437,4 +451,6 @@ class ChatController extends CController
 
         return $result ? $this->ajaxSuccess('图片上传成功...',['file_info'=> encrypt($result->id)]) :$this->ajaxError('图片上传失败');
     }
+
+
 }

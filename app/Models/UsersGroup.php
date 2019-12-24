@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+
 class UsersGroup extends Model
 {
     /**
@@ -38,7 +39,7 @@ class UsersGroup extends Model
      */
     public function members()
     {
-        return $this->hasMany(\App\Models\UsersGroupMember::class,'group_id','id');
+        return $this->hasMany(UsersGroupMember::class,'group_id','id');
     }
 
     /**

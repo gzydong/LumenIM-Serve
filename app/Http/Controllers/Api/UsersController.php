@@ -65,7 +65,7 @@ class UsersController extends CController
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePassword(Request $request){
+    public function changePassword(Request $request,UsersLogic $usersLogic){
         if(!$request->filled(['old_password','new_password'])){
             return $this->ajaxParamError();
         }
@@ -74,7 +74,7 @@ class UsersController extends CController
             return $this->ajaxParamError('新密码格式错误(8~16位字母加数字)');
         }
 
-        [$isTrue,$message] = User::changePassword($this->uid(),$request->post('old_password'),$request->post('new_password'));
+        [$isTrue,$message] = $usersLogic->userChagePassword($this->uid(),$request->post('old_password'),$request->post('new_password'));
         return $this->ajaxReturn($isTrue?200:305,$message);
     }
 

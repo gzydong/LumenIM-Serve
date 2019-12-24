@@ -119,4 +119,29 @@ class UsersLogic extends Logic
 
         return $info;
     }
+
+    /**
+     * 用户修改密码接口
+     *
+     * @param int $user_id 用户ID
+     * @param string $old_password 原始密码
+     * @param string $new_password 新密码
+     * @return array
+     */
+    public function userChagePassword(int $user_id,string $old_password,string $new_password){
+        $info = User::select(['id','password'])->where('id',$user_id)->first();
+        if(!$info){
+            return [false,'用户不存在'];
+        }
+
+        if(!Hash::check($old_password,$info->password)){
+            return [false,'旧密码验证失败'];
+        }
+
+        if(!User::where('id',$user_id)->update(['password'=>Hash::make($new_password)])){
+            return [false,'密码修改失败'];
+        }
+
+        return [true,'密码修改成功'];
+    }
 }

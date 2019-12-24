@@ -55,7 +55,4 @@ class UsersChatFiles extends Model
 
         return 3;
     }
-
-
-
 }
