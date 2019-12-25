@@ -69,7 +69,7 @@ class SocketController extends Controller
 
 
         //将聊天记录保存到数据库(待优化：后面采用异步保存信息)
-        if (!$packageData = ChatService::saveChatRecord($msgData)) {
+        if (!$insert_id = ChatService::saveChatRecord($msgData)) {
             info("聊天记录保存失败：" . json_encode($msgData));
         }
 
@@ -99,6 +99,7 @@ class SocketController extends Controller
         }
 
         //消息发送者用户信息
+        $msgData['id'] = $insert_id;
         $msgData['sendUserInfo'] = $userInfo;
         $msgData["fileInfo"] = [];
 

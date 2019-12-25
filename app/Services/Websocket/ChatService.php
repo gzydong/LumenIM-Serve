@@ -131,6 +131,6 @@ class ChatService
         }
 
         CacheHelper::setLastChatCache(['send_time'=>$message['send_time'],'text'=>$text], $message['receive_user'], $message['source_type'] == 1 ? $message['send_user'] : 0);
-        return true;
+        return $recordRes->id;
     }
 }

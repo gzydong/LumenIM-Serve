@@ -99,10 +99,12 @@ class ChatController extends CController
     public function getChatFiles()
     {
         $page = $this->request->get('page', 1);
+        $page_size = $this->request->get('page_size', 15);
         $receive_id = $this->request->get('receive_id', 4070);
         $type = $this->request->get('type', 1);
 
-        $this->chatLogic->getChatFiles($this->uid(),$receive_id,$type,$page,15);
+        $data = $this->chatLogic->getChatFiles($this->uid(),$receive_id,$type,$page,$page_size);
+        return $this->ajaxSuccess('success',$data);
     }
 
     /**
@@ -451,6 +453,4 @@ class ChatController extends CController
 
         return $result ? $this->ajaxSuccess('图片上传成功...',['file_info'=> encrypt($result->id)]) :$this->ajaxError('图片上传失败');
     }
-
-
 }

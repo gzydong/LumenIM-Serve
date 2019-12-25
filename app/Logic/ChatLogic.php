@@ -540,13 +540,12 @@ SQL;
      * @param int $type 聊天类型
      * @param int $page 分页
      * @param int $page_size 分页大小(默认15)
+     * @return array
      */
     public function getChatFiles(int $user_id,int $receive_id,int $type,int $page,$page_size = 15){
         $countSqlObj = UsersChatRecords::select();
         $rowsSqlObj = UsersChatRecords::select([
             'users_chat_records.id','users_chat_records.send_time','users_chat_files.file_type','users_chat_files.file_suffix','users_chat_files.file_size','users_chat_files.original_name','users_chat_files.save_dir',
-
-            'users_chat_records.user_id','users_chat_records.receive_id'
         ]);
 
         if($type == 1){//好友私信
@@ -572,7 +571,6 @@ SQL;
             $rowsSqlObj->where('users_chat_records.receive_id',$receive_id);
         }
 
-
         $countSqlObj->leftJoin('users_chat_files', 'users_chat_files.id', '=', 'users_chat_records.file_id');
         $rowsSqlObj->leftJoin('users_chat_files', 'users_chat_files.id', '=', 'users_chat_records.file_id');
 
@@ -582,6 +580,6 @@ SQL;
             $rows = $rowsSqlObj->forPage($page, $page_size)->orderBy('users_chat_records.id', 'desc')->get()->toArray();
         }
 
-        return $rows;
+        return $this->packData($rows,$count,$page,$page_size);
     }
 }
