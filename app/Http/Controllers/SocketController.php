@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Facades\WebSocketHelper;
@@ -20,7 +21,8 @@ class SocketController extends Controller
      * @param $msgData
      * @return bool
      */
-    public function chatDialogue($websocket, $msgData){
+    public function chatDialogue($websocket, $msgData)
+    {
         $fd = $msgData['fd'];
 
         $msgData['send_time'] = date('Y-m-d H:i:s');
@@ -35,7 +37,7 @@ class SocketController extends Controller
         }
 
         //验证消息类型 私聊|群聊
-        if (!in_array($msgData['source_type'], [1, 2])){
+        if (!in_array($msgData['source_type'], [1, 2])) {
             return true;
         }
 
@@ -43,13 +45,13 @@ class SocketController extends Controller
         if ($msgData['source_type'] == 1) {//私信
             //判断发送者和接受者是否是好友关系
             if (!ChatService::checkFriends($msgData['send_user'], $msgData['receive_user'])) {
-                WebSocketHelper::sendResponseMessage('notify', $fd, ['notify'=>'温馨提示:您当前与对方尚未成功好友！']);
+                WebSocketHelper::sendResponseMessage('notify', $fd, ['notify' => '温馨提示:您当前与对方尚未成功好友！']);
                 return true;
             }
         } else if ($msgData['source_type'] == 2) {//群聊
             //判断是否属于群成员
             if (!ChatService::checkGroupMember($msgData['receive_user'], $msgData['send_user'])) {
-                WebSocketHelper::sendResponseMessage('notify', $fd, ['notify'=>'温馨提示:您还没有加入该聊天群！']);
+                WebSocketHelper::sendResponseMessage('notify', $fd, ['notify' => '温馨提示:您还没有加入该聊天群！']);
                 return true;
             }
         }
@@ -57,14 +59,14 @@ class SocketController extends Controller
         //处理文本消息
         if ($msgData['msg_type'] == 1) {
             $msgData["content"] = htmlspecialchars($msgData['content']);
-        }else if($msgData['msg_type'] == 2){
+        } else if ($msgData['msg_type'] == 2) {
             $fileId = decrypt($msgData["content"]);
-            if(!$fileId){
+            if (!$fileId) {
                 return true;
             }
 
             $msgData["content"] = '';
-            $msgData['file_id']= $fileId;
+            $msgData['file_id'] = $fileId;
         }
 
 
@@ -106,15 +108,15 @@ class SocketController extends Controller
         //替换表情
         if ($msgData['msg_type'] == 1) {
             $msgData["content"] = emojiReplace($msgData['content']);
-        }else{
+        } else {
             $msgData["content"] = emojiReplace($msgData['content']);
-            $fileInfo = UsersChatFiles::where('id',$msgData['file_id'])->first(['file_type','file_suffix','file_size','save_dir','original_name']);
-            if($fileInfo){
+            $fileInfo = UsersChatFiles::where('id', $msgData['file_id'])->first(['file_type', 'file_suffix', 'file_size', 'save_dir', 'original_name']);
+            if ($fileInfo) {
                 $msgData["fileInfo"]['file_type'] = $fileInfo->file_type;
                 $msgData["fileInfo"]['file_suffix'] = $fileInfo->file_suffix;
                 $msgData["fileInfo"]['file_size'] = $fileInfo->file_size;
                 $msgData["fileInfo"]['original_name'] = $fileInfo->original_name;
-                $msgData["fileInfo"]['url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) :'';
+                $msgData["fileInfo"]['url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) : '';
             }
 
             unset($msgData['file_id']);
@@ -124,6 +126,21 @@ class SocketController extends Controller
 
         //发送消息
         WebSocketHelper::sendResponseMessage('chat_message', $clientFds, $msgData);
+    }
+
+
+    /**
+     * 键盘输入提示
+     *
+     * @param $websocket
+     * @param $msgData
+     */
+    public function inputTipPush($websocket, $msgData)
+    {
+        $clientFds = WebSocketHelper::getUserFds($msgData['receive_user']);
+        if ($clientFds) {
+            WebSocketHelper::sendResponseMessage('input_tip', $clientFds, $msgData);
+        }
     }
 }
 

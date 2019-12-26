@@ -43,15 +43,19 @@ class ImageCompose
      */
     public function saveImage(string $imagePath)
     {
-        $res = imagejpeg($this->background, $imagePath);
-        if (false === $res) {
+        $dir = pathinfo($imagePath,PATHINFO_DIRNAME);
+        if(!is_dir($dir)){
+            mkdir($dir,0777,true);
+        }
+
+        if (false === imagejpeg($this->background, $imagePath)) {
             return false;
         }
 
         // 释放内存
         imagedestroy($this->background);
 
-        return $imagePath;
+        return true;
     }
 
     /**
@@ -71,13 +75,20 @@ class ImageCompose
      */
     function compose($bg_w = 200, $bg_h = 220)
     {
-        $pic_list = array_slice($this->images, 0, 9); // 只操作前9个图片
+        //只操作前9个图片
+        $pic_list = array_slice($this->images, 0, 9);
 
-        $this->background = imagecreatetruecolor($bg_w, $bg_h); // 背景图片
+        //背景
+        $this->background = imagecreatetruecolor($bg_w, $bg_h);
 
-        $color = imagecolorallocate($this->background, 202, 201, 201);
-        imagefill($this->background, 0, 0, $color);           //区域填充
-        imageColorTransparent($this->background, $color);            // 将某个颜色定义为透明色
+        //背景填充色
+        $color = imagecolorallocate($this->background, 255, 255, 255);
+
+        //区域填充
+        imagefill($this->background, 0, 0, $color);
+
+        //将某个颜色定义为透明色
+        imageColorTransparent($this->background, $color);
 
         $start_x = $start_y = 0;
         switch (count($pic_list)) {
@@ -159,7 +170,22 @@ class ImageCompose
                 $start_y = $start_y + $this->pic_h + $this->space_y;
             }
 
-            $resource = imagecreatefromjpeg($pic_path);
+            $ext = pathinfo($pic_path,PATHINFO_EXTENSION);
+            switch ($ext){
+                case "png":
+                    $resource=imagecreatefrompng($pic_path);
+                    break;
+                case "jpg":
+                    $resource=imagecreatefromjpeg($pic_path);
+                    break;
+                case "jpeg":
+                    $resource=imagecreatefromjpeg($pic_path);
+                    break;
+                case "gif":
+                    $resource=imagecreatefromgif($pic_path);
+                    break;
+            }
+
             imagecopyresized($this->background, $resource, $start_x, $start_y, 0, 0, $this->pic_w, $this->pic_h, imagesx($resource), imagesy($resource));
             $start_x = $start_x + $this->pic_w + $this->space_x;
         }

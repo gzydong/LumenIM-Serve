@@ -325,11 +325,14 @@ function shortCode(string $string)
     return $show;
 }
 
-
+/**
+ * 获取文件名
+ * @param $ext 文件名
+ * @return string
+ */
 function getSaveFile($ext){
     return uniqid('im-').'-'.uniqid().'.'.$ext;
 }
-
 
 /**
  * 获取文件url

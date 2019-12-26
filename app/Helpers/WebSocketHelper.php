@@ -26,6 +26,7 @@ class WebSocketHelper
         'friend_apply'=>'friend_apply',//好友添加申请消息
         'join_group'=>'join_group',    //入群消息
         'login_notify'=>'login_notify',//好友登录消息通知
+        'input_tip'=>'input_tip',//好友登录消息通知
     ];
 
     /**
@@ -158,7 +159,7 @@ class WebSocketHelper
      */
     public function sendResponseMessage(string $event,$receive,$data){
         if(isset(self::EVENTS[$event])){
-            if($event == 'login_notify'){
+            if(in_array($event,['login_notify','input_tip'])){
                 Websocket::broadcast()->to($receive)->emit(self::EVENTS[$event], $data);
             }else if(!empty($receive)){
                 Websocket::to($receive)->emit(self::EVENTS[$event], $data);

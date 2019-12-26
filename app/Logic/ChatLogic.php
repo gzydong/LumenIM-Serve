@@ -9,6 +9,7 @@ use App\Models\UsersFriends;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\ImageCompose;
 
 use App\Helpers\Cache\CacheHelper;
 
@@ -34,7 +35,8 @@ class ChatLogic extends Logic
         $rows = array_map(function ($item) use ($user_id, &$friend_ids, &$group_ids) {
             $item['name'] = '';//对方昵称/群名称
             $item['unread_num'] = 0;//未读消息数量
-            $item['not_disturb'] = 0;//未读消息数量
+            $item['not_disturb'] = 0;//是否消息免打扰
+            $item['group_members_num'] = 0;//群聊人数
             $item['avatar'] = '';//默认头像
             $item['remark_name'] = '';//好友备注
             $item['msg_text'] = '......';
@@ -581,5 +583,44 @@ SQL;
         }
 
         return $this->packData($rows,$count,$page,$page_size);
+    }
+
+    /**
+     * 更新群聊头像
+     *
+     * @param int $group_id 群聊ID
+     * @return bool
+     */
+    public function updateGroupAvatar(int $group_id){
+        $members = UsersGroupMember::leftJoin('users', 'users.id', '=', 'users_group_member.user_id')->where([
+            ['users_group_member.group_id', '=', $group_id],
+            ['users_group_member.status', '=', 0],
+        ])->orderBy('users_group_member.created_at','asc')->limit(9)->get(['users.avatarurl','users.id'])->toArray();
+
+        $images = $user_ids =  [];
+        foreach ($members as $member){
+            $images[] = $member['avatarurl'];
+            $user_ids[] = shortCode($member['id']);
+        }
+
+        try{
+            $object = new ImageCompose(array_filter($images));
+            $object->compose();
+
+            $save_dir = config('filesystems.disks.uploads.root');
+            $path = 'avatar/'.date('Ymd').'/'.implode('-',$user_ids).'.png';
+            $isTrue = $object->saveImage($save_dir.'/'.$path);
+            unset($object);
+            unset($members);
+
+            if(!$isTrue){
+                return false;
+            }
+
+            UsersGroup::where('id',$group_id)->update(['avatarurl'=>getFileUrl($path)]);
+            return true;
+        }catch (\Exception $e){
+            return false;
+        }
     }
 }
