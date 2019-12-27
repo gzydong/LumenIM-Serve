@@ -56,7 +56,6 @@ function checkIds(array $ids){
     return true;
 }
 
-
 /**
  * 二维数组用指定的key值作为二维数组的key
  *
@@ -217,8 +216,6 @@ function emojiReplace(string $text){
 
     return str_replace(array_keys($emojiReplace),array_values($emojiReplace),$text);
 }
-
-
 
 function customSort($arr,$sort = []){
     $tmp1 = [];

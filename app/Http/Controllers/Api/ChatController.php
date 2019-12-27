@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UsersChatFiles;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
-use Illuminate\Http\Request;
+use App\Models\Emoticon;
 use App\Logic\ChatLogic;
 use App\Facades\WebSocketHelper;
 use App\Logic\UsersLogic;
 use App\Helpers\Cache\CacheHelper;
-
 use Illuminate\Support\Facades\Storage;
 
 class ChatController extends CController
@@ -55,38 +55,49 @@ class ChatController extends CController
         $data = $type == 1 ? $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size) : $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
         $data['page_size'] = $page_size;
 
-
-
         if (count($data['rows']) > 0) {
             $data['rows'] = array_map(function ($item) use ($uid) {
                 $item['fileInfo'] = [];
+                $item['float'] = ($item['user_id'] == 0) ? 'center' : ($item['user_id'] == $uid ? 'right' : 'left');
 
-                if ($item['user_id'] != 0) {
-                    $item['float'] = $item['user_id'] == $uid ? 'right' : 'left';
-                } else {
-                    $item['float'] = 'center';
-                }
-
-                if ($item['msg_type'] == 1) {
-                    $item['content'] = emojiReplace($item['content']);
-                } else if ($item['msg_type'] == 2) {
-                    $fileInfo = UsersChatFiles::where('id',$item['file_id'])->first(['file_type','file_suffix','file_size','save_dir','original_name']);
-                    if($fileInfo){
-                        $item["fileInfo"]['file_type'] = $fileInfo->file_type;
-                        $item["fileInfo"]['file_suffix'] = $fileInfo->file_suffix;
-                        $item["fileInfo"]['file_size'] = $fileInfo->file_size;
-                        $item["fileInfo"]['original_name'] = $fileInfo->original_name;
-                        $item["fileInfo"]['url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) :'';
-                    }
-                } else if (in_array($item['msg_type'], [3, 4])) {
-                    $item['content'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(), explode(',', $item['content']));
+                //消息类型处理
+                switch ($item['msg_type']) {
+                    case 1://文字消息
+                        $item['content'] = emojiReplace($item['content']);
+                        break;
+                    case 2://文件消息
+                        $fileInfo = UsersChatFiles::where('id', $item['file_id'])->first(['file_type', 'file_suffix', 'file_size', 'save_dir', 'original_name']);
+                        if ($fileInfo) {
+                            $item["fileInfo"]['file_type'] = $fileInfo->file_type;
+                            $item["fileInfo"]['file_suffix'] = $fileInfo->file_suffix;
+                            $item["fileInfo"]['file_size'] = $fileInfo->file_size;
+                            $item["fileInfo"]['original_name'] = $fileInfo->original_name;
+                            $item["fileInfo"]['url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) : '';
+                        }
+                        unset($fileInfo);
+                        break;
+                    case 3://系统入群消息
+                    case 4://系统退群消息
+                        $uids = explode(',', $item['content']);
+                        $item['content'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(), $uids);
+                        break;
+                    case 5://表情包消息
+                        $fileInfo = Emoticon::where('id', $item['file_id'])->first(['describe', 'url']);
+                        if ($fileInfo) {
+                            $item["fileInfo"]['file_type'] = 1;
+                            $item["fileInfo"]['file_suffix'] = '';
+                            $item["fileInfo"]['file_size'] = '';
+                            $item["fileInfo"]['original_name'] = $fileInfo->describe;
+                            $item["fileInfo"]['url'] = $fileInfo->url;
+                        }
+                        unset($fileInfo);
+                        break;
                 }
 
                 unset($item['file_id']);
                 return $item;
             }, $data['rows']);
         }
-
 
         return $this->ajaxSuccess('success', $data);
     }
@@ -103,8 +114,8 @@ class ChatController extends CController
         $receive_id = $this->request->get('receive_id', 4070);
         $type = $this->request->get('type', 1);
 
-        $data = $this->chatLogic->getChatFiles($this->uid(),$receive_id,$type,$page,$page_size);
-        return $this->ajaxSuccess('success',$data);
+        $data = $this->chatLogic->getChatFiles($this->uid(), $receive_id, $type, $page, $page_size);
+        return $this->ajaxSuccess('success', $data);
     }
 
     /**
@@ -215,7 +226,7 @@ class ChatController extends CController
         }
 
         $isTrue = $this->chatLogic->removeGroupChat($group_id, $this->uid(), $member_id);
-        if($isTrue){
+        if ($isTrue) {
             //将用户移出聊天室
             WebSocketHelper::quitGroupRoom($member_id, $group_id);
 
@@ -224,12 +235,12 @@ class ChatController extends CController
                 'msg_type' => 6,
                 'content' => [
                     [
-                        'id'=>$user['id'],
-                        'nickname'=>$user['nickname']
+                        'id' => $user['id'],
+                        'nickname' => $user['nickname']
                     ],
                     [
-                        'id'=>$member_id,
-                        'nickname'=>User::where('id',$member_id)->value('nickname')
+                        'id' => $member_id,
+                        'nickname' => User::where('id', $member_id)->value('nickname')
                     ]
                 ],
                 'receive_user' => $group_id,
@@ -386,8 +397,8 @@ class ChatController extends CController
                 'msg_type' => 6,
                 'content' => [
                     [
-                        'id'=>$user['id'],
-                        'nickname'=>$user['nickname']
+                        'id' => $user['id'],
+                        'nickname' => $user['nickname']
                     ]
                 ],
                 'receive_user' => $group_id,
@@ -425,32 +436,33 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadImage(){
+    public function uploadImage()
+    {
         $file = $this->request->file('img');
         if (!$file->isValid()) {
             return $this->ajaxParamError('请求参数错误');
         }
 
         //图片格式验证
-        if (!in_array($file->getClientOriginalExtension(), ['jpg', 'png', 'jpeg', 'gif','webp'])) {
+        if (!in_array($file->getClientOriginalExtension(), ['jpg', 'png', 'jpeg', 'gif', 'webp'])) {
             return $this->ajaxParamError('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
         }
 
         //保存图片
-        if(!$save_path = Storage::disk('uploads')->put('chatimg/'.date('Ymd'), $file)){
+        if (!$save_path = Storage::disk('uploads')->put('chatimg/' . date('Ymd'), $file)) {
             return $this->ajaxError('图片上传失败');
         }
 
         $result = UsersChatFiles::create([
-            'user_id'=>$this->uid(),
-            'file_type'=>1,
-            'file_suffix'=>$file->getClientOriginalExtension(),
-            'file_size'=>$file->getSize(),
-            'save_dir'=>$save_path,
-            'original_name'=>$file->getClientOriginalName(),
-            'created_at'=>date('Y-m-d H:i:s')
+            'user_id' => $this->uid(),
+            'file_type' => 1,
+            'file_suffix' => $file->getClientOriginalExtension(),
+            'file_size' => $file->getSize(),
+            'save_dir' => $save_path,
+            'original_name' => $file->getClientOriginalName(),
+            'created_at' => date('Y-m-d H:i:s')
         ]);
 
-        return $result ? $this->ajaxSuccess('图片上传成功...',['file_info'=> encrypt($result->id)]) :$this->ajaxError('图片上传失败');
+        return $result ? $this->ajaxSuccess('图片上传成功...', ['file_info' => encrypt($result->id)]) : $this->ajaxError('图片上传失败');
     }
 }

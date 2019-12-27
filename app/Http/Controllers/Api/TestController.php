@@ -16,11 +16,7 @@ class TestController
     public function index(ChatLogic $chatLogic)
     {
 
-        $rows = UsersGroup::all();
-
-        foreach ($rows as $row){
-            $chatLogic->updateGroupAvatar($row->id);
-        }
+        dd(emojiReplace('asdf'));
 
     }
 }
