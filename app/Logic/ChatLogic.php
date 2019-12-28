@@ -573,8 +573,13 @@ SQL;
             $rowsSqlObj->where('users_chat_records.receive_id',$receive_id);
         }
 
-        $countSqlObj->leftJoin('users_chat_files', 'users_chat_files.id', '=', 'users_chat_records.file_id');
-        $rowsSqlObj->leftJoin('users_chat_files', 'users_chat_files.id', '=', 'users_chat_records.file_id');
+        $countSqlObj->join('users_chat_files', function ($join) {
+            $join->on( 'users_chat_files.id', '=', 'users_chat_records.file_id') ->whereIn('users_chat_files.file_type', [2,3]);
+        });
+
+        $rowsSqlObj->join('users_chat_files', function ($join) {
+            $join->on( 'users_chat_files.id', '=', 'users_chat_records.file_id') ->whereIn('users_chat_files.file_type', [2,3]);
+        });
 
         $count = $countSqlObj->count();
         $rows = [];
