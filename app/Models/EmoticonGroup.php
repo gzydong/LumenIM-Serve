@@ -1,15 +1,16 @@
 <?php
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
-class Emoticon extends Model
+class EmoticonGroup extends Model
 {
     /**
      * 关联到模型的数据表
      *
      * @var string
      */
-    protected $table = 'emoticon';
+    protected $table = 'emoticon_group';
 
     /**
      * 不能被批量赋值的属性
@@ -23,7 +24,7 @@ class Emoticon extends Model
      *
      * @var array
      */
-    protected $fillable = ['emojo_group_id','describe','url','created_at'];
+    protected $fillable = ['name','url','created_at'];
 
     /**
      * 表明模型是否应该被打上时间戳
@@ -32,4 +33,3 @@ class Emoticon extends Model
      */
     public $timestamps = false;
 }
-

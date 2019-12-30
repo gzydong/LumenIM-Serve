@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\EmoticonGroup;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UsersChatFiles;
@@ -464,5 +465,31 @@ class ChatController extends CController
         ]);
 
         return $result ? $this->ajaxSuccess('图片上传成功...', ['file_info' => encrypt($result->id)]) : $this->ajaxError('图片上传失败');
+    }
+
+    /**
+     * 获取用户表情包
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEditorEmoji(){
+        $emojiGroup = [
+            [
+                'url'=>'https://g.alicdn.com/dingding/desktop-assets/1.1.1/img/face/icon_heart.png',
+                'name'=>'我的收藏',
+                'list'=>[]
+            ]
+        ];
+
+        $groups = EmoticonGroup::all();
+        foreach ($groups as $group){
+            $emojiGroup[] = [
+                'url'=>$group->url,
+                'name'=>$group->name,
+                'list'=>Emoticon::where('emojo_group_id',$group->id)->select(['id as media_id','url as src'])->get()->toArray()
+            ];
+        }
+
+        return $this->ajaxSuccess('success',$emojiGroup);
     }
 }

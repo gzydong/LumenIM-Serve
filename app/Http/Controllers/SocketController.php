@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Facades\WebSocketHelper;
 use App\Facades\ChatService;
+use App\Models\Emoticon;
 use App\Models\UsersChatFiles;
 
 /**
@@ -37,7 +38,7 @@ class SocketController extends Controller
         }
 
         //验证消息类型 私聊|群聊
-        if (!in_array($msgData['source_type'], [1, 2])) {
+        if (!in_array($msgData['source_type'], [1, 2]) || !in_array($msgData['msg_type'], [1,2,3,4,5])) {
             return true;
         }
 
@@ -67,8 +68,10 @@ class SocketController extends Controller
 
             $msgData["content"] = '';
             $msgData['file_id'] = $fileId;
+        }else if ($msgData['msg_type'] == 5) {
+            $msgData['file_id'] = $msgData["content"];
+            $msgData["content"] = '';
         }
-
 
         //将聊天记录保存到数据库(待优化：后面采用异步保存信息)
         if (!$insert_id = ChatService::saveChatRecord($msgData)) {
@@ -108,8 +111,7 @@ class SocketController extends Controller
         //替换表情
         if ($msgData['msg_type'] == 1) {
             $msgData["content"] = emojiReplace($msgData['content']);
-        } else {
-            $msgData["content"] = emojiReplace($msgData['content']);
+        } else if ($msgData['msg_type'] == 2){
             $fileInfo = UsersChatFiles::where('id', $msgData['file_id'])->first(['file_type', 'file_suffix', 'file_size', 'save_dir', 'original_name']);
             if ($fileInfo) {
                 $msgData["fileInfo"]['file_type'] = $fileInfo->file_type;
@@ -117,6 +119,17 @@ class SocketController extends Controller
                 $msgData["fileInfo"]['file_size'] = $fileInfo->file_size;
                 $msgData["fileInfo"]['original_name'] = $fileInfo->original_name;
                 $msgData["fileInfo"]['url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) : '';
+            }
+
+            unset($msgData['file_id']);
+        }else if ($msgData['msg_type'] == 5){
+            $fileInfo = Emoticon::where('id', $msgData['file_id'])->first(['url']);
+            if ($fileInfo) {
+                $msgData["fileInfo"]['file_type'] = 1;
+                $msgData["fileInfo"]['file_suffix'] = '';
+                $msgData["fileInfo"]['file_size'] = '';
+                $msgData["fileInfo"]['original_name'] = '';
+                $msgData["fileInfo"]['url'] = $fileInfo->url;
             }
 
             unset($msgData['file_id']);
