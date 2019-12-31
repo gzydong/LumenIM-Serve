@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Models\EmoticonGroup;
@@ -481,15 +480,16 @@ class ChatController extends CController
             ]
         ];
 
-        $groups = EmoticonGroup::all();
-        foreach ($groups as $group){
-            $emojiGroup[] = [
-                'url'=>$group->url,
-                'name'=>$group->name,
-                'list'=>Emoticon::where('emojo_group_id',$group->id)->select(['id as media_id','url as src'])->get()->toArray()
-            ];
-        }
-
         return $this->ajaxSuccess('success',$emojiGroup);
+    }
+
+    /**
+     * 获取表情包列表
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEmoticonList(){
+        $items = EmoticonGroup::select('id','name','url')->get();
+        return $this->ajaxSuccess('success',$items);
     }
 }

@@ -59,6 +59,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     //发送聊天图片
     $router->post('/chat/send-image', ['uses' => 'ChatController@uploadImage']);
     $router->get('/chat/get-editor-emoji', ['uses' => 'ChatController@getEditorEmoji']);
+    $router->get('/chat/get-emoticon-list', ['uses' => 'ChatController@getEmoticonList']);
 });
 
 //UploadController 上传文件控制器分组
