@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\Websocket;
 
 use App\Models\UsersChatFiles;
@@ -19,13 +20,14 @@ class ChatService
      * @param int $receive_user_id 接收者用户ID
      * @return bool|mixed
      */
-    public static function checkFriends(int $send_user_id,int $receive_user_id){
-        $isTrue = CacheHelper::getFriendRelationCache($send_user_id,$receive_user_id);
-        if($isTrue === null){
-            $isTrue = UsersFriends::checkFriends($send_user_id,$receive_user_id);
-            CacheHelper::setFriendRelationCache($send_user_id,$receive_user_id,$isTrue?1:0);
+    public static function checkFriends(int $send_user_id, int $receive_user_id)
+    {
+        $isTrue = CacheHelper::getFriendRelationCache($send_user_id, $receive_user_id);
+        if ($isTrue === null) {
+            $isTrue = UsersFriends::checkFriends($send_user_id, $receive_user_id);
+            CacheHelper::setFriendRelationCache($send_user_id, $receive_user_id, $isTrue ? 1 : 0);
             return $isTrue;
-        }else{
+        } else {
             return boolval($isTrue);
         }
     }
@@ -37,13 +39,14 @@ class ChatService
      * @param int $group_id 聊天群ID
      * @return bool|mixed
      */
-    public static function checkGroupMember(int $send_user_id,int $group_id){
-        $isTrue = CacheHelper::getGroupRelationCache($send_user_id,$group_id);
-        if($isTrue === null){
-            $isTrue = UsersGroup::checkGroupMember($send_user_id,$group_id);
-            CacheHelper::setGroupRelationCache($send_user_id,$group_id,$isTrue?1:0);
+    public static function checkGroupMember(int $send_user_id, int $group_id)
+    {
+        $isTrue = CacheHelper::getGroupRelationCache($send_user_id, $group_id);
+        if ($isTrue === null) {
+            $isTrue = UsersGroup::checkGroupMember($send_user_id, $group_id);
+            CacheHelper::setGroupRelationCache($send_user_id, $group_id, $isTrue ? 1 : 0);
             return $isTrue;
-        }else{
+        } else {
             return boolval($isTrue);
         }
     }
@@ -56,7 +59,8 @@ class ChatService
      * @param int $user_id 用户ID
      * @return array|mixed
      */
-    public static function getUsersGroupMemberInfo(int $group_id,int $user_id){
+    public static function getUsersGroupMemberInfo(int $group_id, int $user_id)
+    {
         $info = CacheHelper::getUserGroupVisitCard($group_id, $user_id);
         if (!$info) {
             $res = UsersGroupMember::from('users_group_member as ugm')
@@ -66,9 +70,9 @@ class ChatService
                 ->first();
 
             $info = [
-                'avatar'=>$res->avatarurl,
-                'nickname'=>$res->nickname,
-                'visit_card'=>$res->visit_card
+                'avatar' => $res->avatarurl,
+                'nickname' => $res->nickname,
+                'visit_card' => $res->visit_card
             ];
 
             CacheHelper::setUserGroupVisitCard($group_id, $user_id, $info);
@@ -91,15 +95,15 @@ class ChatService
             'receive_id' => $message['receive_user'],
             'content' => $message['content'],
             'send_time' => $message['send_time'],
-            'file_id' => $message['file_id']??0
+            'file_id' => $message['file_id'] ?? 0
         ]);
 
         if (!$recordRes) {
             return false;
         }
 
-        if(isset($message['file_id']) && $message['file_id']){
-            UsersChatFiles::where('id',$message['file_id'])->update(['chat_records_id'=>$recordRes->id]);
+        if (isset($message['file_id']) && $message['file_id']) {
+            UsersChatFiles::where('id', $message['file_id'])->update(['chat_records_id' => $recordRes->id]);
         }
 
         //判断聊天消息类型
@@ -122,15 +126,19 @@ class ChatService
         }
 
         //缓存最后一条聊天记录
-        if($message['msg_type'] == 2){
-            $text = "[图片消息]";
-        }else if($message['msg_type'] == 2){
-            $text = "[文件消息]";
-        }else{
-            $text = $message['content'];
+        $text = $message['content'];
+        if ($message['msg_type'] == 2) {
+            $type = UsersChatFiles::where('id', $message['file_id'])->value('file_type');
+            $text = $type == '1' ? '[图片消息]' : '[文件消息]';
+        } else if ($message['msg_type'] == 3) {
+            $text = '[系统提示:好友入群消息]';
+        } else if ($message['msg_type'] == 4) {
+            $text = '[系统提示:好友退群消息]';
+        } else if ($message['msg_type'] == 5) {
+            $text = '[图片消息]';
         }
 
-        CacheHelper::setLastChatCache(['send_time'=>$message['send_time'],'text'=>$text], $message['receive_user'], $message['source_type'] == 1 ? $message['send_user'] : 0);
+        CacheHelper::setLastChatCache(['send_time' => $message['send_time'], 'text' => $text], $message['receive_user'], $message['source_type'] == 1 ? $message['send_user'] : 0);
         return $recordRes->id;
     }
 }

@@ -141,7 +141,6 @@ class SocketController extends Controller
         WebSocketHelper::sendResponseMessage('chat_message', $clientFds, $msgData);
     }
 
-
     /**
      * 键盘输入提示
      *
