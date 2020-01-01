@@ -1,9 +1,8 @@
 <?php
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-
+use App\Models\Emoticon;
+use App\Models\UsersEmoticon;
 
 /**
  * 测试控制器
@@ -14,7 +13,8 @@ class TestController
 {
     public function index()
     {
-
+        $info = UsersEmoticon::select(['id','user_id','emoticon_ids'])->where('user_id',2054)->first();
+        dd($info->emoticon_ids);
     }
 
     public function getGif($href)

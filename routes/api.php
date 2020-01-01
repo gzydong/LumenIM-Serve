@@ -8,6 +8,13 @@ $router->get('/', ['as' => 'api', function () {
 }]);
 
 
+//测试控制器
+$router->group([], function () use ($router) {
+    $router->get('/test/index', ['middleware' => [], 'uses' => 'TestController@index']);
+});
+
+
+
 //AuthController 控制器分组
 $router->group([], function () use ($router) {
     $router->post('/auth/login', ['middleware' => [], 'uses' => 'AuthController@login']);
@@ -17,7 +24,6 @@ $router->group([], function () use ($router) {
 
     $router->post('/auth/send-verify-code', ['middleware' => [], 'uses' => 'AuthController@sendVerifyCode']);
     $router->post('/auth/forget-password', ['middleware' => [], 'uses' => 'AuthController@forgetPassword']);
-
 });
 
 //UsersController 控制器分组
@@ -58,9 +64,9 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 
     //发送聊天图片
     $router->post('/chat/send-image', ['uses' => 'ChatController@uploadImage']);
-    $router->get('/chat/get-editor-emoji', ['uses' => 'ChatController@getEditorEmoji']);
-    $router->get('/chat/get-emoticon-list', ['uses' => 'ChatController@getEmoticonList']);
 });
+
+
 
 //UploadController 上传文件控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
@@ -69,12 +75,21 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/upload/get-file-split-info', ['uses' => 'UploadController@getFileSplitInfo']);
 });
 
+
+
+//EmoticonController 表情包控制器分组
+$router->group(['middleware' => ['jwt.auth']], function () use ($router) {
+    $router->get('/emoticon/user-emoticon', ['uses' => 'EmoticonController@getUserEmoticon']);
+    $router->get('/emoticon/system-emoticon', ['uses' => 'EmoticonController@getSystemEmoticon']);
+    $router->post('/emoticon/set-user-emoticon', ['uses' => 'EmoticonController@setUserEmoticon']);
+});
+
+
 //DownloadController 下载文件控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/download/user-chat-file', ['uses' => 'DownloadController@userChatFile']);
 });
 
-//TestController 控制器分组
-$router->group([], function () use ($router) {
-    $router->get('/test/index', ['middleware' => [], 'uses' => 'TestController@index']);
-});
+
+
+

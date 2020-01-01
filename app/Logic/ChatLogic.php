@@ -2,9 +2,11 @@
 
 namespace App\Logic;
 
+use App\Models\Emoticon;
 use App\Models\User;
 use App\Models\UsersChatList;
 use App\Models\UsersChatRecords;
+use App\Models\UsersEmoticon;
 use App\Models\UsersFriends;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
@@ -232,11 +234,11 @@ SQL;
             }
 
             UsersChatRecords::create([
-                'msg_type' => 5,
+                'msg_type' => 3,
                 'source' => 2,
                 'user_id' => 0,
                 'receive_id' => $insRes->id,
-                'text_msg' => implode(',', $uids),
+                'content' => implode(',', $uids),
                 'send_time' => date('Y-m-d H:i;s')
             ]);
 
@@ -307,11 +309,11 @@ SQL;
 
             $uidsStr = implode(',', $uids);
             UsersChatRecords::create([
-                'msg_type' => 5,
+                'msg_type' => 3,
                 'source' => 2,
                 'user_id' => 0,
                 'receive_id' => $group_id,
-                'text_msg' => "{$user_id},{$uidsStr}",
+                'content' => "{$user_id},{$uidsStr}",
                 'send_time' => date('Y-m-d H:i;s')
             ]);
 
@@ -352,7 +354,7 @@ SQL;
                 'source' => 2,
                 'user_id' => 0,
                 'receive_id' => $group_id,
-                'text_msg' => "{$group_owner_id},{$group_member_id}",
+                'content' => "{$group_owner_id},{$group_member_id}",
                 'send_time' => date('Y-m-d H:i;s')
             ]);
 
@@ -416,7 +418,7 @@ SQL;
                     'source' => 2,
                     'user_id' => 0,
                     'receive_id' => $group_id,
-                    'text_msg' => $user_id,
+                    'content' => $user_id,
                     'send_time' => date('Y-m-d H:i;s')
                 ]);
             }
@@ -480,7 +482,7 @@ SQL;
         }
 
         //判断用户是否是群成员
-        if(!UsersGroupMember::where('group_id',$group_id)->where('user_id',$user_id)->where('status',0)->exists()){
+        if (!UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('status', 0)->exists()) {
             return [];
         }
 
@@ -544,41 +546,42 @@ SQL;
      * @param int $page_size 分页大小(默认15)
      * @return array
      */
-    public function getChatFiles(int $user_id,int $receive_id,int $type,int $page,$page_size = 15){
+    public function getChatFiles(int $user_id, int $receive_id, int $type, int $page, $page_size = 15)
+    {
         $countSqlObj = UsersChatRecords::select();
         $rowsSqlObj = UsersChatRecords::select([
-            'users_chat_records.id','users_chat_records.send_time','users_chat_files.file_type','users_chat_files.file_suffix','users_chat_files.file_size','users_chat_files.original_name','users_chat_files.save_dir',
+            'users_chat_records.id', 'users_chat_records.send_time', 'users_chat_files.file_type', 'users_chat_files.file_suffix', 'users_chat_files.file_size', 'users_chat_files.original_name', 'users_chat_files.save_dir',
         ]);
 
-        if($type == 1){//好友私信
+        if ($type == 1) {//好友私信
             $where1 = [
-                ['users_chat_records.msg_type','=',2],
-                ['users_chat_records.user_id','=',$user_id],
-                ['users_chat_records.receive_id','=',$receive_id]
+                ['users_chat_records.msg_type', '=', 2],
+                ['users_chat_records.user_id', '=', $user_id],
+                ['users_chat_records.receive_id', '=', $receive_id]
             ];
 
             $where2 = [
-                ['users_chat_records.msg_type','=',2],
-                ['users_chat_records.user_id','=',$receive_id],
-                ['users_chat_records.receive_id','=',$user_id]
+                ['users_chat_records.msg_type', '=', 2],
+                ['users_chat_records.user_id', '=', $receive_id],
+                ['users_chat_records.receive_id', '=', $user_id]
             ];
 
             $countSqlObj->where($where1)->orWhere($where2);
             $rowsSqlObj->where($where1)->orWhere($where2);
-        }else{//群聊消息
-            $countSqlObj->where('users_chat_records.msg_type',2);
-            $rowsSqlObj->where('users_chat_records.msg_type',2);
+        } else {//群聊消息
+            $countSqlObj->where('users_chat_records.msg_type', 2);
+            $rowsSqlObj->where('users_chat_records.msg_type', 2);
 
-            $countSqlObj->where('users_chat_records.receive_id',$receive_id);
-            $rowsSqlObj->where('users_chat_records.receive_id',$receive_id);
+            $countSqlObj->where('users_chat_records.receive_id', $receive_id);
+            $rowsSqlObj->where('users_chat_records.receive_id', $receive_id);
         }
 
         $countSqlObj->join('users_chat_files', function ($join) {
-            $join->on( 'users_chat_files.id', '=', 'users_chat_records.file_id') ->whereIn('users_chat_files.file_type', [2,3]);
+            $join->on('users_chat_files.id', '=', 'users_chat_records.file_id')->whereIn('users_chat_files.file_type', [2, 3]);
         });
 
         $rowsSqlObj->join('users_chat_files', function ($join) {
-            $join->on( 'users_chat_files.id', '=', 'users_chat_records.file_id') ->whereIn('users_chat_files.file_type', [2,3]);
+            $join->on('users_chat_files.id', '=', 'users_chat_records.file_id')->whereIn('users_chat_files.file_type', [2, 3]);
         });
 
         $count = $countSqlObj->count();
@@ -587,7 +590,7 @@ SQL;
             $rows = $rowsSqlObj->forPage($page, $page_size)->orderBy('users_chat_records.id', 'desc')->get()->toArray();
         }
 
-        return $this->packData($rows,$count,$page,$page_size);
+        return $this->packData($rows, $count, $page, $page_size);
     }
 
     /**
@@ -596,35 +599,36 @@ SQL;
      * @param int $group_id 群聊ID
      * @return bool
      */
-    public function updateGroupAvatar(int $group_id){
+    public function updateGroupAvatar(int $group_id)
+    {
         $members = UsersGroupMember::leftJoin('users', 'users.id', '=', 'users_group_member.user_id')->where([
             ['users_group_member.group_id', '=', $group_id],
             ['users_group_member.status', '=', 0],
-        ])->orderBy('users_group_member.created_at','asc')->limit(9)->get(['users.avatarurl','users.id'])->toArray();
+        ])->orderBy('users_group_member.created_at', 'asc')->limit(9)->get(['users.avatarurl', 'users.id'])->toArray();
 
-        $images = $user_ids =  [];
-        foreach ($members as $member){
+        $images = $user_ids = [];
+        foreach ($members as $member) {
             $images[] = $member['avatarurl'];
             $user_ids[] = shortCode($member['id']);
         }
 
-        try{
+        try {
             $object = new ImageCompose(array_filter($images));
             $object->compose();
 
             $save_dir = config('filesystems.disks.uploads.root');
-            $path = 'avatar/'.date('Ymd').'/'.implode('-',$user_ids).'.png';
-            $isTrue = $object->saveImage($save_dir.'/'.$path);
+            $path = 'avatar/' . date('Ymd') . '/' . implode('-', $user_ids) . '.png';
+            $isTrue = $object->saveImage($save_dir . '/' . $path);
             unset($object);
             unset($members);
 
-            if(!$isTrue){
+            if (!$isTrue) {
                 return false;
             }
 
-            UsersGroup::where('id',$group_id)->update(['avatarurl'=>getFileUrl($path)]);
+            UsersGroup::where('id', $group_id)->update(['avatarurl' => getFileUrl($path)]);
             return true;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return false;
         }
     }

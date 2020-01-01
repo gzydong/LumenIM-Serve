@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Facades\WebSocketHelper;
 use App\Facades\ChatService;
-use App\Models\Emoticon;
+use App\Models\EmoticonDetails;
 use App\Models\UsersChatFiles;
 
 /**
@@ -123,7 +123,7 @@ class SocketController extends Controller
 
             unset($msgData['file_id']);
         }else if ($msgData['msg_type'] == 5){
-            $fileInfo = Emoticon::where('id', $msgData['file_id'])->first(['url']);
+            $fileInfo = EmoticonDetails::where('id', $msgData['file_id'])->first(['url']);
             if ($fileInfo) {
                 $msgData["fileInfo"]['file_type'] = 1;
                 $msgData["fileInfo"]['file_suffix'] = '';

@@ -3,14 +3,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Emoticon extends Model
+class UsersEmoticon extends Model
 {
     /**
      * 关联到模型的数据表
      *
      * @var string
      */
-    protected $table = 'emoticon';
+    protected $table = 'users_emoticon';
 
     /**
      * 不能被批量赋值的属性
@@ -24,7 +24,7 @@ class Emoticon extends Model
      *
      * @var array
      */
-    protected $fillable = ['name','url','created_at'];
+    protected $fillable = ['user_id','emoticon_ids'];
 
     /**
      * 表明模型是否应该被打上时间戳
@@ -32,4 +32,16 @@ class Emoticon extends Model
      * @var bool
      */
     public $timestamps = false;
+
+
+    /**
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getEmoticonIdsAttribute($value)
+    {
+        return explode(',',$value);
+    }
 }
+

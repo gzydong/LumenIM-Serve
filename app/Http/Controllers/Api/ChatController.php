@@ -1,13 +1,13 @@
 <?php
 namespace App\Http\Controllers\Api;
 
-use App\Models\EmoticonGroup;
+
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UsersChatFiles;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
-use App\Models\Emoticon;
+use App\Models\EmoticonDetails;
 use App\Logic\ChatLogic;
 use App\Facades\WebSocketHelper;
 use App\Logic\UsersLogic;
@@ -82,7 +82,7 @@ class ChatController extends CController
                         $item['content'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(), $uids);
                         break;
                     case 5://表情包消息
-                        $fileInfo = Emoticon::where('id', $item['file_id'])->first(['describe', 'url']);
+                        $fileInfo = EmoticonDetails::where('id', $item['file_id'])->first(['describe', 'url']);
                         if ($fileInfo) {
                             $item["fileInfo"]['file_type'] = 1;
                             $item["fileInfo"]['file_suffix'] = '';
@@ -152,7 +152,7 @@ class ChatController extends CController
                     'send_user' => 0,
                     'receive_user' => $data['group_info']['id'],
                     'source_type' => 2,
-                    'msg_type' => 5,
+                    'msg_type' => 3,
                     'content' => customSort(User::select('id', 'nickname')->whereIn('id', $data['uids'])->get()->toArray(), $data['uids']),
                     'send_time' => date('Y-m-d H:i:s'),
                     'sendUserInfo' => []
@@ -192,14 +192,14 @@ class ChatController extends CController
                 ['id' => $userInfo['id'], 'nickname' => $userInfo['nickname']]
             ];
 
-            //推送退群消息
+            //推送入群消息
             WebSocketHelper::sendResponseMessage('join_group', WebSocketHelper::getRoomGroupName($group_id), [
                 'message' => [
                     'avatar' => '',
                     'send_user' => 0,
                     'receive_user' => $group_id,
                     'source_type' => 2,
-                    'msg_type' => 5,
+                    'msg_type' => 3,
                     'content' => array_merge($users, User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray()),
                     'send_time' => date('Y-m-d H:i:s'),
                     'sendUserInfo' => []
@@ -232,7 +232,7 @@ class ChatController extends CController
 
             $user = $this->getUser();
             $message = [
-                'msg_type' => 6,
+                'msg_type' => 4,
                 'content' => [
                     [
                         'id' => $user['id'],
@@ -464,32 +464,5 @@ class ChatController extends CController
         ]);
 
         return $result ? $this->ajaxSuccess('图片上传成功...', ['file_info' => encrypt($result->id)]) : $this->ajaxError('图片上传失败');
-    }
-
-    /**
-     * 获取用户表情包
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getEditorEmoji(){
-        $emojiGroup = [
-            [
-                'url'=>'https://g.alicdn.com/dingding/desktop-assets/1.1.1/img/face/icon_heart.png',
-                'name'=>'我的收藏',
-                'list'=>[]
-            ]
-        ];
-
-        return $this->ajaxSuccess('success',$emojiGroup);
-    }
-
-    /**
-     * 获取表情包列表
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getEmoticonList(){
-        $items = EmoticonGroup::select('id','name','url')->get();
-        return $this->ajaxSuccess('success',$items);
     }
 }
