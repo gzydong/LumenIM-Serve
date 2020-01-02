@@ -1,18 +1,20 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
-
+use App\Models\UsersFriends;
 use Illuminate\Http\Request;
+use App\Helpers\Cache\CacheHelper;
+use App\Facades\WebSocketHelper;
+use Illuminate\Support\Facades\Storage;
+
 use App\Models\User;
 use App\Models\UsersChatFiles;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
 use App\Models\EmoticonDetails;
 use App\Logic\ChatLogic;
-use App\Facades\WebSocketHelper;
 use App\Logic\UsersLogic;
-use App\Helpers\Cache\CacheHelper;
-use Illuminate\Support\Facades\Storage;
 
 class ChatController extends CController
 {
@@ -33,7 +35,94 @@ class ChatController extends CController
     public function getChatList()
     {
         $rows = $this->chatLogic->getUserChatList($this->uid());
+        if($rows){
+            $rows = arraysSort($rows,'created_at');
+        }
+
         return $this->ajaxSuccess('success', $rows);
+    }
+
+    /**
+     * 获取用户聊天指定的列表信息
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getChatItem()
+    {
+        $type = $this->request->get('type',0);
+        $receive_id = $this->request->get('receive_id',0);
+        $uid = $this->uid();
+        if (!in_array($type, [1,2]) || !isInt($receive_id)) {
+            return $this->ajaxParamError();
+        }
+
+        $item = [
+            'type'=>$type,
+            'name' => '',
+            'unread_num' => 0,
+            'not_disturb' => 0,
+            'group_members_num' => 0,
+            'avatar' => '',
+            'remark_name' => '',
+            'msg_text' => '......',
+            'friend_id'=>0,
+            'group_id'=>0,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($type == 1) {
+            $friendInfo = User::select(['nickname', 'avatarurl'])->where('id', $receive_id)->first();
+            if (!$friendInfo) {
+                return $this->ajaxError('获取列表信息失败...');
+            }
+            $item['name'] = $friendInfo->nickname;
+            $item['avatar'] = $friendInfo->avatarurl;
+            unset($friendInfo);
+
+            $info = UsersFriends::select(['user1', 'user1_remark', 'user2_remark'])->where('user1', $uid < $receive_id ? $uid : $receive_id)->where('user2', $uid > $receive_id ? $uid : $receive_id)->where('status', 1)->first();
+            if (!$info) {
+                return $this->ajaxError('获取列表信息失败...');
+            }
+
+            $item['remark_name'] = $uid == $info->user1 ? $info->user1_remark : $info->user2_remark;
+            unset($info);
+
+            $item['unread_num'] = intval(CacheHelper::getChatUnreadNum($uid, $receive_id));
+            $item['friend_id'] = $receive_id;
+        } else {
+            $groupInfo = UsersGroup::select(['group_name', 'avatarurl'])->where('id', $receive_id)->where('status', 0)->first();
+            if (!$groupInfo) {
+                return $this->ajaxError('获取列表信息失败...');
+            }
+            $item['name'] = $groupInfo->group_name;
+            $item['avatar'] = $groupInfo->avatarurl;
+            unset($groupInfo);
+
+            $groupMemberInfo = UsersGroupMember::select(['not_disturb'])->where('group_id',$receive_id)->where('user_id', $uid)->where('status', 0)->first();
+            if (!$groupMemberInfo) {
+                return $this->ajaxError('获取列表信息失败...');
+            }
+
+            $item['not_disturb'] = $groupMemberInfo->not_disturb;
+            unset($groupMemberInfo);
+
+            $item['group_id'] = $receive_id;
+        }
+
+        $id = $this->chatLogic->createChatList($uid, $receive_id, $type);
+        if ($id == 0) {
+            return $this->ajaxError('获取列表信息失败...');
+        }
+
+        $item['id'] = $id;
+
+        $records = CacheHelper::getLastChatCache($receive_id, $type == 1 ? $uid : 0);
+        if ($records) {
+            $item['msg_text'] = $records['text'];
+            $item['created_at'] = $records['send_time'];
+        }
+
+        return $this->ajaxSuccess('success', $item);
     }
 
     /**
@@ -465,4 +554,6 @@ class ChatController extends CController
 
         return $result ? $this->ajaxSuccess('图片上传成功...', ['file_info' => encrypt($result->id)]) : $this->ajaxError('图片上传失败');
     }
+
+
 }

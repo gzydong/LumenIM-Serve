@@ -46,6 +46,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 //ChatController 控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/chat/chat-list', ['uses' => 'ChatController@getChatList']);
+    $router->get('/chat/get-chat-item', ['uses' => 'ChatController@getChatItem']);
     $router->get('/chat/chat-records', ['uses' => 'ChatController@getChatRecords']);
     $router->get('/chat/chat-files', ['uses' => 'ChatController@getChatFiles']);
 

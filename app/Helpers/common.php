@@ -339,3 +339,15 @@ function getSaveFile($ext){
 function getFileUrl(string $path){
     return config('config.upload.upload_domain','').'/'.$path;
 }
+
+/**
+ * 二维数组排序
+ * @param array $array 数组
+ * @param $field 排序字段
+ * @param int $sort 排序方式
+ * @return array
+ */
+function arraysSort(array $array,$field,$sort = SORT_DESC){
+    array_multisort(array_column($array,$field),$sort,$array);
+    return $array;
+}

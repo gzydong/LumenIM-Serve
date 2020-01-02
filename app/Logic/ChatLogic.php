@@ -2,11 +2,9 @@
 
 namespace App\Logic;
 
-use App\Models\Emoticon;
 use App\Models\User;
 use App\Models\UsersChatList;
 use App\Models\UsersChatRecords;
-use App\Models\UsersEmoticon;
 use App\Models\UsersFriends;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
@@ -447,19 +445,18 @@ SQL;
         if ($result) {
             if ($result->status == 0) {
                 $result->status = 1;
+                $result->created_at = date('Y-m-d H:i:s');
                 $result->save();
             }
         } else {
-            $data = [
+            if (!$result = UsersChatList::create([
                 'type' => $type,
                 'uid' => $user_id,
                 'status' => 1,
                 'friend_id' => $type == 1 ? $receive_id : 0,
                 'group_id' => $type == 2 ? $receive_id : 0,
                 'created_at' => date('Y-m-d H:i:s')
-            ];
-
-            if (!$result = UsersChatList::create($data)) {
+            ])) {
                 return 0;
             }
         }

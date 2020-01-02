@@ -13,6 +13,9 @@ class TestController
 {
     public function index()
     {
+
+
+        exit;
         $info = UsersEmoticon::select(['id','user_id','emoticon_ids'])->where('user_id',2054)->first();
         dd($info->emoticon_ids);
     }
