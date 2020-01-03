@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +26,7 @@ class UsersFriends extends Model
      *
      * @var array
      */
-    protected $fillable = ['user1','user2','active','status','agree_time','created_at','user1_remark','user2_remark'];
+    protected $fillable = ['user1', 'user2', 'active', 'status', 'agree_time', 'created_at', 'user1_remark', 'user2_remark'];
 
     /**
      * 表明模型是否应该被打上时间戳
@@ -36,10 +38,11 @@ class UsersFriends extends Model
     /**
      * 获取用户所有好友
      *
-     * @param int $uid  用户ID
+     * @param int $uid 用户ID
      * @return mixed
      */
-    public static function getUserFriends(int $uid){
+    public static function getUserFriends(int $uid)
+    {
         $sql = <<<SQL
             SELECT lar_users.id,lar_users.nickname,lar_users.avatarurl,lar_users.motto,lar_users.gender,tmp_table.friend_remark from lar_users 
             INNER join
@@ -56,18 +59,13 @@ SQL;
     /**
      * 判断用户之间是否存在好友关系
      *
-     * @param int $user_id1  用户1
-     * @param int $user_id2  用户2
+     * @param int $user_id1 用户1
+     * @param int $user_id2 用户2
      * @return bool
      */
-    public static function checkFriends(int $user_id1,int $user_id2){
-        $sql = <<<SQL
-            (SELECT user2 as uid from lar_users_friends where user1 = {$user_id1} and user2 = {$user_id2} and `status` = 1 limit 1)
-              UNION all
-            (SELECT user1 as uid from lar_users_friends where user1 = {$user_id2} and user2 = {$user_id1} and `status` = 1 limit 1)
-SQL;
-
-        return DB::select($sql) ? true :false;
+    public static function checkFriends(int $user_id1, int $user_id2)
+    {
+        return self::where('user1', $user_id1 < $user_id2 ? $user_id1 : $user_id2)->where('user2', $user_id1 < $user_id2 ? $user_id2 : $user_id1)->where('status', 1)->exists();
     }
 
     /**
@@ -75,10 +73,11 @@ SQL;
      * @param int $user_id 指定用户ID
      * @return array
      */
-    public static function getFriendIds(int $user_id){
+    public static function getFriendIds(int $user_id)
+    {
         $sql = "SELECT user2 as uid from lar_users_friends where user1 = {$user_id} and `status` = 1 UNION all SELECT user1 as uid from lar_users_friends where user2 = {$user_id} and `status` = 1";
-        return array_map(function ($item){
+        return array_map(function ($item) {
             return $item->uid;
-        },DB::select($sql));
+        }, DB::select($sql));
     }
 }

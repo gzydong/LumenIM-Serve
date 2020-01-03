@@ -322,14 +322,6 @@ function shortCode(string $string)
     return $show;
 }
 
-/**
- * 获取文件名
- * @param $ext 文件名
- * @return string
- */
-function getSaveFile($ext){
-    return uniqid('im-').'-'.uniqid().'.'.$ext;
-}
 
 /**
  * 获取文件url
@@ -350,4 +342,16 @@ function getFileUrl(string $path){
 function arraysSort(array $array,$field,$sort = SORT_DESC){
     array_multisort(array_column($array,$field),$sort,$array);
     return $array;
+}
+
+
+/**
+ * 随机生成图片名
+ * @param string $ext 图片后缀名
+ * @param int $width 图片宽度
+ * @param int $height 图片高度
+ * @return string
+ */
+function getSaveImgName(string $ext,int $width,int $height){
+    return uniqid().random(18).uniqid().'_'.$width.'x'.$height.'.'.$ext;
 }

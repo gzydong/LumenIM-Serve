@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Helpers;
 
 /**
@@ -43,9 +44,9 @@ class ImageCompose
      */
     public function saveImage(string $imagePath)
     {
-        $dir = pathinfo($imagePath,PATHINFO_DIRNAME);
-        if(!is_dir($dir)){
-            mkdir($dir,0777,true);
+        $dir = pathinfo($imagePath, PATHINFO_DIRNAME);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
         }
 
         if (false === imagejpeg($this->background, $imagePath)) {
@@ -170,19 +171,19 @@ class ImageCompose
                 $start_y = $start_y + $this->pic_h + $this->space_y;
             }
 
-            $ext = pathinfo($pic_path,PATHINFO_EXTENSION);
-            switch ($ext){
+            $ext = pathinfo($pic_path, PATHINFO_EXTENSION);
+            switch ($ext) {
                 case "png":
-                    $resource=imagecreatefrompng($pic_path);
+                    $resource = imagecreatefrompng($pic_path);
                     break;
                 case "jpg":
-                    $resource=imagecreatefromjpeg($pic_path);
+                    $resource = imagecreatefromjpeg($pic_path);
                     break;
                 case "jpeg":
-                    $resource=imagecreatefromjpeg($pic_path);
+                    $resource = imagecreatefromjpeg($pic_path);
                     break;
                 case "gif":
-                    $resource=imagecreatefromgif($pic_path);
+                    $resource = imagecreatefromgif($pic_path);
                     break;
             }
 

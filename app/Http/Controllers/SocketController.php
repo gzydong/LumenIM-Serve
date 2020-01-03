@@ -129,7 +129,7 @@ class SocketController extends Controller
                 $msgData["fileInfo"]['file_suffix'] = '';
                 $msgData["fileInfo"]['file_size'] = '';
                 $msgData["fileInfo"]['original_name'] = '';
-                $msgData["fileInfo"]['url'] = $fileInfo->url;
+                $msgData["fileInfo"]['url'] = getFileUrl($fileInfo->url);
             }
 
             unset($msgData['file_id']);

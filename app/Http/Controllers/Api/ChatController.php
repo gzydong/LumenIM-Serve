@@ -59,7 +59,7 @@ class ChatController extends CController
         $item = [
             'type'=>$type,
             'name' => '',
-            'unread_num' => 0,
+            'unread_num' => 1,
             'not_disturb' => 0,
             'group_members_num' => 0,
             'avatar' => '',
@@ -69,6 +69,7 @@ class ChatController extends CController
             'group_id'=>0,
             'created_at' => date('Y-m-d H:i:s')
         ];
+
 
         if ($type == 1) {
             $friendInfo = User::select(['nickname', 'avatarurl'])->where('id', $receive_id)->first();
@@ -108,6 +109,7 @@ class ChatController extends CController
 
             $item['group_id'] = $receive_id;
         }
+
 
         $id = $this->chatLogic->createChatList($uid, $receive_id, $type);
         if ($id == 0) {
@@ -177,7 +179,7 @@ class ChatController extends CController
                             $item["fileInfo"]['file_suffix'] = '';
                             $item["fileInfo"]['file_size'] = '';
                             $item["fileInfo"]['original_name'] = $fileInfo->describe;
-                            $item["fileInfo"]['url'] = $fileInfo->url;
+                            $item["fileInfo"]['url'] = getFileUrl($fileInfo->url);
                         }
                         unset($fileInfo);
                         break;
@@ -200,7 +202,7 @@ class ChatController extends CController
     {
         $page = $this->request->get('page', 1);
         $page_size = $this->request->get('page_size', 15);
-        $receive_id = $this->request->get('receive_id', 4070);
+        $receive_id = $this->request->get('receive_id', 0);
         $type = $this->request->get('type', 1);
 
         $data = $this->chatLogic->getChatFiles($this->uid(), $receive_id, $type, $page, $page_size);
@@ -532,13 +534,17 @@ class ChatController extends CController
             return $this->ajaxParamError('请求参数错误');
         }
 
+        $ext = $file->getClientOriginalExtension();
         //图片格式验证
-        if (!in_array($file->getClientOriginalExtension(), ['jpg', 'png', 'jpeg', 'gif', 'webp'])) {
+        if (!in_array($ext, ['jpg', 'png', 'jpeg', 'gif', 'webp'])) {
             return $this->ajaxParamError('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
         }
 
+        $imgInfo = getimagesize($file->getRealPath());
+        $filename = getSaveImgName($ext,$imgInfo[0],$imgInfo[1]);
+
         //保存图片
-        if (!$save_path = Storage::disk('uploads')->put('chatimg/' . date('Ymd'), $file)) {
+        if (!$save_path = Storage::disk('uploads')->putFileAs('images/' . date('Ymd'), $file, $filename)) {
             return $this->ajaxError('图片上传失败');
         }
 
@@ -554,6 +560,4 @@ class ChatController extends CController
 
         return $result ? $this->ajaxSuccess('图片上传成功...', ['file_info' => encrypt($result->id)]) : $this->ajaxError('图片上传失败');
     }
-
-
 }

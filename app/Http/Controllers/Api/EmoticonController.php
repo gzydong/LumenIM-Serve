@@ -37,11 +37,18 @@ class EmoticonController extends CController
         if($ids){
             $items = Emoticon::select('id','name','url')->whereIn('id',$ids)->get();
             foreach ($items as $item){
+                $list = EmoticonDetails::where('emoticon_id',$item->id)->get(['id as media_id','url as src'])->toArray();
+                if($list){
+                    $list = array_map(function ($item){
+                        $item['src'] = getFileUrl($item['src']);
+                        return $item;
+                    },$list);
+                }
                 $emoticon_list[] = [
                     'emoticon_id'=>$item->id,
-                    'url'=>$item->url,
+                    'url'=>getFileUrl($item->url),
                     'name'=>$item->name,
-                    'list'=>EmoticonDetails::where('emoticon_id',$item->id)->get(['id as media_id','url as src'])
+                    'list'=>$list
                 ];
             }
         }
@@ -60,6 +67,7 @@ class EmoticonController extends CController
             $ids = UsersEmoticon::where('user_id',$this->uid())->value('emoticon_ids')??[];
             foreach ($items as $k => &$item){
                 $item['status'] = in_array($item['id'],$ids) ? 1 : 0;
+                $item['url'] = getFileUrl($item['url']);
             }
         }
 
@@ -89,11 +97,20 @@ class EmoticonController extends CController
                 return $this->ajaxError('添加表情包失败...');
             }
 
+            $list = EmoticonDetails::where('emoticon_id',$emoticonInfo->id)->get(['id as media_id','url as src'])->toArray();
+            if($list){
+                $list = array_map(function ($item){
+                    $item['src'] = getFileUrl($item['src']);
+                    return $item;
+                },$list);
+            }
+
+
             $data = [
                 'emoticon_id'=>$emoticonInfo->id,
-                'url'=>$emoticonInfo->url,
+                'url'=>getFileUrl($emoticonInfo->url),
                 'name'=>$emoticonInfo->name,
-                'list'=>EmoticonDetails::where('emoticon_id',$emoticonInfo->id)->get(['id as media_id','url as src'])
+                'list'=>$list
             ];
 
             return $this->ajaxSuccess('添加表情包成功',$data);

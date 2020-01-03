@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Emoticon;
 use App\Models\UsersEmoticon;
+use App\Models\UsersFriends;
 
 /**
  * 测试控制器
@@ -14,10 +15,7 @@ class TestController
     public function index()
     {
 
-
-        exit;
-        $info = UsersEmoticon::select(['id','user_id','emoticon_ids'])->where('user_id',2054)->first();
-        dd($info->emoticon_ids);
+        UsersFriends::checkFriends(2054,2055);
     }
 
     public function getGif($href)
