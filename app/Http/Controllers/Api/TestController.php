@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Emoticon;
 use App\Models\UsersEmoticon;
 use App\Models\UsersFriends;
-
+use Illuminate\Support\Facades\Storage;
 /**
  * 测试控制器
  * Class TestController
@@ -15,6 +15,9 @@ class TestController
     public function index()
     {
 
+        dd();
+
+        exit;
         UsersFriends::checkFriends(2054,2055);
     }
 
