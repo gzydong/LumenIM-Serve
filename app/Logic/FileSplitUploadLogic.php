@@ -78,13 +78,12 @@ class FileSplitUploadLogic
             return false;
         }
 
-        @Storage::disk('uploads')->delete("tmp/{$hashName}/{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp");
+        $save_path = "tmp/{$hashName}/{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp";
 
-//        //临时文件路径
-//        $real_path = $file->getRealPath();
-//        file_put_contents(Storage::disk('uploads')->path("tmp/sss/{$hashName}/{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp"),file_get_contents($real_path));
-
-
+        //判断上传目录是否存在
+        if(!Storage::disk('uploads')->exists(pathinfo($save_path,PATHINFO_DIRNAME))){
+            Storage::disk('uploads')->makeDirectory(pathinfo($save_path,PATHINFO_DIRNAME));
+        }
 
         if (!$save_path = Storage::disk('uploads')->putFileAs("tmp/{$hashName}", $file, "{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp")) {
             return false;
