@@ -5,6 +5,9 @@ use App\Models\Emoticon;
 use App\Models\UsersEmoticon;
 use App\Models\UsersFriends;
 use Illuminate\Support\Facades\Storage;
+use App\Models\EmoticonDetails;
+
+use App\Logic\EmoticonLogic;
 /**
  * 测试控制器
  * Class TestController
@@ -12,13 +15,9 @@ use Illuminate\Support\Facades\Storage;
  */
 class TestController
 {
-    public function index()
+    public function index(EmoticonLogic $emoticonLogic)
     {
 
-        dd();
-
-        exit;
-        UsersFriends::checkFriends(2054,2055);
     }
 
     public function getGif($href)

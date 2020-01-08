@@ -62,4 +62,32 @@ class EmoticonLogic extends Logic{
 
         return UsersEmoticon::where('user_id', $user_id)->update(['emoticon_ids' => implode(',', $emoticon_ids)]) ? true : false;
     }
+
+    /**
+     * 关键字查询表情包
+     *
+     * @param string $keyword 查询关键字
+     * @param int $page 分页
+     * @param int $page_size  分页大小
+     * @return array
+     */
+    public function searchEmoticon(string $keyword,int $page,int $page_size){
+        $countSqlObj = EmoticonDetails::select();
+        $rowsSqlObj = EmoticonDetails::select(['id as media_id','url as src']);
+
+        //where 条件
+        $countSqlObj->where('describe','like',"%{$keyword}%");
+        $rowsSqlObj->where('describe','like',"%{$keyword}%");
+
+        $count = $countSqlObj->count();
+        $rows = [];
+        if ($count > 0) {
+            $rows = $rowsSqlObj->forPage($page, $page_size)->get()->toArray();
+        }
+
+        unset($countSqlObj);
+        unset($rowsSqlObj);
+
+        return $this->packData($rows, $count, $page, $page_size);
+    }
 }

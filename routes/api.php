@@ -83,8 +83,8 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/emoticon/user-emoticon', ['uses' => 'EmoticonController@getUserEmoticon']);
     $router->get('/emoticon/system-emoticon', ['uses' => 'EmoticonController@getSystemEmoticon']);
     $router->post('/emoticon/set-user-emoticon', ['uses' => 'EmoticonController@setUserEmoticon']);
+    $router->get('/emoticon/search-emoticon', ['uses' => 'EmoticonController@searchEmoticon']);
 });
-
 
 //DownloadController 下载文件控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {

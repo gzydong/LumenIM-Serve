@@ -24,14 +24,7 @@ class EmoticonController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function getUserEmoticon(){
-        $emoticon_list = [
-            [
-                'emoticon_id'=>0,
-                'url'=>'https://g.alicdn.com/dingding/desktop-assets/1.1.1/img/face/icon_heart.png',
-                'name'=>'我的收藏',
-                'list'=>[]
-            ]
-        ];
+        $emoticon_list = [];
 
         $ids = UsersEmoticon::where('user_id',$this->uid())->value('emoticon_ids');
         if($ids){
@@ -44,13 +37,16 @@ class EmoticonController extends CController
                         return $item;
                     },$list);
                 }
+
                 $emoticon_list[] = [
                     'emoticon_id'=>$item->id,
                     'url'=>getFileUrl($item->url),
                     'name'=>$item->name,
                     'list'=>$list
                 ];
+                unset($list);
             }
+            unset($items);
         }
 
         return $this->ajaxSuccess('success',$emoticon_list);
@@ -105,7 +101,6 @@ class EmoticonController extends CController
                 },$list);
             }
 
-
             $data = [
                 'emoticon_id'=>$emoticonInfo->id,
                 'url'=>getFileUrl($emoticonInfo->url),
@@ -121,9 +116,27 @@ class EmoticonController extends CController
     }
 
     /**
-     * 用户收集表情包
+     * 关键字查询表情包
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function collectEmoticon(){
+    public function searchEmoticon(){
+        $keyword = $this->request->get('keyword','');
+        $page = $this->request->get('page',1);
+        $page_size = 100;
+        if(empty($keyword)){
+            return $this->ajaxParamError();
+        }
 
+        $data = $this->emoticonLogic->searchEmoticon($keyword,$page,$page_size);
+
+        if($data['rows']){
+            $data['rows'] = array_map(function ($item){
+                $item['src'] = getFileUrl($item['src']);
+                return $item;
+            },$data['rows']);
+        }
+
+        return $this->ajaxSuccess('success',$data);
     }
 }

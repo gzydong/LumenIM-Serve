@@ -5,6 +5,8 @@ use App\Models\FileSplitUpload;
 use Illuminate\Support\Facades\Storage;
 
 
+set_time_limit(0);
+
 /**
  * LumenImCommand 重写 laravel-swoole 的HttpServerCommand 命令行
  *
@@ -27,7 +29,7 @@ class ClearTmpFileCommand extends Command
     protected $description = '清除拆分上传的临时文件';
 
     public function handle(){
-        FileSplitUpload::select(['id', 'save_dir', 'hash_name'])->where('file_type', 1)->where('is_delete', 0)->where('upload_at', '<', time())->chunk(200, function ($rows) {
+        FileSplitUpload::select(['id', 'save_dir', 'hash_name'])->where('file_type', 1)->where('is_delete', 0)->where('upload_at', '<', time() - 60*60*6)->chunk(200, function ($rows) {
             $hash_name = [];
             try {
                 foreach ($rows as $row) {

@@ -9,7 +9,6 @@
         "barryvdh/laravel-cors": "^0.11.4",
         "illuminate/mail": "5.7.28",
         "illuminate/redis": "5.7.28",
-        "intervention/image": "^2.5",
         "laravel/lumen-framework": "5.7.*",
         "league/flysystem": "^1.0",
         "predis/predis": "^1.1",
