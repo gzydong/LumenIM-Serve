@@ -5,6 +5,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\KeyGenerateCommand;
 use App\Console\Commands\ClearTmpFileCommand;
+use App\Console\Commands\ForkCommand;
 
 class Kernel extends ConsoleKernel
 {
@@ -16,6 +17,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         KeyGenerateCommand::class,
         ClearTmpFileCommand::class,
+        ForkCommand::class,
     ];
 
     /**

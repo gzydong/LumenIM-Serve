@@ -11,6 +11,7 @@ $router->get('/', ['as' => 'api', function () {
 //测试控制器
 $router->group([], function () use ($router) {
     $router->get('/test/index', ['middleware' => [], 'uses' => 'TestController@index']);
+    $router->post('/test/index2', ['middleware' => [], 'uses' => 'TestController@index2']);
 });
 
 
@@ -25,6 +26,7 @@ $router->group([], function () use ($router) {
     $router->post('/auth/send-verify-code', ['middleware' => [], 'uses' => 'AuthController@sendVerifyCode']);
     $router->post('/auth/forget-password', ['middleware' => [], 'uses' => 'AuthController@forgetPassword']);
 });
+
 
 //UsersController 控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
@@ -92,5 +94,15 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 });
 
 
-
-
+//ArticleController控制器分组
+$router->group(['middleware' => ['jwt.auth']], function () use ($router) {
+    $router->get('/article/article-class', ['uses' => 'ArticleController@getArticleClass']);
+    $router->get('/article/article-list', ['uses' => 'ArticleController@getArticleList']);
+    $router->get('/article/article-detail', ['uses' => 'ArticleController@getArticleDetail']);
+    $router->post('/article/edit-article', ['uses' => 'ArticleController@editArticle']);
+    $router->post('/article/edit-article-class', ['uses' => 'ArticleController@editArticleClass']);
+    $router->post('/article/del-article-class', ['uses' => 'ArticleController@delArticleClass']);
+    $router->post('/article/article-class-sort', ['uses' => 'ArticleController@articleClassSort']);
+    $router->post('/article/merge-article-class', ['uses' => 'ArticleController@mergeArticleClass']);
+    $router->post('/article/upload-article-image', ['uses' => 'ArticleController@uploadArticleImage']);
+});

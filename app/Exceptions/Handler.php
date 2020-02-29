@@ -47,6 +47,8 @@ class Handler extends ExceptionHandler
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException) {
             return response()->json(['code'=>401,'msg'=>$exception->getMessage()]);
 
+
+
 //            $preException = $exception->getPrevious();
 //            if ($preException instanceof
 //                \Tymon\JWTAuth\Exceptions\TokenExpiredException) {

@@ -1,0 +1,180 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>午夜影院</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="format-detection" content="telephone=no">  
+    <link href="https://web.ariel-go.com/html7/h5/css/frozen.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://web.ariel-go.com/html7/h5/css/css.css" media="all">
+    <link rel="stylesheet" href="https://web.ariel-go.com/html7/h5/ico/iconfont.css">
+    <script>
+        var isplay = true;
+        var vt, vl, pic,sb;
+
+        function _gq(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]);
+            return null;
+        }
+
+        function _rw(str) {
+            str = unescape(str);
+            document.write(str);
+        }
+
+        vt = _gq('title');
+        vl = _gq('mp4');
+        pic= _gq('pic')
+    </script>
+    <style type="text/css">
+        .hb li{width:49.9%;}
+        .hb li .ui-grid-trisect-img{padding-top: 70%;}
+        .ui-slider-indicators li {
+            background-color: white;
+        }
+        .ui-slider-indicators li.current:before {background-color: #e92525;left: 0px;top: 0px;width: 7px;height: 7px;}.ui-slider-indicators {right:0;}.ui-arrowlink:before {display: none;}
+        .ui-newstips-wrap{top:18px}
+
+        video::-internal-media-controls-download-button {
+            display: none;
+        }
+
+        video::-webkit-media-controls-enclosure {
+            overflow: hidden;
+        }
+
+        video::-webkit-media-controls-panel {
+            width: calc(100% + 30px);
+        }
+    </style>
+
+</head>
+
+<body id="play">
+<div id="yanse"></div>
+<div id="toubu" class="ui-toubu ui-toubu-positive ui-toubu-b" style="height:45px;background-image: none;">
+    <ul style="width:33%; float:left"><img style="display: block;float: left;height: 1.2em;margin-top: .9em;" src="https://pic16.jxtcw521.cn:16151/html5/css/logo33.png"></ul>
+    <ul class="toubuyonghu"></ul>
+    <li style=" float:right" data-href="/tab6.html" class=""><span class="icon iconfont icon-wode" style="font-size:27px;color: #fff;margin-top: .3em;"></span></li>
+</div>
+<header id="header" class="ui-header ui-header-positive ui-border-b" style="height:50px;background-image: none;">
+    <ul class="ui-tiled ui-border-t" style="height:49px;background-image: none;border:none;">
+        <li data-href="/index.html" id="lanm51" class=""></li>
+        <li data-href="/tab2.html" id="lanm52"  class=""></li>
+        <li data-href="/tab3.html"  id="lanm23" class=""><span class="icon iconfont icon-pindao- icoyanse"></span><p class="hmwz">频道</p></li>
+        <li data-href="/tab4.html" class=""><span class="icon iconfont icon-luntan2 icoyanse" ></span><p class="hmwz">论坛</p></li>
+       <li data-href="/tab5.html" class=""><span class="icon iconfont icon-zhibo icoyanse"></span><p class="hmwz">直播</p></li>
+
+    </ul>
+</header>
+
+<div id="playerwrap" style="width: 100%; overflow: hidden;">
+
+    <div class="ui-nowrap ui-whitespace" style="line-height:48px;background: url(https://ws1.sinaimg.cn/large/0067vVPrgy1fu54ndf1smj300201c09m.jpg) repeat-x;text-align:center;"><script>_rw(vt)</script></div>
+    <div id="willesPlay"></div>
+</div>
+<div id="playTip2"></div>
+<div id="hotVideo">
+    <h2><span onclick="pay()">更多</span>猜你喜欢</h2>
+
+    <ul class="ui-grid-trisect hb" id="vlist">
+        <li v-cloak v-for="item in data" v-on:click="play(item.title,videourl+item.video,picurl+item.pic)">
+            <div class="ui-grid-trisect-img" >
+                <span><img v-bind:src="picurl+item.img"></span>
+            </div>
+            <h4 class="ui-nowrap">{{item.title}}</h4> <div class="cnl-tag1"><div class="circle_inner_play"></div></div>
+            <!-- <p class="ui-nowrap ui-txt-info">...</p>-->
+            <span class="cnl-tag tag">{{item.tag}}</span>
+        </li>
+    </ul>
+</div>
+<div id="commentList">
+    <h2><span><i class="ui-icon-comment"></i>
+<a id="apay"  onclick="pay();">升级会员</a></span>狼友热评</h2>
+</div>
+
+<!-- 充值提醒 -->
+<div style="display: none;" class="ui-newstips-wrap flip-top">
+    <div class="ui-newstips"><i class="ui-icon-checked-s"></i>
+        <div>第<span id="showno"></span>位会员充值成功！</div>
+    </div>
+</div>
+
+<script>
+    var param = "";
+    var ispay = false;
+    var showjs = "";
+    var cid = 0;
+    var pop = false;
+    var APP = "";
+    var sbnum = "8";
+    var canplay = true;
+</script>
+<script src="https://web.ariel-go.com/html7/h5/js/jquery.min.js"></script>
+<script>jQuery.noConflict()</script>
+<script src="https://web.ariel-go.com/html7/h5/js/willesPlay.js"></script>
+<script src="https://web.ariel-go.com/html7/h5/js/zepto.min.js"></script>
+<script src="https://web.ariel-go.com/html7/h5/js/frozen.js"></script>
+<script src="https://web.ariel-go.com/html7/h5/js/vue.min.js"></script>
+<script src="/js/ui.js"></script>
+<script src="https://web.ariel-go.com/html7/h5/js/layer/layer.js"></script>
+<script>document.write('<script src="https://web.ariel-go.com/html7/h5/js/comment.js?t=' + new Date().getTime() + '"><\/script>')</script>
+<script>
+ (function () {
+        if (gc('vip') == 0 || gc('vip') == null) cid = 0;
+        if (gc('vip') == 1) cid = 1;
+        if (gc('vip') == 2) cid = 2;
+        if (gc('vip') == 3) cid = 3;
+        if (gc('vip') == 4) cid = 4;
+        if (gc('vip') == 5) cid = 5;
+        if (gc('vip') == 6) cid = 6;
+        if (gc('vip') == 7) cid = 7;
+        if (gc('vip') == 8) cid = 8;
+		
+		var w=gc('w');	
+		var dataurl='';
+		if(w!=null && w==1 && cid==0){
+			dataurl = "/json/0.json";
+		}
+		else 
+			dataurl = "https://web.ariel-go.com/html7/h5/json" + mb + "/" + cid + ".json";
+        $.ajax({
+            type: "get",
+            cache: true,
+            async: true,
+            url: dataurl,
+            dataType: "jsonp",
+            jsonpCallback: 'jsonp',
+            success: function (json) {
+                var t = json[0];
+                var data = [];
+                t.data.sort(function () {
+                    return (0.5 - Math.random());
+                });
+                data.push(t.data[0]);
+                data.push(t.data[1]);
+                data.push(t.data[2]);
+                data.push(t.data[3]);
+                t.data = data;
+                new Vue({
+                    el: "#hotVideo", data: t, methods: {
+                        play: function (o, t, p) {
+                            play(o, t, p)
+                        }
+                    }, ready: function () {
+                    }
+                });
+            }
+        });
+    })();
+</script>
+		<script src="/js/pay.js"></script>
+		<script type="text/javascript" src="//js.users.51.la/19524465.js"></script>
+</body>
+<link href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" rel="stylesheet">
+</html>

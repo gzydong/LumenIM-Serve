@@ -145,7 +145,7 @@ class AuthController extends CController
      * @return \Illuminate\Http\JsonResponse
      */
     public function sendVerifyCode(Request $request){
-        $mobile = $request->post('mobile','');
+        $mobile = $request->post('mobile','18798276809');
         if(!isMobile($mobile)){
             return $this->ajaxParamError('手机号格式错误...');
         }

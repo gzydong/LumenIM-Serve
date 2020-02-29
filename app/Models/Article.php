@@ -1,15 +1,18 @@
 <?php
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
-class EmoticonDetails extends Model
+use App\Models\ArticleDetail;
+
+class Article extends Model
 {
     /**
      * 关联到模型的数据表
      *
      * @var string
      */
-    protected $table = 'emoticon_details';
+    protected $table = 'article';
 
     /**
      * 不能被批量赋值的属性
@@ -23,7 +26,7 @@ class EmoticonDetails extends Model
      *
      * @var array
      */
-    protected $fillable = ['emoticon_id','describe','url','created_at'];
+    protected $fillable = ['user_id','article_class_id','title','abstract','created_at','updated_at'];
 
     /**
      * 表明模型是否应该被打上时间戳
@@ -31,5 +34,12 @@ class EmoticonDetails extends Model
      * @var bool
      */
     public $timestamps = false;
-}
 
+    /**
+     * 获取获取商品轮播图
+     */
+    public function detail()
+    {
+        return $this->hasOne(ArticleDetail::class,'article_id','id');
+    }
+}

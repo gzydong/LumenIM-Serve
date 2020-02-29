@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Api;
 use App\Models\Emoticon;
 use App\Models\UsersEmoticon;
 use App\Models\UsersFriends;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\EmoticonDetails;
 
-use App\Logic\EmoticonLogic;
+use App\Logic\ArticleLogic;
+use Illuminate\Http\Request;
+
 /**
  * 测试控制器
  * Class TestController
@@ -15,10 +18,48 @@ use App\Logic\EmoticonLogic;
  */
 class TestController
 {
-    public function index(EmoticonLogic $emoticonLogic)
+
+
+    public function index(Request $request)
     {
 
+        $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
+        $logic = new ArticleLogic();
+
+        foreach ($list as $v){
+            $logic->editArticle(2054,0,[
+                'title'=>$v->title,
+                'abstract'=>mb_substr(strip_tags(htmlspecialchars_decode($v->content)),0,200),
+                'class_id'=>mt_rand(1,6),
+                'md_content'=>$v->markdown_content,
+                'content'=>$v->content
+            ]);
+        }
+
+        exit;
+        $page = $request->get('page',1);
+        $items = EmoticonDetails::where('describe','=','')->forPage($page, 1000)->get()->toArray();
+
+        return response()->json(['code' => 200, 'msg' => 'success', 'data' => $items]);
     }
+
+    public function index2(Request $request)
+    {
+        $id = $request->post('id',1);
+        $describe = $request->post('describe','');
+
+        if(empty($describe)){
+            return response()->json(['code' => 305, 'msg' => 'success', 'data' => []]);
+        }
+
+        if(EmoticonDetails::where('id',$id)->update(['describe'=>$describe])){
+            return response()->json(['code' => 200, 'msg' => 'success', 'data' => []]);
+        }else{
+            return response()->json(['code' => 305, 'msg' => 'success', 'data' => []]);
+        }
+    }
+
+
 
     public function getGif($href)
     {
