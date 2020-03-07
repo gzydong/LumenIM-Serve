@@ -35,8 +35,8 @@ class ChatController extends CController
     public function getChatList()
     {
         $rows = $this->chatLogic->getUserChatList($this->uid());
-        if($rows){
-            $rows = arraysSort($rows,'created_at');
+        if ($rows) {
+            $rows = arraysSort($rows, 'created_at');
         }
 
         return $this->ajaxSuccess('success', $rows);
@@ -49,15 +49,15 @@ class ChatController extends CController
      */
     public function getChatItem()
     {
-        $type = $this->request->get('type',0);
-        $receive_id = $this->request->get('receive_id',0);
+        $type = $this->request->get('type', 0);
+        $receive_id = $this->request->get('receive_id', 0);
         $uid = $this->uid();
-        if (!in_array($type, [1,2]) || !isInt($receive_id)) {
+        if (!in_array($type, [1, 2]) || !isInt($receive_id)) {
             return $this->ajaxParamError();
         }
 
         $item = [
-            'type'=>$type,
+            'type' => $type,
             'name' => '',
             'unread_num' => 1,
             'not_disturb' => 0,
@@ -65,8 +65,8 @@ class ChatController extends CController
             'avatar' => '',
             'remark_name' => '',
             'msg_text' => '......',
-            'friend_id'=>0,
-            'group_id'=>0,
+            'friend_id' => 0,
+            'group_id' => 0,
             'created_at' => date('Y-m-d H:i:s')
         ];
 
@@ -99,7 +99,7 @@ class ChatController extends CController
             $item['avatar'] = $groupInfo->avatarurl;
             unset($groupInfo);
 
-            $groupMemberInfo = UsersGroupMember::select(['not_disturb'])->where('group_id',$receive_id)->where('user_id', $uid)->where('status', 0)->first();
+            $groupMemberInfo = UsersGroupMember::select(['not_disturb'])->where('group_id', $receive_id)->where('user_id', $uid)->where('status', 0)->first();
             if (!$groupMemberInfo) {
                 return $this->ajaxError('获取列表信息失败...');
             }
@@ -171,17 +171,6 @@ class ChatController extends CController
                     case 4://系统退群消息
                         $uids = explode(',', $item['content']);
                         $item['content'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(), $uids);
-                        break;
-                    case 5://表情包消息
-                        $fileInfo = EmoticonDetails::where('id', $item['file_id'])->first(['describe', 'url']);
-                        if ($fileInfo) {
-                            $item["fileInfo"]['file_type'] = 1;
-                            $item["fileInfo"]['file_suffix'] = '';
-                            $item["fileInfo"]['file_size'] = '';
-                            $item["fileInfo"]['original_name'] = $fileInfo->describe;
-                            $item["fileInfo"]['url'] = getFileUrl($fileInfo->url);
-                        }
-                        unset($fileInfo);
                         break;
                 }
 
@@ -541,7 +530,7 @@ class ChatController extends CController
         }
 
         $imgInfo = getimagesize($file->getRealPath());
-        $filename = getSaveImgName($ext,$imgInfo[0],$imgInfo[1]);
+        $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
 
         //保存图片
         if (!$save_path = Storage::disk('uploads')->putFileAs('images/' . date('Ymd'), $file, $filename)) {
@@ -559,5 +548,51 @@ class ChatController extends CController
         ]);
 
         return $result ? $this->ajaxSuccess('图片上传成功...', ['file_info' => encrypt($result->id)]) : $this->ajaxError('图片上传失败');
+    }
+
+
+    /**
+     * 查询聊天记录
+     */
+    public function findChatRecords()
+    {
+
+
+        $user_id = $this->uid();
+        $receive_id = $this->request->get('receive_id', 0);
+        $source = $this->request->get('source', 1);
+        $find_type = $this->request->get('find_type', 0);
+        $find_mode = $this->request->get('find_mode', 0);
+        $record_id = $this->request->get('record_id', 0);
+        $limit = 30;
+
+
+//        "min_record_id":1052,"max_record_id":1092
+//        $user_id = 2054;
+//        $receive_id = 4106;
+//        $find_mode = 1;
+//        $record_id = 1052;
+
+
+        if (!isInt($receive_id) || !in_array($source, [1, 2]) || !in_array($find_type, [0, 1, 2]) || !in_array($find_mode, [0, 1, 2]) || !isInt($record_id, true)) {
+            $this->ajaxParamError();
+        }
+
+        $result = $this->chatLogic->findChatRecords($user_id, $receive_id, $source, $find_type, $find_mode, $record_id,$limit);
+        if ($result) {
+            $result = array_map(function ($item) {
+                $item['file_url'] = ($item['msg_type'] == 2) ? getFileUrl($item['save_dir']) : '';
+                $item['content'] = emojiReplace($item['content']);
+                return $item;
+            }, $result);
+        }
+
+        return $this->ajaxSuccess('success', [
+            'records' => $result,
+            'min_record_id' => $result ? end($result)['id'] : 0,
+            'max_record_id' => $result ? $result[0]['id'] : 0,
+            'limit' => $limit,
+            'count' => count($result),
+        ]);
     }
 }

@@ -24,7 +24,7 @@ class UsersChatFiles extends Model
      *
      * @var array
      */
-    protected $fillable = ['user_id','chat_records_id','file_type','file_suffix','file_size','save_dir','original_name','created_at'];
+    protected $fillable = ['user_id','flie_source','file_type','file_suffix','file_size','save_dir','original_name','created_at'];
 
     /**
      * 表明模型是否应该被打上时间戳

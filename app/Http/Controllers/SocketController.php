@@ -62,14 +62,25 @@ class SocketController extends Controller
             $msgData["content"] = htmlspecialchars($msgData['content']);
         } else if ($msgData['msg_type'] == 2) {
             $fileId = decrypt($msgData["content"]);
-            if (!$fileId) {
-                return true;
-            }
+            if (!$fileId)  return true;
 
             $msgData["content"] = '';
             $msgData['file_id'] = $fileId;
         }else if ($msgData['msg_type'] == 5) {
-            $msgData['file_id'] = $msgData["content"];
+            $emoticonDetails = EmoticonDetails::select(['id','file_suffix','file_size','url'])->where('id',$msgData["content"])->first();
+            $fileRes = UsersChatFiles::create([
+                'user_id' => $uid,
+                'flie_source'=>2,
+                'file_type' => 1,
+                'file_suffix' => $emoticonDetails->file_suffix,
+                'file_size' => $emoticonDetails->file_size,
+                'save_dir' => $emoticonDetails->url,
+                'original_name' => '系统表情',
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+
+            $msgData['msg_type'] = 2;
+            $msgData['file_id'] = $fileRes->id;
             $msgData["content"] = '';
         }
 

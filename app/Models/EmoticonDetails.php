@@ -23,7 +23,7 @@ class EmoticonDetails extends Model
      *
      * @var array
      */
-    protected $fillable = ['emoticon_id','describe','url','created_at'];
+    protected $fillable = ['emoticon_id','describe','url','file_suffix','file_size','created_at'];
 
     /**
      * 表明模型是否应该被打上时间戳

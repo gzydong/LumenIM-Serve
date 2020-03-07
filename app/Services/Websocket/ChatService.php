@@ -102,10 +102,6 @@ class ChatService
             return false;
         }
 
-        if (isset($message['file_id']) && $message['file_id']) {
-            UsersChatFiles::where('id', $message['file_id'])->update(['chat_records_id' => $recordRes->id]);
-        }
-
         //判断聊天消息类型
         if ($message['source_type'] == 1) {
             //创建好友的聊天列表

@@ -12,6 +12,5 @@
 */
 
 $router->get('/', function () use ($router) {
-
-
+    echo 'lumne';
 });

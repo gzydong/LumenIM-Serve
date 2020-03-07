@@ -25,7 +25,9 @@ class UsersController extends CController
             'mobile' => $userInfo['mobile'],
             'nickname' => $userInfo['nickname'],
             'avatarurl' => $userInfo['avatarurl'],
-            'motto' => $userInfo['motto']
+            'motto' => $userInfo['motto'],
+            'email'=>$userInfo['email'],
+            'gender'=>$userInfo['gender']
         ]);
     }
 
@@ -55,11 +57,12 @@ class UsersController extends CController
      */
     public function editUserDetail(Request $request)
     {
-        if (!$request->has(['nickname', 'avatarurl', 'motto'])) {
+        $params = ['nickname', 'avatarurl', 'motto','email','gender'];
+        if (!$request->has($params) || !isInt($request->post('gender'),true)) {
             return $this->ajaxParamError();
         }
 
-        [$isTrue, $message] = User::editUserDetail($this->uid(), $request->only(['nickname', 'avatarurl', 'motto']));
+        [$isTrue, $message] = User::editUserDetail($this->uid(), $request->only($params));
         return $this->ajaxReturn($isTrue ? 200 : 305, $message);
     }
 

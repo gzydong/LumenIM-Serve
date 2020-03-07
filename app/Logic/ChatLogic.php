@@ -629,4 +629,85 @@ SQL;
             return false;
         }
     }
+
+    /**
+     * 查找历史聊天记录信息
+     *
+     * @param int $user_id 用户ID
+     * @param int $receive_id 接收者ID(用户ID或群聊接收ID)
+     * @param int $source 聊天来源（1:私信 2:群聊）
+     * @param int $find_type 搜索消息类型(0:全部信息 1:图片信息 2:文件信息)
+     * @param int $find_mode 记录查找方式(0:获取最新的数据 1:向上查找 2:向下查找)
+     * @param int $record_id 记录节点ID
+     * @param int $limit 数据大小
+     * @return mixed
+     */
+    public function findChatRecords(int $user_id, int $receive_id, int $source, int $find_type, int $find_mode, int $record_id,$limit = 30)
+    {
+        $rowsSqlObj = UsersChatRecords::select([
+            'users_chat_records.id',
+            'users_chat_records.source',
+            'users_chat_records.msg_type',
+            'users_chat_records.user_id',
+            'users_chat_records.receive_id',
+            'users_chat_records.content',
+            'users_chat_records.send_time',
+
+            'users_chat_records.file_id',
+            'users_chat_files.user_id as send_user_id',
+            'users_chat_files.flie_source',
+            'users_chat_files.file_type',
+            'users_chat_files.file_suffix',
+            'users_chat_files.file_size',
+            'users_chat_files.save_dir',
+            'users_chat_files.original_name',
+
+            'users.nickname',
+            'users.avatarurl as avatar',
+        ]);
+
+
+        $rowsSqlObj->leftJoin('users','users.id','=','users_chat_records.user_id');
+
+        $joinType = $find_type == 0 ? 'leftJoin' : 'join';
+        $rowsSqlObj->{$joinType}('users_chat_files', function ($join) use ($find_type) {
+            $join->on('users_chat_files.id', '=', 'users_chat_records.file_id');
+            if ($find_type == 1) {
+                $join->where('users_chat_files.file_type', 1);
+            } else if ($find_type == 2) {
+                $join->where('users_chat_files.file_type', 3);
+            }
+        });
+
+        //私有消息
+        if($source == 1){
+            $where1 = $where2 = [];
+
+            if($find_mode > 0){
+                $where1[] = $where2[] = ['users_chat_records.id',$find_mode == 1 ? '<' : '>',$record_id];
+            }
+
+            $where1[] = ['users_chat_records.user_id','=',$user_id];
+            $where1[] = ['users_chat_records.receive_id','=',$receive_id];
+
+            $where2[] = ['users_chat_records.user_id','=',$receive_id];
+            $where2[] = ['users_chat_records.receive_id','=',$user_id];
+
+            $rowsSqlObj->where($where1)->orWhere($where2);
+        }else{//群聊信息
+            if($find_mode > 0){
+                $rowsSqlObj->where('users_chat_records.id', $find_mode == 1 ? '<' : '>', $record_id);
+            }
+
+            $rowsSqlObj->where('users_chat_records.receive_id', $receive_id);
+            $rowsSqlObj->where('users_chat_records.source', $source);
+            $rowsSqlObj->whereIn('users_chat_records.msg_type', [1,2]);
+        }
+
+
+//        echo $rowsSqlObj->orderBy('users_chat_records.id','desc')->limit($limit)->toSql();exit;
+
+
+        return $rowsSqlObj->orderBy('users_chat_records.id','desc')->limit($limit)->get()->toArray();
+    }
 }
