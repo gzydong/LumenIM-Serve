@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Facades\ChatService;
 use App\Models\UsersFriends;
 use Illuminate\Http\Request;
 use App\Helpers\Cache\CacheHelper;
@@ -12,7 +13,6 @@ use App\Models\User;
 use App\Models\UsersChatFiles;
 use App\Models\UsersGroup;
 use App\Models\UsersGroupMember;
-use App\Models\EmoticonDetails;
 use App\Logic\ChatLogic;
 use App\Logic\UsersLogic;
 
@@ -556,8 +556,6 @@ class ChatController extends CController
      */
     public function findChatRecords()
     {
-
-
         $user_id = $this->uid();
         $receive_id = $this->request->get('receive_id', 0);
         $source = $this->request->get('source', 1);
@@ -567,15 +565,13 @@ class ChatController extends CController
         $limit = 30;
 
 
-//        "min_record_id":1052,"max_record_id":1092
-//        $user_id = 2054;
-//        $receive_id = 4106;
-//        $find_mode = 1;
-//        $record_id = 1052;
-
-
         if (!isInt($receive_id) || !in_array($source, [1, 2]) || !in_array($find_type, [0, 1, 2]) || !in_array($find_mode, [0, 1, 2]) || !isInt($record_id, true)) {
             $this->ajaxParamError();
+        }
+
+        //判断是否属于群成员
+        if ($source == 2 && !ChatService::checkGroupMember($receive_id, $user_id)) {
+            $this->ajaxReturn(403,'非法请求');
         }
 
         $result = $this->chatLogic->findChatRecords($user_id, $receive_id, $source, $find_type, $find_mode, $record_id,$limit);
