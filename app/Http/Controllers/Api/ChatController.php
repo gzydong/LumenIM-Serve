@@ -623,7 +623,7 @@ class ChatController extends CController
         if($result){
             $result = array_map(function ($items) use($keywords){
                 //高亮显示
-                $items['content'] = str_replace($keywords,"<mark>{$keywords}</mark>mark>",$items['content']);
+                $items['content'] = str_replace($keywords,"<mark>{$keywords}</mark>",$items['content']);
                 return $items;
             },$result);
         }
