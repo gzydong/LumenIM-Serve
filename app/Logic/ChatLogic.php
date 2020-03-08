@@ -704,10 +704,78 @@ SQL;
             $rowsSqlObj->whereIn('users_chat_records.msg_type', [1,2]);
         }
 
-
-//        echo $rowsSqlObj->orderBy('users_chat_records.id','desc')->limit($limit)->toSql();exit;
-
-
         return $rowsSqlObj->orderBy('users_chat_records.id','desc')->limit($limit)->get()->toArray();
+    }
+
+    /**
+     * 关键词搜索聊天记录
+     *
+     * @param int $user_id 用户ID
+     * @param int $receive_id 接收者ID(用户ID或群聊接收ID)
+     * @param int $source 聊天来源（1:私信 2:群聊）
+     * @param int $find_type 搜索消息类型(0:全部信息 1:图片信息 2:文件信息)
+     * @param string $keywords 搜索关键词
+     * @param int $record_id 上一次记录ID数
+     * @param int $limit 分页大小
+     * @return array
+     */
+    public function searchChatRecords(int $user_id, int $receive_id, int $source, int $find_type,string $keywords,int $record_id,$limit = 30){
+        $rowsSqlObj = UsersChatRecords::select([
+            'users_chat_records.id',
+            'users_chat_records.source',
+            'users_chat_records.msg_type',
+            'users_chat_records.user_id',
+            'users_chat_records.receive_id',
+            'users_chat_records.content',
+            'users_chat_records.send_time',
+
+            'users_chat_records.file_id',
+            'users_chat_files.user_id as send_user_id',
+            'users_chat_files.flie_source',
+            'users_chat_files.file_type',
+            'users_chat_files.file_suffix',
+            'users_chat_files.file_size',
+            'users_chat_files.save_dir',
+            'users_chat_files.original_name',
+
+            'users.nickname',
+            'users.avatarurl as avatar',
+        ]);
+
+        $rowsSqlObj->leftJoin('users','users.id','=','users_chat_records.user_id');
+
+        $joinType = $find_type == 0 ? 'leftJoin' : 'join';
+        $rowsSqlObj->{$joinType}('users_chat_files', function ($join) use ($find_type) {
+            $join->on('users_chat_files.id', '=', 'users_chat_records.file_id');
+            if ($find_type == 1) {
+                $join->where('users_chat_files.file_type', 1);
+            } else if ($find_type == 2) {
+                $join->where('users_chat_files.file_type', 3);
+            }
+        });
+
+        if($record_id){
+            $rowsSqlObj->where('users_chat_records.id','<', $record_id);
+        }
+
+        if($source == 1){
+            $rowsSqlObj->where(function ($query) use($user_id,$receive_id) {
+                $query->where([
+                    ['users_chat_records.user_id','=',$user_id],
+                    ['users_chat_records.receive_id','=',$receive_id]
+                ])->orWhere([
+                    ['users_chat_records.user_id','=',$receive_id],
+                    ['users_chat_records.receive_id','=',$user_id]
+                ]);
+            });
+        }else{
+            $rowsSqlObj->where('users_chat_records.receive_id', $receive_id);
+            $rowsSqlObj->where('users_chat_records.source', $source);
+            $rowsSqlObj->whereIn('users_chat_records.msg_type', [1,2]);
+        }
+
+        $rowsSqlObj->where('users_chat_records.content', 'like', "%{$keywords}%");
+
+        return $rowsSqlObj->orderBy('users_chat_records.id','desc')->limit(30)->get()->toArray();
     }
 }

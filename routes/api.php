@@ -71,6 +71,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 });
 
 $router->get('/chat/find-chat-records2', ['uses' => 'ChatController@findChatRecords']);
+$router->get('/chat/search-chat-records', ['uses' => 'ChatController@searchChatRecords']);
 
 
 

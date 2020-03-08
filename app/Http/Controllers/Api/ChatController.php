@@ -591,4 +591,18 @@ class ChatController extends CController
             'count' => count($result),
         ]);
     }
+
+    /**
+     * 搜索聊天记录
+     */
+    public function searchChatRecords(){
+        $user_id = 2054;
+        $receive_id = 75;
+        $source = 2;
+        $find_type = 0;
+        $keywords = '文科';
+        $page = 1;
+
+        $this->chatLogic->searchChatRecords($user_id,$receive_id,$source,$find_type,$keywords,1184);
+    }
 }
