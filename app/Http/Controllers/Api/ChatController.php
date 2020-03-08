@@ -606,11 +606,28 @@ class ChatController extends CController
         $keywords = $this->request->get('keywords', '');
         $limit = 30;
 
+
+//        $user_id = 2054;
+//        $receive_id =4106;
+//        $source = 1;
+//        $find_type = 0;
+//        $record_id = 0;
+//        $keywords = '阿森';
+
+
         if(!isInt($receive_id) || !in_array($source,[1,2]) || !in_array($find_type,[0,1,2]) || !isInt($record_id,true) || empty($keywords)){
             return $this->ajaxParamError();
         }
 
         $result = $this->chatLogic->searchChatRecords($user_id,$receive_id,$source,$find_type,addslashes($keywords),$record_id);
+        if($result){
+            $result = array_map(function ($items) use($keywords){
+                //高亮显示
+                $items['content'] = str_replace($keywords,"<mark>{$keywords}</mark>mark>",$items['content']);
+                return $items;
+            },$result);
+        }
+
         return $this->ajaxSuccess('success',[
             'records' => $result,
             'min_record_id' => $result ? end($result)['id'] : 0,
