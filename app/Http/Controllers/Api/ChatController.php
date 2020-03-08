@@ -603,7 +603,7 @@ class ChatController extends CController
         $source = $this->request->get('source', 0);
         $find_type = $this->request->get('find_type', 0);
         $record_id = $this->request->get('record_id', 0);
-        $keywords = '';
+        $keywords = $this->request->get('keywords', '');
         $limit = 30;
 
         if(!isInt($receive_id) || !in_array($source,[1,2]) || !in_array($find_type,[0,1,2]) || isInt($record_id,true) || empty($keywords)){
