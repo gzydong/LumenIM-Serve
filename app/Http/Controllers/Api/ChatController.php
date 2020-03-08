@@ -606,7 +606,7 @@ class ChatController extends CController
         $keywords = $this->request->get('keywords', '');
         $limit = 30;
 
-        if(!isInt($receive_id) || !in_array($source,[1,2]) || !in_array($find_type,[0,1,2]) || isInt($record_id,true) || empty($keywords)){
+        if(!isInt($receive_id) || !in_array($source,[1,2]) || !in_array($find_type,[0,1,2]) || !isInt($record_id,true) || empty($keywords)){
             return $this->ajaxParamError();
         }
 

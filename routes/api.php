@@ -65,6 +65,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/chat/update-chat-unread-num', ['uses' => 'ChatController@updateChatUnreadNum']);
     $router->post('/chat/set-group-disturb', ['uses' => 'ChatController@setGroupDisturb']);
     $router->get('/chat/find-chat-records', ['uses' => 'ChatController@findChatRecords']);
+
     $router->get('/chat/search-chat-records', ['uses' => 'ChatController@searchChatRecords']);
 
     //发送聊天图片
@@ -72,7 +73,6 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 });
 
 $router->get('/chat/find-chat-records2', ['uses' => 'ChatController@findChatRecords']);
-
 
 
 //UploadController 上传文件控制器分组
