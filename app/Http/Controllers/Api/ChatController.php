@@ -594,15 +594,28 @@ class ChatController extends CController
 
     /**
      * 搜索聊天记录
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function searchChatRecords(){
-        $user_id = 2054;
-        $receive_id = 75;
-        $source = 2;
-        $find_type = 0;
-        $keywords = '文科';
-        $page = 1;
+        $user_id = $this->uid();
+        $receive_id = $this->request->get('receive_id', 0);
+        $source = $this->request->get('source', 0);
+        $find_type = $this->request->get('find_type', 0);
+        $record_id = $this->request->get('record_id', 0);
+        $keywords = '';
+        $limit = 30;
 
-        $this->chatLogic->searchChatRecords($user_id,$receive_id,$source,$find_type,$keywords,1184);
+        if(!isInt($receive_id) || !in_array($source,[1,2]) || !in_array($find_type,[0,1,2]) || isInt($record_id,true) || empty($keywords)){
+            return $this->ajaxParamError();
+        }
+
+        $result = $this->chatLogic->searchChatRecords($user_id,$receive_id,$source,$find_type,addslashes($keywords),$record_id);
+        return $this->ajaxSuccess('success',[
+            'records' => $result,
+            'min_record_id' => $result ? end($result)['id'] : 0,
+            'limit' => $limit,
+            'count' => count($result),
+        ]);
     }
 }
