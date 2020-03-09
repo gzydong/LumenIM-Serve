@@ -72,8 +72,8 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->post('/chat/send-image', ['uses' => 'ChatController@uploadImage']);
 });
 
-$router->get('/chat/find-chat-records2', ['uses' => 'ChatController@findChatRecords']);
-
+//$router->get('/chat/find-chat-records2', ['uses' => 'ChatController@findChatRecords']);
+//$router->get('/chat/search-chat-records2', ['uses' => 'ChatController@searchChatRecords']);
 
 //UploadController 上传文件控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {

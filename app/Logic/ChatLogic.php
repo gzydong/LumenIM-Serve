@@ -679,32 +679,33 @@ SQL;
             }
         });
 
-        //私有消息
+        if($find_mode == 3){
+            $rowsSqlObj->where('users_chat_records.id', '>=', $record_id);
+        }else if($find_mode > 0){
+            $rowsSqlObj->where('users_chat_records.id', $find_mode == 1 ? '<' : '>', $record_id);
+        }
+
         if($source == 1){
-            $where1 = $where2 = [];
-
-            if($find_mode > 0){
-                $where1[] = $where2[] = ['users_chat_records.id',$find_mode == 1 ? '<' : '>',$record_id];
-            }
-
-            $where1[] = ['users_chat_records.user_id','=',$user_id];
-            $where1[] = ['users_chat_records.receive_id','=',$receive_id];
-
-            $where2[] = ['users_chat_records.user_id','=',$receive_id];
-            $where2[] = ['users_chat_records.receive_id','=',$user_id];
-
-            $rowsSqlObj->where($where1)->orWhere($where2);
-        }else{//群聊信息
-            if($find_mode > 0){
-                $rowsSqlObj->where('users_chat_records.id', $find_mode == 1 ? '<' : '>', $record_id);
-            }
-
+            $rowsSqlObj->where(function ($query) use($user_id,$receive_id) {
+                $query->where([
+                    ['users_chat_records.user_id','=',$user_id],
+                    ['users_chat_records.receive_id','=',$receive_id]
+                ])->orWhere([
+                    ['users_chat_records.user_id','=',$receive_id],
+                    ['users_chat_records.receive_id','=',$user_id]
+                ]);
+            });
+        }else{
             $rowsSqlObj->where('users_chat_records.receive_id', $receive_id);
             $rowsSqlObj->where('users_chat_records.source', $source);
             $rowsSqlObj->whereIn('users_chat_records.msg_type', [1,2]);
         }
 
-        return $rowsSqlObj->orderBy('users_chat_records.id','desc')->limit($limit)->get()->toArray();
+        if($find_mode != 3){
+            $rowsSqlObj->orderBy('users_chat_records.id','desc');
+        }
+
+        return $rowsSqlObj->limit($limit)->get()->toArray();
     }
 
     /**

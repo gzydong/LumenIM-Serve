@@ -565,7 +565,15 @@ class ChatController extends CController
         $limit = 30;
 
 
-        if (!isInt($receive_id) || !in_array($source, [1, 2]) || !in_array($find_type, [0, 1, 2]) || !in_array($find_mode, [0, 1, 2]) || !isInt($record_id, true)) {
+//        $user_id = 2054;
+//        $receive_id = 4106;
+//        $source = 1;
+//        $find_type = 0;
+//        $find_mode = 3;
+//        $record_id = 1275;
+//        $limit = 30;
+
+        if (!isInt($receive_id) || !in_array($source, [1, 2]) || !in_array($find_type, [0, 1, 2]) || !in_array($find_mode, [0, 1, 2,3]) || !isInt($record_id, true)) {
             $this->ajaxParamError();
         }
 
@@ -612,7 +620,7 @@ class ChatController extends CController
 //        $source = 1;
 //        $find_type = 0;
 //        $record_id = 0;
-//        $keywords = '阿森';
+//        $keywords = '客户';
 
 
         if(!isInt($receive_id) || !in_array($source,[1,2]) || !in_array($find_type,[0,1,2]) || !isInt($record_id,true) || empty($keywords)){
