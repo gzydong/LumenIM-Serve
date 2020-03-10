@@ -14,8 +14,6 @@ $router->group([], function () use ($router) {
     $router->post('/test/index2', ['middleware' => [], 'uses' => 'TestController@index2']);
 });
 
-
-
 //AuthController 控制器分组
 $router->group([], function () use ($router) {
     $router->post('/auth/login', ['middleware' => [], 'uses' => 'AuthController@login']);
@@ -49,7 +47,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->get('/chat/chat-list', ['uses' => 'ChatController@getChatList']);
     $router->get('/chat/get-chat-item', ['uses' => 'ChatController@getChatItem']);
-    $router->get('/chat/chat-records', ['uses' => 'ChatController@getChatRecords']);
+    $router->get('/chat/get-chats-records', ['uses' => 'ChatController@getChatsRecords']);
     $router->get('/chat/chat-files', ['uses' => 'ChatController@getChatFiles']);
 
     //群聊相关接口
@@ -66,7 +64,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->post('/chat/set-group-disturb', ['uses' => 'ChatController@setGroupDisturb']);
     $router->get('/chat/find-chat-records', ['uses' => 'ChatController@findChatRecords']);
     $router->get('/chat/search-chat-records', ['uses' => 'ChatController@searchChatRecords']);
-    $router->get('/chat/get-chats-records', ['uses' => 'ChatController@getChatsRecords']);
+
 
     //发送聊天图片
     $router->post('/chat/send-image', ['uses' => 'ChatController@uploadImage']);

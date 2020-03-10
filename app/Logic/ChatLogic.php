@@ -102,87 +102,6 @@ class ChatLogic extends Logic
     }
 
     /**
-     * 获取私信聊天记录
-     *
-     * @param int $record_id 记录ID
-     * @param int $user_id 用户ID
-     * @param int $receive_id 接收者ID
-     * @param int $page_size 分页大小
-     * @return array
-     */
-    public function getPrivateChatInfos(int $record_id, int $user_id, int $receive_id, $page_size = 20)
-    {
-        $infos = User::select('id', 'avatarurl')->find([$user_id, $receive_id])->toArray();
-        if ($infos && count($infos) != 2) {
-            return ['rows' => [], 'record_id' => 0];
-        }
-
-        $whereID = ($record_id == 0) ? '' : " and `id` < {$record_id}";
-        $sql = <<<SQL
-                    select * from (
-                        select * from `lar_users_chat_records` where  `receive_id` = {$user_id} and `user_id` = {$receive_id} and `source` = 1 {$whereID}
-                          UNION
-                        select * from `lar_users_chat_records` where  `receive_id` = {$receive_id} and `user_id` = {$user_id} and `source` = 1 {$whereID}
-                    ) tmp_table ORDER BY id desc  limit {$page_size}
-SQL;
-
-        $rows = array_map(function ($item) use ($infos) {
-            if ($infos[0]['id'] == $item->user_id) {
-                $item->avatar = $infos[0]['avatarurl'];
-            } else {
-                $item->avatar = $infos[1]['avatarurl'];
-            }
-
-            $item->nickname = '';
-            $item->nickname_remarks = '';
-            return (array)$item;
-        }, DB::select($sql));
-
-        return ['rows' => $rows, 'record_id' => end($rows)['id']];
-    }
-
-    /**
-     * 获取群聊的聊天记录
-     *
-     * @param int $record_id 记录ID
-     * @param int $receive_id 群聊ID
-     * @param int $user_id 用户ID
-     * @param int $page_size 分页大小
-     * @return array
-     */
-    public function getGroupChatInfos(int $record_id, int $receive_id, int $user_id, $page_size = 20)
-    {
-        $sqlObj = UsersChatRecords::where('receive_id', $receive_id)->where('source', 2);
-        if ($record_id > 0) {
-            $sqlObj->where('id', '<', $record_id);
-        }
-
-        $rows = $sqlObj->orderBy('id', 'desc')->limit($page_size)->get()->toArray();
-        if ($rows) {
-            $uids = implode(',', array_unique(array_column($rows, 'user_id')));
-            $sql = <<<SQL
-            SELECT users.id,users.avatarurl as avatar,users.nickname,tmp_table.nickname_remarks from lar_users users
-            left JOIN (
-            SELECT user2 as friend_id,user1_remark as nickname_remarks  from lar_users_friends where user1 = {$user_id} and user2 in ({$uids}) 
-              UNION 
-            SELECT user1 as friend_id,user2_remark as nickname_remarks from lar_users_friends where user2 = {$user_id} and user1 in ({$uids})
-            ) tmp_table on users.id = tmp_table.friend_id where users.id in ({$uids})
-SQL;
-
-            $userInfos = replaceArrayKey('id', array_map(function ($item) {
-                return (array)$item;
-            }, DB::select($sql)));
-
-            $rows = array_map(function ($val) use ($userInfos) {
-                unset($userInfos[$val['user_id']]['id']);
-                return array_merge($val, $userInfos[$val['user_id']] ?? ['avatarurl' => '', 'nickname' => '', 'nickname_remarks' => '']);
-            }, $rows);
-        }
-
-        return ['rows' => $rows, 'record_id' => end($rows)['id']];
-    }
-
-    /**
      * 创建群聊
      * @param int $user_id 用户ID
      * @param string $group_name 群聊名称
@@ -701,15 +620,10 @@ SQL;
             $rowsSqlObj->whereIn('users_chat_records.msg_type', [1,2]);
         }
 
-        if($find_mode != 3 && $find_mode !=2){
-
-        }
-
         $orderBy = 'asc';
         if($find_mode == 0 || $find_mode == 1){
             $orderBy = 'desc';
         }
-
 
         $rowsSqlObj->orderBy('users_chat_records.id',$orderBy);
         return $rowsSqlObj->limit($limit)->get()->toArray();
@@ -790,11 +704,11 @@ SQL;
     /**
      * 获取聊天记录
      *
-     * @param int $user_id
-     * @param int $receive_id
-     * @param int $source
-     * @param int $record_id
-     * @param int $limit
+     * @param int $user_id 用户ID
+     * @param int $receive_id 接收者ID(用户ID或群聊接收ID)
+     * @param int $source 聊天来源（1:私信 2:群聊）
+     * @param int $record_id 上一次记录ID数
+     * @param int $limit 分页大小
      * @return mixed
      */
     public function getChatsRecords(int $user_id, int $receive_id, int $source,int $record_id,int $limit){

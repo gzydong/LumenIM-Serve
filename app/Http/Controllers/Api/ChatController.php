@@ -132,61 +132,6 @@ class ChatController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getChatRecords()
-    {
-        $record_id = $this->request->get('record_id', 0);
-        $receive_id = $this->request->get('receive_id', 0);
-        $type = $this->request->get('type', 1);
-        $page_size = 20;
-        if (!isInt($record_id, true) || !isInt($receive_id) || !in_array($type, [1, 2])) {
-            return $this->ajaxParamError();
-        }
-
-        $uid = $this->uid();
-        $data = $type == 1 ? $this->chatLogic->getPrivateChatInfos($record_id, $uid, $receive_id, $page_size) : $this->chatLogic->getGroupChatInfos($record_id, $receive_id, $uid, $page_size);
-        $data['page_size'] = $page_size;
-
-        if (count($data['rows']) > 0) {
-            $data['rows'] = array_map(function ($item) use ($uid) {
-                $item['fileInfo'] = [];
-                $item['float'] = ($item['user_id'] == 0) ? 'center' : ($item['user_id'] == $uid ? 'right' : 'left');
-
-                //消息类型处理
-                switch ($item['msg_type']) {
-                    case 1://文字消息
-                        $item['content'] = emojiReplace($item['content']);
-                        break;
-                    case 2://文件消息
-                        $fileInfo = UsersChatFiles::where('id', $item['file_id'])->first(['file_type', 'file_suffix', 'file_size', 'save_dir', 'original_name']);
-                        if ($fileInfo) {
-                            $item["fileInfo"]['file_type'] = $fileInfo->file_type;
-                            $item["fileInfo"]['file_suffix'] = $fileInfo->file_suffix;
-                            $item["fileInfo"]['file_size'] = $fileInfo->file_size;
-                            $item["fileInfo"]['original_name'] = $fileInfo->original_name;
-                            $item["fileInfo"]['url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) : '';
-                        }
-                        unset($fileInfo);
-                        break;
-                    case 3://系统入群消息
-                    case 4://系统退群消息
-                        $uids = explode(',', $item['content']);
-                        $item['content'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(), $uids);
-                        break;
-                }
-
-                unset($item['file_id']);
-                return $item;
-            }, $data['rows']);
-        }
-
-        return $this->ajaxSuccess('success', $data);
-    }
-
-    /**
-     * 获取私信或群聊的聊天记录
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getChatFiles()
     {
         $page = $this->request->get('page', 1);
@@ -627,7 +572,7 @@ class ChatController extends CController
     }
 
     /**
-     * 获取用户聊天记录
+     * 获取私信或群聊的聊天记录
      */
     public function getChatsRecords(){
         $user_id = $this->uid();
@@ -635,14 +580,6 @@ class ChatController extends CController
         $source = $this->request->get('source', 0);
         $record_id = $this->request->get('record_id', 0);
         $limit = 30;
-
-
-
-//        $user_id = 2054;
-//        $receive_id = 2055;
-//        $source = 1;
-//        $record_id = 1131;
-//        $limit = 30;
 
         if(!isInt($receive_id) || !isInt($source) || !isInt($record_id,true)){
             return $this->ajaxParamError();
