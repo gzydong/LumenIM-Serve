@@ -593,8 +593,8 @@ class ChatController extends CController
 
         return $this->ajaxSuccess('success', [
             'records' => $result,
-            'min_record_id' => $result ? end($result)['id'] : 0,
-            'max_record_id' => $result ? $result[0]['id'] : 0,
+            'min_record_id' => $result ? min(array_column($result,'id')) : 0,
+            'max_record_id' => $result ? max(array_column($result,'id')) : 0,
             'limit' => $limit,
             'count' => count($result),
         ]);
