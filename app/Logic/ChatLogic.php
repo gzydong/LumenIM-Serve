@@ -701,10 +701,17 @@ SQL;
             $rowsSqlObj->whereIn('users_chat_records.msg_type', [1,2]);
         }
 
-        if($find_mode != 3){
-            $rowsSqlObj->orderBy('users_chat_records.id','desc');
+        if($find_mode != 3 && $find_mode !=2){
+
         }
 
+        $orderBy = 'asc';
+        if($find_mode == 0 || $find_mode == 1){
+            $orderBy = 'desc';
+        }
+
+
+        $rowsSqlObj->orderBy('users_chat_records.id',$orderBy);
         return $rowsSqlObj->limit($limit)->get()->toArray();
     }
 

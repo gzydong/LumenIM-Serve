@@ -569,8 +569,8 @@ class ChatController extends CController
 //        $receive_id = 4106;
 //        $source = 1;
 //        $find_type = 0;
-//        $find_mode = 3;
-//        $record_id = 1275;
+//        $find_mode = 2;
+//        $record_id = 1273;
 //        $limit = 30;
 
         if (!isInt($receive_id) || !in_array($source, [1, 2]) || !in_array($find_type, [0, 1, 2]) || !in_array($find_mode, [0, 1, 2,3]) || !isInt($record_id, true)) {
