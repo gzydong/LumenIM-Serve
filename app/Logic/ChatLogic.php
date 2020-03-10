@@ -786,4 +786,63 @@ SQL;
 
         return $rowsSqlObj->orderBy('users_chat_records.id','desc')->limit(30)->get()->toArray();
     }
+
+    /**
+     * 获取聊天记录
+     *
+     * @param int $user_id
+     * @param int $receive_id
+     * @param int $source
+     * @param int $record_id
+     * @param int $limit
+     * @return mixed
+     */
+    public function getChatsRecords(int $user_id, int $receive_id, int $source,int $record_id,int $limit){
+        $rowsSqlObj = UsersChatRecords::select([
+            'users_chat_records.id',
+            'users_chat_records.source',
+            'users_chat_records.msg_type',
+            'users_chat_records.user_id',
+            'users_chat_records.receive_id',
+            'users_chat_records.content',
+            'users_chat_records.send_time',
+
+            'users_chat_records.file_id',
+            'users_chat_files.flie_source',
+            'users_chat_files.file_type',
+            'users_chat_files.file_suffix',
+            'users_chat_files.file_size',
+            'users_chat_files.save_dir',
+            'users_chat_files.original_name as file_original_name',
+
+            'users.nickname',
+            'users.avatarurl as avatar',
+        ]);
+
+        $rowsSqlObj->leftJoin('users','users.id','=','users_chat_records.user_id');
+        $rowsSqlObj->leftJoin('users_chat_files','users_chat_files.id','=','users_chat_records.file_id');
+
+        if($record_id){
+            $rowsSqlObj->where('users_chat_records.id','<', $record_id);
+        }
+
+        if($source == 1){
+            $rowsSqlObj->where(function ($query) use($user_id,$receive_id) {
+                $query->where([
+                    ['users_chat_records.user_id','=',$user_id],
+                    ['users_chat_records.receive_id','=',$receive_id]
+                ])->orWhere([
+                    ['users_chat_records.user_id','=',$receive_id],
+                    ['users_chat_records.receive_id','=',$user_id]
+                ]);
+            });
+        }else{
+            $rowsSqlObj->where('users_chat_records.receive_id', $receive_id);
+            $rowsSqlObj->where('users_chat_records.source', $source);
+        }
+
+        $rowsSqlObj->orderBy('users_chat_records.id','desc');
+
+        return $rowsSqlObj->limit($limit)->get()->toArray();
+    }
 }

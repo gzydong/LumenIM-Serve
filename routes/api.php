@@ -66,14 +66,15 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     $router->post('/chat/set-group-disturb', ['uses' => 'ChatController@setGroupDisturb']);
     $router->get('/chat/find-chat-records', ['uses' => 'ChatController@findChatRecords']);
     $router->get('/chat/search-chat-records', ['uses' => 'ChatController@searchChatRecords']);
-
+    $router->get('/chat/get-chats-records', ['uses' => 'ChatController@getChatsRecords']);
 
     //发送聊天图片
     $router->post('/chat/send-image', ['uses' => 'ChatController@uploadImage']);
 });
 
-$router->get('/chat/find-chat-records2', ['uses' => 'ChatController@findChatRecords']);
-$router->get('/chat/search-chat-records2', ['uses' => 'ChatController@searchChatRecords']);
+//$router->get('/chat/find-chat-records2', ['uses' => 'ChatController@findChatRecords']);
+//$router->get('/chat/search-chat-records2', ['uses' => 'ChatController@searchChatRecords']);
+//$router->get('/chat/get-chats-records2', ['uses' => 'ChatController@getChatsRecords']);
 
 //UploadController 上传文件控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {

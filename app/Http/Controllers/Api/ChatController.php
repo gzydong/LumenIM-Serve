@@ -564,15 +564,6 @@ class ChatController extends CController
         $record_id = $this->request->get('record_id', 0);
         $limit = 30;
 
-
-//        $user_id = 2054;
-//        $receive_id = 4106;
-//        $source = 1;
-//        $find_type = 0;
-//        $find_mode = 2;
-//        $record_id = 1273;
-//        $limit = 30;
-
         if (!isInt($receive_id) || !in_array($source, [1, 2]) || !in_array($find_type, [0, 1, 2]) || !in_array($find_mode, [0, 1, 2,3]) || !isInt($record_id, true)) {
             $this->ajaxParamError();
         }
@@ -614,15 +605,6 @@ class ChatController extends CController
         $keywords = $this->request->get('keywords', '');
         $limit = 30;
 
-
-//        $user_id = 2054;
-//        $receive_id =4106;
-//        $source = 1;
-//        $find_type = 0;
-//        $record_id = 0;
-//        $keywords = '客户';
-
-
         if(!isInt($receive_id) || !in_array($source,[1,2]) || !in_array($find_type,[0,1,2]) || !isInt($record_id,true) || empty($keywords)){
             return $this->ajaxParamError();
         }
@@ -641,6 +623,57 @@ class ChatController extends CController
             'min_record_id' => $result ? end($result)['id'] : 0,
             'limit' => $limit,
             'count' => count($result),
+        ]);
+    }
+
+    /**
+     * 获取用户聊天记录
+     */
+    public function getChatsRecords(){
+        $user_id = $this->uid();
+        $receive_id = $this->request->get('receive_id', 0);
+        $source = $this->request->get('source', 0);
+        $record_id = $this->request->get('record_id', 0);
+        $limit = 30;
+
+        if(!isInt($receive_id) || !isInt($source) || !isInt($record_id,true)){
+            return $this->ajaxParamError();
+        }
+
+        //判断是否属于群成员
+        if ($source == 2 && !ChatService::checkGroupMember($receive_id, $user_id)) {
+            $this->ajaxReturn(301,'非群聊成员不能查看群聊信息');
+        }
+
+        if($result = $this->chatLogic->getChatsRecords($user_id,$receive_id,$source,$record_id,$limit)){
+            //消息处理
+            $result = array_map(function ($item) use($user_id){
+                $item['float'] = $item['user_id'] == 0 ? 'center' : ($item['user_id'] == $user_id ? 'right' : 'left');
+                $item['file_url'] = '';
+                $item['friend_remarks'] = '';
+
+                //消息类型处理
+                switch ($item['msg_type']) {
+                    case 1://文字消息
+                        $item['content'] = emojiReplace($item['content']);
+                        break;
+                    case 2://文字消息
+                        $item['file_url'] = ($item['msg_type'] == 2) ? getFileUrl($item['save_dir']) : '';
+                        break;
+                    case 3://系统入群消息
+                    case 4://系统退群消息
+                        $uids = explode(',', $item['content']);
+                        $item['content'] = customSort(User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray(), $uids);
+                        break;
+                }
+                return $item;
+            },$result);
+        }
+
+        return $this->ajaxSuccess('success',[
+            'rows'=>$result,
+            'record_id'=>$result?$result[0]['id']:0,
+            'limit'=>$limit
         ]);
     }
 }
