@@ -636,6 +636,14 @@ class ChatController extends CController
         $record_id = $this->request->get('record_id', 0);
         $limit = 30;
 
+
+
+//        $user_id = 2054;
+//        $receive_id = 2055;
+//        $source = 1;
+//        $record_id = 1131;
+//        $limit = 30;
+
         if(!isInt($receive_id) || !isInt($source) || !isInt($record_id,true)){
             return $this->ajaxParamError();
         }
@@ -672,7 +680,7 @@ class ChatController extends CController
 
         return $this->ajaxSuccess('success',[
             'rows'=>$result,
-            'record_id'=>$result?$result[0]['id']:0,
+            'record_id'=>$result?$result[count($result) - 1]['id']:0,
             'limit'=>$limit
         ]);
     }
