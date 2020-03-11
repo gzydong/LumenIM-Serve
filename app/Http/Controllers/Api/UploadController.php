@@ -95,7 +95,7 @@ class UploadController extends CController
 
                 return $this->ajaxSuccess('文件上传成功...',[
                     'is_file_merge'=>true,
-                    'file_info'=> encrypt($res->id)
+                    'file_info'=> $res->id
                 ]);
             }
         }
