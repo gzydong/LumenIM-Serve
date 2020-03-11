@@ -25,6 +25,8 @@ class DownloadController extends CController
     public function userChatFile(Request $request){
         $crId = $request->get('cr_id',0);
         $uid = $this->uid();
+
+
         if(!isInt($crId)){
             return $this->ajaxError('文件下载失败...');
         }
@@ -34,6 +36,7 @@ class DownloadController extends CController
             return $this->ajaxError('文件不存在...');
         }
 
+
         //判断消息是否是当前用户发送(如果是则跳过权限验证)
         if($recordsInfo->user_id != $uid){
             if($recordsInfo->source == 1){
@@ -41,7 +44,7 @@ class DownloadController extends CController
                     return $this->ajaxError('非法请求...');
                 }
             }else {
-                if(!UsersGroup::checkGroupMember($uid,$recordsInfo->receive_id)){
+                if(!UsersGroup::checkGroupMember($recordsInfo->receive_id,$uid)){
                     return $this->ajaxError('非法请求...');
                 }
             }

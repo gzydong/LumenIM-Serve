@@ -330,7 +330,6 @@ class ChatController extends CController
         return $this->ajaxSuccess('success', $data);
     }
 
-
     /**
      * 获取用户聊天好友
      *
