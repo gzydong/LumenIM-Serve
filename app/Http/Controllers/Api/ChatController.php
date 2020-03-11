@@ -492,7 +492,7 @@ class ChatController extends CController
             'created_at' => date('Y-m-d H:i:s')
         ]);
 
-        return $result ? $this->ajaxSuccess('图片上传成功...', ['file_info' => encrypt($result->id)]) : $this->ajaxError('图片上传失败');
+        return $result ? $this->ajaxSuccess('图片上传成功...', ['file_info' => $result->id]) : $this->ajaxError('图片上传失败');
     }
 
 
