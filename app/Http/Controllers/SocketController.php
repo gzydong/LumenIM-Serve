@@ -99,6 +99,9 @@ class SocketController extends Controller
             }
         }
 
+
+        var_dump($msgData);
+
         //处理文本消息
         if ($msgData['msg_type'] == 1) {
             $msgData["content"] = htmlspecialchars($msgData['content']);
