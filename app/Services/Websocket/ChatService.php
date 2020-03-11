@@ -88,36 +88,26 @@ class ChatService
      */
     public static function saveChatRecord(array $message)
     {
-        $recordRes = UsersChatRecords::create([
-            'source' => $message['source_type'],
-            'msg_type' => $message['msg_type'],
-            'user_id' => $message['send_user'],
-            'receive_id' => $message['receive_user'],
-            'content' => $message['content'],
-            'send_time' => $message['send_time'],
-            'file_id' => $message['file_id'] ?? 0
-        ]);
-
-        if (!$recordRes) {
+        if (!$recordRes = UsersChatRecords::create($message)) {
             return false;
         }
 
         //判断聊天消息类型
-        if ($message['source_type'] == 1) {
+        if ($message['source'] == 1) {
             //创建好友的聊天列表
-            if ($info = UsersChatList::select('id', 'status')->where('type', 1)->where('uid', $message['receive_user'])->where('friend_id', $message['send_user'])->first()) {
+            if ($info = UsersChatList::select('id', 'status')->where('type', 1)->where('uid', $message['receive_id'])->where('friend_id', $message['user_id'])->first()) {
                 if ($info->status == 0) {
                     UsersChatList::where('id', $info->id)->update(['status' => 1]);
                 }
             } else {
-                UsersChatList::create(['type' => 1, 'uid' => $message['receive_user'], 'friend_id' => $message['send_user'], 'status' => 1, 'created_at' => date('Y-m-d H:i:s')]);
+                UsersChatList::create(['type' => 1, 'uid' => $message['receive_id'], 'friend_id' => $message['user_id'], 'status' => 1, 'created_at' => date('Y-m-d H:i:s')]);
             }
 
             //设置未读消息
-            CacheHelper::setChatUnreadNum($message['receive_user'], $message['send_user']);
-        } else if ($message['source_type'] == 2) {//群聊
-            if ($uids = UsersGroupMember::where('group_id', $message['receive_user'])->where('status', 0)->pluck('user_id')->toArray()) {
-                UsersChatList::where('group_id', $message['receive_user'])->whereIn('uid', $uids)->where('status', 0)->update(['status' => 1]);
+            CacheHelper::setChatUnreadNum($message['receive_id'], $message['user_id']);
+        } else if ($message['source'] == 2) {//群聊
+            if ($uids = UsersGroupMember::where('group_id', $message['receive_id'])->where('status', 0)->pluck('user_id')->toArray()) {
+                UsersChatList::where('group_id', $message['receive_id'])->whereIn('uid', $uids)->where('status', 0)->update(['status' => 1]);
             }
         }
 
@@ -130,11 +120,9 @@ class ChatService
             $text = '[系统提示:好友入群消息]';
         } else if ($message['msg_type'] == 4) {
             $text = '[系统提示:好友退群消息]';
-        } else if ($message['msg_type'] == 5) {
-            $text = '[图片消息]';
         }
 
-        CacheHelper::setLastChatCache(['send_time' => $message['send_time'], 'text' => $text], $message['receive_user'], $message['source_type'] == 1 ? $message['send_user'] : 0);
+        CacheHelper::setLastChatCache(['send_time' => $message['send_time'], 'text' => $text], $message['receive_id'], $message['source'] == 1 ? $message['user_id'] : 0);
         return $recordRes->id;
     }
 }
