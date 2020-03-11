@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\Websocket;
 
-use App\Helpers\RsaMeans;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Websocket 自定义挥手处理
@@ -21,17 +21,14 @@ class HandShakeHandler
      */
     public function handle($request, $response)
     {
-        $socketkey = $request->header['sec-websocket-key'];
-        $token     = isset($request->get['sid'])?$request->get['sid']:'';
-
-        if (0 === preg_match('#^[+/0-9A-Za-z]{21}[AQgw]==$#', $socketkey) || 16 !== strlen(base64_decode($socketkey))) {
+        if(!Auth::guard('api')->check()){
+            $response->status(401);
             $response->end();
             return false;
         }
 
-        //连接用户验证
-        if(empty($token) || !RsaMeans::decrypt($token)){
-            $response->status(401);
+        $socketkey = $request->header['sec-websocket-key'];
+        if (0 === preg_match('#^[+/0-9A-Za-z]{21}[AQgw]==$#', $socketkey) || 16 !== strlen(base64_decode($socketkey))) {
             $response->end();
             return false;
         }

@@ -15,57 +15,6 @@ use App\Models\UsersChatFiles;
 class SocketController extends Controller
 {
     /**
-     * 格式化聊天消息
-     *
-     * @param array $message
-     * @return array
-     */
-    private function formatMessage(array $message)
-    {
-        $data = [
-            'send_user' => 0,       //发送消息的用户ID
-            'receive_user' => 0,   //接受者消息ID(用户ID或群ID)
-            'chat_type' => 1,       //聊天类型  1:私聊     2:群聊
-            'msg_type' => 1,        //消息类型  1:文本消息 2:文件消息 3:表情包消息
-            'data' => [
-                'id' => '',
-                'msg_type' => '',
-                'source' => '',
-                'user_id' => '',
-                'receive_id' => '',
-                'float' => '',
-                'avatar' => '',
-                'nickname' => '',
-                'friend_remarks' => '',
-                'send_time' => '',
-                'content' => '',
-                'file_id' => '',
-                'file_original_name' => '',
-                'file_size' => '',
-                'file_suffix' => '',
-                'file_type' => '',
-                'file_url' => '',
-                'flie_source' => '',
-                'save_dir' => ''
-            ]
-        ];
-
-        return $data;
-    }
-
-    private function sendData()
-    {
-        return [
-            'send_user' => 0,       //发送消息的用户ID
-            'receive_user' => 0,   //接受者消息ID(用户ID或群ID)
-            'chat_type' => 1,       //聊天类型  1:私聊     2:群聊
-            'msg_type' => 1,        //消息类型  1:文本消息 2:文件消息 3:表情包消息
-            'text_message' => '',   //文本消息内容
-            'file_message' => 0     //文件消息或表情包消息
-        ];
-    }
-
-    /**
      * 聊天数据处理
      *
      * @param $websocket
@@ -85,7 +34,7 @@ class SocketController extends Controller
         }
 
         //验证消息类型 私聊|群聊
-        if (!in_array($msgData['source_type'], [1, 2]) || !in_array($msgData['msg_type'], [1, 2, 3, 4, 5])) {
+        if (!in_array($msgData['source_type'], [1, 2]) || !in_array($msgData['msg_type'], [1, 2, 3])) {
             return true;
         }
 
@@ -229,5 +178,3 @@ class SocketController extends Controller
         }
     }
 }
-
-

@@ -13,19 +13,6 @@ use SwooleTW\Http\Websocket\Facades\Websocket;
 |
 */
 
-
-//
-//Websocket::on('connect', function ($websocket, Request $request) {
-//    echo '1 :called while socket on connect';
-//    // called while socket on connect
-//});
-
-//Websocket::on('disconnect', function ($websocket) {
-//    // called while socket on disconnect
-//    echo '连接断开了'.PHP_EOL;
-//});
-
-
 //聊天对话消息处理
 Websocket::on('event_chat_dialogue', 'App\Http\Controllers\SocketController@chatDialogue');
 

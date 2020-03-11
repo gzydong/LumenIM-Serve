@@ -6,8 +6,9 @@ use App\Models\UsersFriends;
 use Swoole\Websocket\Frame;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 use Illuminate\Http\Request;
-use App\Helpers\RsaMeans;
 use App\Facades\WebSocketHelper;
+
+use Illuminate\Support\Facades\Auth;
 
 class SocketHandler extends WebsocketHandler
 {
@@ -21,7 +22,7 @@ class SocketHandler extends WebsocketHandler
      */
     public function onOpen($fd, Request $request)
     {
-        $user_id = RsaMeans::decrypt($request->get('sid'));
+        $user_id = Auth::guard('api')->user()->id;
 
         //获取用户所有客户端ID
         $fds = WebSocketHelper::getUserFds($user_id);

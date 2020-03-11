@@ -65,7 +65,7 @@ $app->singleton(
 
 //加载中间件组
 $app->routeMiddleware([
-    'api.auth' => App\Http\Middleware\ApiSignAuth::class
+
 ]);
 
 //加载默认中间件
