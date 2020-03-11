@@ -19,8 +19,20 @@ class TestController
 
     public function index(Request $request)
     {
-
-
+//        $ip = '255.255.255.250';
+//        $res = ip2long($ip);
+//
+////        $request->getClientIp();
+//
+//        dd($request->getClientIp());
+//
+//
+//
+//        dd(long2ip(4294967295));
+//
+//        $ip2 = long2ip($res);
+//
+//        dd($ip,$res,$ip2);
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();

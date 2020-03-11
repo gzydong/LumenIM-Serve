@@ -26,7 +26,6 @@ class DownloadController extends CController
         $crId = $request->get('cr_id',0);
         $uid = $this->uid();
 
-
         if(!isInt($crId)){
             return $this->ajaxError('文件下载失败...');
         }
@@ -35,7 +34,6 @@ class DownloadController extends CController
         if(!$recordsInfo){
             return $this->ajaxError('文件不存在...');
         }
-
 
         //判断消息是否是当前用户发送(如果是则跳过权限验证)
         if($recordsInfo->user_id != $uid){
