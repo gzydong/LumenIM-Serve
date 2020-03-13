@@ -7,6 +7,7 @@ use App\Models\EmoticonDetails;
 use App\Logic\ArticleLogic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
  * 测试控制器
@@ -19,6 +20,9 @@ class TestController
 
     public function index(Request $request)
     {
+
+        $exp = JWTAuth::parseToken()->payload();
+        dd($exp);
 //        $ip = '255.255.255.250';
 //        $res = ip2long($ip);
 //

@@ -21,6 +21,7 @@ class HandShakeHandler
      */
     public function handle($request, $response)
     {
+        var_dump(Auth::guard('api')->check());
         if(!Auth::guard('api')->check()){
             $response->status(401);
             $response->end();
