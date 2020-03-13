@@ -12,6 +12,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 class HandShakeHandler
 {
     /**
+     * https://learnku.com/articles/10885/full-use-of-jwt
      * @see https://www.swoole.co.uk/docs/modules/swoole-websocket-server
      *
      * @param \Swoole\Http\Request $request
@@ -21,7 +22,8 @@ class HandShakeHandler
      */
     public function handle($request, $response)
     {
-        $token = JWTAuth::parseToken()->getToken();
+
+        $token = JWTAuth::getToken();
         var_dump(Auth::guard('api')->check(),$token);
         if(!Auth::guard('api')->check()){
             $response->status(401);
