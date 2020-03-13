@@ -11,6 +11,9 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
  * 测试控制器
+ * https://learnku.com/articles/10885/full-use-of-jwt
+ *
+ * https://www.cnblogs.com/liwei-17/p/9249546.html
  * Class TestController
  * @package App\Http\Controllers\Api
  */
@@ -20,14 +23,12 @@ class TestController
 
     public function index(Request $request)
     {
+        $token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC80Ny4xMDUuMTgwLjEyMzo5NTAxXC9hcGlcL2F1dGhcL2xvZ2luIiwiaWF0IjoxNTg0MDg3NjgzLCJleHAiOjE1ODQyNjA0ODMsIm5iZiI6MTU4NDA4NzY4MywianRpIjoiemNOdUUzUWpWemlQbFNKRiIsInN1YiI6MjA1NCwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.0zGdBtkqZdfsIOU0vcDKM3uYrmdaUaN2ootc60iDe8E';
+//        $token = JWTAuth::setToken($token)->parseToken();
 
-        dd($token = JWTAuth::getToken());
 
-//        dd(Auth::guard('api')->check());
-//        $exp = JWTAuth::parseToken()->payload();
 
-        $token = JWTAuth::parseToken()->getToken();
-        dd($token);
+        dd(JWTAuth::setToken($token)->invalidate());
 //        $ip = '255.255.255.250';
 //        $res = ip2long($ip);
 //
