@@ -162,7 +162,7 @@ class WebSocketHelper
             if(in_array($event,['login_notify','input_tip'])){
                 Websocket::broadcast()->to($receive)->emit(self::EVENTS[$event], $data);
             }else if(!empty($receive)){
-                Websocket::to($receive)->emit(self::EVENTS[$event], $data);
+                Websocket::broadcast()->to($receive)->emit(self::EVENTS[$event], $data);
             }else{
                 Websocket::emit(self::EVENTS[$event], $data);
             }

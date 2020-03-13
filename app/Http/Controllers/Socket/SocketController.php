@@ -157,7 +157,7 @@ class SocketController extends Controller
         //获取消息推送的客户端
         $clientFds = [];
         if ($push_message['source_type'] == 1) {//私聊
-            $clientFds = WebSocketHelper::getUserFds($push_message['receive_user']);
+            $clientFds = array_merge(WebSocketHelper::getUserFds($push_message['receive_user']),WebSocketHelper::getUserFds($push_message['send_user']));
         } else if ($push_message['source_type'] == 2) {
             $clientFds = WebSocketHelper::getRoomGroupName($push_message['receive_user']);
         }
