@@ -24,10 +24,10 @@ class ChatLogic extends Logic
      */
     public function getUserChatList(int $user_id)
     {
-        $rows = UsersChatList::select(['users_chat_list.id', 'users_chat_list.type', 'users_chat_list.friend_id', 'users_chat_list.group_id', 'users_chat_list.created_at'])
+        $rows = UsersChatList::select(['users_chat_list.id', 'users_chat_list.type', 'users_chat_list.friend_id', 'users_chat_list.group_id', 'users_chat_list.updated_at'])
             ->where('users_chat_list.uid', $user_id)
             ->where('users_chat_list.status', 1)
-            ->orderBy('id', 'desc')->get()->toArray();
+            ->orderBy('updated_at', 'desc')->get()->toArray();
 
         if (empty($rows)) return [];
 
@@ -40,6 +40,7 @@ class ChatLogic extends Logic
             $item['avatar'] = '';//默认头像
             $item['remark_name'] = '';//好友备注
             $item['msg_text'] = '......';
+            $item['created_at'] = $item['updated_at'];
 
             if ($item['type'] == 1) {
                 $friend_ids[] = $item['friend_id'];
@@ -56,7 +57,6 @@ class ChatLogic extends Logic
 
             return $item;
         }, $rows);
-
 
         $friendInfos = $groupInfos = [];
         if ($group_ids) {
@@ -362,11 +362,9 @@ class ChatLogic extends Logic
     {
         $result = UsersChatList::where('uid', $user_id)->where('type', $type)->where($type == 1 ? 'friend_id' : 'group_id', $receive_id)->first();
         if ($result) {
-            if ($result->status == 0) {
-                $result->status = 1;
-                $result->created_at = date('Y-m-d H:i:s');
-                $result->save();
-            }
+            $result->status = 1;
+            $result->updated_at = date('Y-m-d H:i:s');
+            $result->save();
         } else {
             if (!$result = UsersChatList::create([
                 'type' => $type,
@@ -374,7 +372,8 @@ class ChatLogic extends Logic
                 'status' => 1,
                 'friend_id' => $type == 1 ? $receive_id : 0,
                 'group_id' => $type == 2 ? $receive_id : 0,
-                'created_at' => date('Y-m-d H:i:s')
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
             ])) {
                 return 0;
             }

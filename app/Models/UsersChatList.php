@@ -24,7 +24,7 @@ class UsersChatList extends Model
      *
      * @var array
      */
-    protected $fillable = ['type','uid','friend_id','friend_id','group_id','status','created_at'];
+    protected $fillable = ['type','uid','friend_id','friend_id','group_id','status','created_at','updated_at'];
 
     /**
      * 表明模型是否应该被打上时间戳
