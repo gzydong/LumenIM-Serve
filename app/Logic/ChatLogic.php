@@ -378,7 +378,6 @@ class ChatLogic extends Logic
                 return 0;
             }
         }
-
         return $result->id;
     }
 
