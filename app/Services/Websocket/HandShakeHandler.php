@@ -25,6 +25,8 @@ class HandShakeHandler
 
         $token = JWTAuth::getToken();
         var_dump(Auth::guard('api')->check(),$token);
+        var_dump($request->get['token']);
+        var_dump('-----------------------------------');
         if(!Auth::guard('api')->check()){
             $response->status(401);
             $response->end();
