@@ -24,6 +24,8 @@ class SocketHandler extends WebsocketHandler
     {
         $user_id = Auth::guard('api')->user()->id;
 
+        var_dump($user_id);
+
         //获取用户所有客户端ID
         $fds = WebSocketHelper::getUserFds($user_id);
 
@@ -32,20 +34,20 @@ class SocketHandler extends WebsocketHandler
         WebSocketHelper::bindGroupChats($user_id, $fd);//绑定群聊关系
 
         //判断用户是否在其它地方登陆
-        if(!$fds){
-            //获取所有好友的用户ID
-            if($uids = UsersFriends::getFriendIds($user_id)){
-                $ffds = [];//所有好友的客户端ID
-
-                foreach ($uids as $friends_id){
-                    $ffds = array_merge($ffds,WebSocketHelper::getUserFds($friends_id));
-                }
-
-                if($ffds){
-                    WebSocketHelper::sendResponseMessage('login_notify',$ffds,['user_id'=>$user_id,'status'=>1,'notify'=>'好友上线通知...']);
-                }
-            }
-        }
+//        if(!$fds){
+//            //获取所有好友的用户ID
+//            if($uids = UsersFriends::getFriendIds($user_id)){
+//                $ffds = [];//所有好友的客户端ID
+//
+//                foreach ($uids as $friends_id){
+//                    $ffds = array_merge($ffds,WebSocketHelper::getUserFds($friends_id));
+//                }
+//
+//                if($ffds){
+//                    WebSocketHelper::sendResponseMessage('login_notify',$ffds,['user_id'=>$user_id,'status'=>1,'notify'=>'好友上线通知...']);
+//                }
+//            }
+//        }
 
         return true;
     }
