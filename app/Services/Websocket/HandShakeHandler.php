@@ -2,7 +2,7 @@
 namespace App\Services\Websocket;
 
 use Illuminate\Support\Facades\Auth;
-
+use Tymon\JWTAuth\Facades\JWTAuth;
 /**
  * Websocket 自定义挥手处理
  *
@@ -21,7 +21,8 @@ class HandShakeHandler
      */
     public function handle($request, $response)
     {
-        var_dump(Auth::guard('api')->check());
+        $token = JWTAuth::parseToken()->getToken();
+        var_dump(Auth::guard('api')->check(),$token);
         if(!Auth::guard('api')->check()){
             $response->status(401);
             $response->end();

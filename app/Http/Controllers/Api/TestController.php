@@ -21,8 +21,11 @@ class TestController
     public function index(Request $request)
     {
 
-        $exp = JWTAuth::parseToken()->payload();
-        dd($exp);
+//        dd(Auth::guard('api')->check());
+//        $exp = JWTAuth::parseToken()->payload();
+
+        $token = JWTAuth::parseToken()->getToken();
+        dd($token);
 //        $ip = '255.255.255.250';
 //        $res = ip2long($ip);
 //
