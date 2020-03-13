@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Facades\WebSocketHelper;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 
