@@ -1,8 +1,8 @@
 <?php
-namespace App\Services\Websocket;
+namespace App\Services\Socket;
 
-use Illuminate\Support\Facades\Auth;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Helpers\Rsa;
+
 /**
  * Websocket 自定义挥手处理
  *
@@ -23,11 +23,8 @@ class HandShakeHandler
     public function handle($request, $response)
     {
 
-        $token = JWTAuth::getToken();
-        var_dump(Auth::guard('api')->check(),$token);
-        var_dump($request->get['token']);
-        var_dump('-----------------------------------');
-        if(!Auth::guard('api')->check()){
+        $sign = $request->get['sign']??'';
+        if(!Rsa::decrypt($sign)){
             $response->status(401);
             $response->end();
             return false;

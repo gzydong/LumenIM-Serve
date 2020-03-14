@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Socket;
 
-use App\Facades\WebSocketHelper;
 use App\Facades\ChatService;
 use App\Models\EmoticonDetails;
 use App\Models\UsersChatFiles;
@@ -25,12 +24,15 @@ class SocketController extends Controller
     public function chatDialogue($websocket, $msgData)
     {
         $fd = $msgData['fd'];
+
+        $socket = app('SocketFdUtil');
+
         //获取客户端绑定的用户ID
-        $uid = WebSocketHelper::getFdUserId($fd);
+        $uid = $socket->getFdUserId($fd);
 
         //检测发送者与客户端是否是同一个用户
         if ($uid != $msgData['send_user']) {
-            WebSocketHelper::sendResponseMessage('notify', $fd, ['notify' => '非法操作!!!']);
+            $socket->sendResponseMessage('notify', $fd, ['notify' => '非法操作!!!']);
             return true;
         }
 
@@ -43,13 +45,13 @@ class SocketController extends Controller
         if ($msgData['source_type'] == 1) {//私信
             //判断发送者和接受者是否是好友关系
             if (!ChatService::checkFriends($msgData['send_user'], $msgData['receive_user'])) {
-                WebSocketHelper::sendResponseMessage('notify', $fd, ['notify' => '温馨提示:您当前与对方尚未成功好友！']);
+                $socket->sendResponseMessage('notify', $fd, ['notify' => '温馨提示:您当前与对方尚未成功好友！']);
                 return true;
             }
         } else if ($msgData['source_type'] == 2) {//群聊
             //判断是否属于群成员
             if (!ChatService::checkGroupMember($msgData['receive_user'], $msgData['send_user'])) {
-                WebSocketHelper::sendResponseMessage('notify', $fd, ['notify' => '温馨提示:您还没有加入该聊天群！']);
+                $socket->sendResponseMessage('notify', $fd, ['notify' => '温馨提示:您还没有加入该聊天群！']);
                 return true;
             }
         }
@@ -157,12 +159,12 @@ class SocketController extends Controller
         //获取消息推送的客户端
         $clientFds = [];
         if ($push_message['source_type'] == 1) {//私聊
-            $clientFds = array_merge(WebSocketHelper::getUserFds($push_message['receive_user']),WebSocketHelper::getUserFds($push_message['send_user']));
+            $clientFds = array_unique(array_merge($socket->getUserFds($push_message['receive_user']), $socket->getUserFds($push_message['send_user'])));
         } else if ($push_message['source_type'] == 2) {
-            $clientFds = WebSocketHelper::getRoomGroupName($push_message['receive_user']);
+            $clientFds = $socket->getRoomGroupName($push_message['receive_user']);
         }
 
-        WebSocketHelper::sendResponseMessage('chat_message', $clientFds, $push_message);
+        $socket->sendResponseMessage('chat_message', $clientFds, $push_message);
     }
 
     /**
@@ -173,9 +175,10 @@ class SocketController extends Controller
      */
     public function inputTipPush($websocket, $msgData)
     {
-        $clientFds = WebSocketHelper::getUserFds($msgData['receive_user']);
+        $socket = app('SocketFdUtil');
+        $clientFds = $socket->getUserFds($msgData['receive_user']);
         if ($clientFds) {
-            WebSocketHelper::sendResponseMessage('input_tip', $clientFds, $msgData);
+            $socket->sendResponseMessage('input_tip', $clientFds, $msgData);
         }
     }
 }

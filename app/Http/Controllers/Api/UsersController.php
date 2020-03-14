@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Logic\UsersLogic;
 use App\Logic\FriendsLogic;
-use App\Facades\WebSocketHelper;
 
 class UsersController extends CController
 {
@@ -42,7 +41,7 @@ class UsersController extends CController
         $rows = $usersLogic->getUserFriends($this->uid());
         if ($rows) {
             foreach ($rows as $k => $row) {
-                $rows[$k]->online = WebSocketHelper::getUserFds($row->id) ? 1 : 0;
+                $rows[$k]->online = app('SocketFdUtil')->getUserFds($row->id) ? 1 : 0;
             }
         }
 
@@ -139,8 +138,8 @@ class UsersController extends CController
         }
 
         //判断对方是否在线。如果在线发送消息通知
-        if ($fd = WebSocketHelper::getUserFds($friend_id)) {
-            WebSocketHelper::sendResponseMessage('friend_apply', $fd, []);
+        if ($fd = app('SocketFdUtil')->getUserFds($friend_id)) {
+            app('SocketFdUtil')->sendResponseMessage('friend_apply', $fd, []);
         }
 
         CacheHelper::setFriendApplyUnreadNum($friend_id);

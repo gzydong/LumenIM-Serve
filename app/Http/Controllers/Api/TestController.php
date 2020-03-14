@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Rsa;
+use App\Helpers\SocketFdUtil;
 use Illuminate\Support\Facades\DB;
 use App\Models\EmoticonDetails;
 
@@ -23,26 +25,7 @@ class TestController
 
     public function index(Request $request)
     {
-        $token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC80Ny4xMDUuMTgwLjEyMzo5NTAxXC9hcGlcL2F1dGhcL2xvZ2luIiwiaWF0IjoxNTg0MDg3NjgzLCJleHAiOjE1ODQyNjA0ODMsIm5iZiI6MTU4NDA4NzY4MywianRpIjoiemNOdUUzUWpWemlQbFNKRiIsInN1YiI6MjA1NCwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.0zGdBtkqZdfsIOU0vcDKM3uYrmdaUaN2ootc60iDe8E';
-//        $token = JWTAuth::setToken($token)->parseToken();
 
-
-
-        dd(JWTAuth::setToken($token)->invalidate());
-//        $ip = '255.255.255.250';
-//        $res = ip2long($ip);
-//
-////        $request->getClientIp();
-//
-//        dd($request->getClientIp());
-//
-//
-//
-//        dd(long2ip(4294967295));
-//
-//        $ip2 = long2ip($res);
-//
-//        dd($ip,$res,$ip2);
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();

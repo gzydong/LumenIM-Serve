@@ -10,6 +10,6 @@ class ChatService extends Facade
      * @return string
      */
     protected static function getFacadeAccessor() {
-        return 'chat.service';
+        return 'chat:service';
     }
 }

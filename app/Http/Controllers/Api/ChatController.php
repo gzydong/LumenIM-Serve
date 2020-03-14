@@ -1,12 +1,10 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Facades\ChatService;
 use App\Models\UsersFriends;
 use Illuminate\Http\Request;
 use App\Helpers\Cache\CacheHelper;
-use App\Facades\WebSocketHelper;
 use Illuminate\Support\Facades\Storage;
 
 use App\Models\User;
@@ -167,11 +165,11 @@ class ChatController extends CController
         [$isTrue, $data] = $this->chatLogic->launchGroupChat($this->uid(), $group_name, $group_avatar, $group_profile, array_unique($uids));
         if ($isTrue) {//群聊创建成功后需要创建聊天室并发送消息通知
             foreach ($data['uids'] as $uuid) {
-                WebSocketHelper::bindUserGroupChat($uuid, $data['group_info']['id']);
+                app('SocketFdUtil')->bindUserGroupChat( $data['group_info']['id'],$uuid);
             }
 
             //推送退群消息
-            WebSocketHelper::sendResponseMessage('join_group', WebSocketHelper::getRoomGroupName($data['group_info']['id']), [
+            app('SocketFdUtil')->sendResponseMessage('join_group', app('SocketFdUtil')->getRoomGroupName($data['group_info']['id']), [
                 'message' => [
                     'avatar' => '',
                     'send_user' => 0,
@@ -208,7 +206,7 @@ class ChatController extends CController
         $isTrue = $this->chatLogic->inviteFriendsGroupChat($this->uid(), $group_id, $uids);
         if ($isTrue) {
             foreach ($uids as $uuid) {
-                WebSocketHelper::bindUserGroupChat($uuid, $group_id);
+                app('SocketFdUtil')->bindUserGroupChat( $group_id,$uuid);
             }
 
             $userInfo = $this->getUser(true);
@@ -218,7 +216,7 @@ class ChatController extends CController
             ];
 
             //推送入群消息
-            WebSocketHelper::sendResponseMessage('join_group', WebSocketHelper::getRoomGroupName($group_id), [
+            app('SocketFdUtil')->sendResponseMessage('join_group', app('SocketFdUtil')->getRoomGroupName($group_id), [
                 'message' => [
                     'avatar' => '',
                     'send_user' => 0,
@@ -253,7 +251,7 @@ class ChatController extends CController
         $isTrue = $this->chatLogic->removeGroupChat($group_id, $this->uid(), $member_id);
         if ($isTrue) {
             //将用户移出聊天室
-            WebSocketHelper::quitGroupRoom($member_id, $group_id);
+            app('SocketFdUtil')->clearGroupRoom($member_id, $group_id);
 
             $user = $this->getUser();
             $message = [
@@ -275,7 +273,7 @@ class ChatController extends CController
             ];
 
             //推送退群消息
-            WebSocketHelper::sendResponseMessage('chat_message', WebSocketHelper::getRoomGroupName($group_id), $message);
+            app('SocketFdUtil')->sendResponseMessage('chat_message', app('SocketFdUtil')->getRoomGroupName($group_id), $message);
         }
         return $isTrue ? $this->ajaxSuccess('群聊用户已被移除..') : $this->ajaxError('群聊用户移除失败...');
     }
@@ -414,7 +412,7 @@ class ChatController extends CController
         $isTrue = $this->chatLogic->quitGroupChat($group_id, $this->uid());
         if ($isTrue) {
             //将用户移出聊天室
-            WebSocketHelper::quitGroupRoom($this->uid(), $group_id);
+            app('SocketFdUtil')->clearGroupRoom($this->uid(), $group_id);
 
             $user = $this->getUser();
             $message = [
@@ -432,7 +430,7 @@ class ChatController extends CController
             ];
 
             //推送退群消息
-            WebSocketHelper::sendResponseMessage('chat_message', WebSocketHelper::getRoomGroupName($group_id), $message);
+            app('SocketFdUtil')->sendResponseMessage('chat_message', app('SocketFdUtil')->getRoomGroupName($group_id), $message);
         }
 
         return $isTrue ? $this->ajaxSuccess('已成功退出群聊...') : $this->ajaxError('退出群聊失败...');

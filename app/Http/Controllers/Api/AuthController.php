@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Rsa;
 use App\Models\User;
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
@@ -80,7 +81,8 @@ class AuthController extends CController
             'userInfo' => [
                 'uid' => $user->id,
                 'avatar' => $user->avatarurl,
-                'nickname' => $user->nickname
+                'nickname' => $user->nickname,
+                'sign'=>Rsa::encrypt($user->id)
             ]
         ]);
     }

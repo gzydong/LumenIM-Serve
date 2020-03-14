@@ -1,6 +1,7 @@
 <?php
 namespace App\Console\Commands;
 
+use App\Helpers\SocketFdUtil;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use App\Facades\WebSocketHelper;
 
@@ -35,8 +36,7 @@ class LumenImCommand extends HttpServerCommand
             return;
         }
 
-        //清除redis 缓存
-        WebSocketHelper::clearRedisCache();
+        (new SocketFdUtil)->clearRedisCache();
 
         parent::start();
     }

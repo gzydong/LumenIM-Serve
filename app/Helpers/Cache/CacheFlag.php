@@ -15,7 +15,7 @@ class CacheFlag
      * @return string
      */
     public static function lastChatCacheKey($sender = 0){
-        return $sender == 0 ? 'groups.chat.last.msg' : 'friends.chat.last.msg';
+        return $sender == 0 ? 'groups:chat:last.msg' : 'friends:chat:last:msg';
     }
 
 
@@ -25,7 +25,7 @@ class CacheFlag
      * @return string
      */
     public static function chatUnreadNumCacheKey(){
-        return  'hash.chat.unread.num';
+        return  'hash:chat:unread:num';
     }
 
     /**
@@ -33,11 +33,11 @@ class CacheFlag
      * @return string
      */
     public static function applyUnreadNumCacheKey(){
-        return 'friend.apply.unread.num';
+        return 'friend:apply:unread:num';
     }
 
     public static function userGroupVisitCardCacheKey(int $group_id){
-        return "users.group{$group_id}.visit.card";
+        return "users:group:visit_card:{$group_id}";
     }
 
     /**
@@ -49,7 +49,7 @@ class CacheFlag
      */
     public static function friendRelationCacheKey(int $user_id,int $friends_id){
         $key = $user_id > $friends_id ? "{$friends_id}_$user_id":"{$user_id}_$friends_id";
-        return "user.friends.relation.{$key}";
+        return "user:friends:relation:{$key}";
     }
 
     /**
@@ -60,7 +60,7 @@ class CacheFlag
      * @return string
      */
     public static function groupRelationCacheKey(int $user_id,int $group_id){
-        return "user.group.relation.{$user_id}_$group_id";
+        return "user:group:relation:{$user_id}_$group_id";
     }
 
     /**
@@ -69,6 +69,6 @@ class CacheFlag
      * @return string
      */
     public static function friendRemarkCacheKey(){
-        return 'hash.user.friend.remark.cache';
+        return 'hash:user:friend:remark:cache';
     }
 }

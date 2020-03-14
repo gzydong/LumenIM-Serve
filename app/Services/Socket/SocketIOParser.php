@@ -1,5 +1,5 @@
 <?php
-namespace App\Services\Websocket;
+namespace App\Services\Socket;
 
 use SwooleTW\Http\Websocket\Parser;
 

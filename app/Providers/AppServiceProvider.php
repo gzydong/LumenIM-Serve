@@ -2,11 +2,10 @@
 
 namespace App\Providers;
 
+use App\Helpers\SocketFdUtil;
 use Illuminate\Support\ServiceProvider;
 
-use App\Helpers\WebSocketHelper;
-
-use App\Services\Websocket\ChatService;
+use App\Services\Socket\ChatService;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -18,12 +17,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('websocket.helper', function ($app) {
-            return new WebSocketHelper();
+        $this->app->singleton('chat:service', function ($app) {
+            return new ChatService();
         });
 
-        $this->app->singleton('chat.service', function ($app) {
-            return new ChatService();
+        $this->app->singleton('SocketFdUtil', function ($app) {
+            return new SocketFdUtil();
         });
     }
 }

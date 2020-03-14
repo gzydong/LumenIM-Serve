@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Websocket;
+namespace App\Services\Socket;
 
 use App\Models\UsersChatFiles;
 use App\Models\UsersGroupMember;
