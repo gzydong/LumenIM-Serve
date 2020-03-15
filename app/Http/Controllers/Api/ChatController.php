@@ -34,7 +34,7 @@ class ChatController extends CController
     {
         $rows = $this->chatLogic->getUserChatList($this->uid());
         if ($rows) {
-            $rows = arraysSort($rows, 'created_at');
+            $rows = arraysSort($rows, 'updated_at');
         }
 
         return $this->ajaxSuccess('success', $rows);

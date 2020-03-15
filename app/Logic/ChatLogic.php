@@ -41,10 +41,14 @@ class ChatLogic extends Logic
             $item['remark_name'] = '';//好友备注
             $item['msg_text'] = '......';
             $item['created_at'] = $item['updated_at'];
+            $item['online'] = 0;
+
 
             if ($item['type'] == 1) {
                 $friend_ids[] = $item['friend_id'];
                 $item['unread_num'] = intval(CacheHelper::getChatUnreadNum($user_id, $item['friend_id']));
+
+                $item['online'] = app('SocketFdUtil')->getUserFds($item['friend_id']) ? 1 : 0;
             } else {
                 $group_ids[] = $item['group_id'];
             }
@@ -52,7 +56,7 @@ class ChatLogic extends Logic
             $records = CacheHelper::getLastChatCache($item['type'] == 1 ? $item['friend_id'] : $item['group_id'], $item['type'] == 1 ? $user_id : 0);
             if ($records) {
                 $item['msg_text'] = $records['text'];
-                $item['created_at'] = $records['send_time'];
+                $item['updated_at'] = $records['send_time'];
             }
 
             return $item;
@@ -138,7 +142,8 @@ class ChatLogic extends Logic
                     'friend_id' => 0,
                     'group_id' => $insRes->id,
                     'status' => 1,
-                    'created_at' => date('Y-m-d H:i:s')
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
                 ];
             }
 
