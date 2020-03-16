@@ -10,7 +10,7 @@ $router->get('/', ['as' => 'api', function () {
 
 //测试控制器
 $router->group([], function () use ($router) {
-    $router->get('/test/index', ['middleware' => [], 'uses' => 'TestController@index']);
+    $router->get('/test/index', ['middleware' => ['myjwt'], 'uses' => 'TestController@index']);
     $router->post('/test/index2', ['middleware' => [], 'uses' => 'TestController@index2']);
 });
 
@@ -69,10 +69,6 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
     //发送聊天图片
     $router->post('/chat/send-image', ['uses' => 'ChatController@uploadImage']);
 });
-
-$router->get('/chat/find-chat-records2', ['uses' => 'ChatController@findChatRecords']);
-$router->get('/chat/search-chat-records2', ['uses' => 'ChatController@searchChatRecords']);
-$router->get('/chat/get-chats-records2', ['uses' => 'ChatController@getChatsRecords']);
 
 //UploadController 上传文件控制器分组
 $router->group(['middleware' => ['jwt.auth']], function () use ($router) {

@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
+use App\Helpers\JwtAuth;
+
+
 class CController extends Controller
 {
-
     /**
      * 获取 API 的守卫
      *
