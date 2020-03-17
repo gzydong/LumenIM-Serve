@@ -93,8 +93,6 @@ $app->register(App\Providers\LumenIMServiceProvider::class);
 //注册redis服务
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
 
-//注册JWT验证服务
-$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
 //注册支持跨域服务
 $app->register(Barryvdh\Cors\ServiceProvider::class);

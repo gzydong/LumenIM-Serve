@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\Socket;
 
-use App\Helpers\Rsa;
+use App\Helpers\JwtAuth;
 
 /**
  * Websocket 自定义挥手处理
@@ -22,9 +22,9 @@ class HandShakeHandler
      */
     public function handle($request, $response)
     {
-
-        $sign = $request->get['sign']??'';
-        if(!Rsa::decrypt($sign)){
+        $auth = new JwtAuth();
+        $auth->setToken($request->get['token']);
+        if($auth->validate() == false ||  $auth->verify() == false){
             $response->status(401);
             $response->end();
             return false;

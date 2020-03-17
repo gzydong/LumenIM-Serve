@@ -16,24 +16,14 @@ class JwtAuth
      */
     public function handle($request, Closure $next)
     {
-
         try{
-            $token = '';
-            if($request->has('token')){
-                $token = $request->get('token','');
-            }else if($request->hasHeader('authorization')){
-                $token = $request->header('authorization','');
-            }
-
-
+            $token = Auth::parseToken();
             if(empty($token)){
                 throw new UnauthorizedHttpException('jwt-auth', 'Token not provided');
             }
 
             $auth = Auth::getInstance();
             $auth->setToken($token);
-
-//            dd($auth->validate() && $auth->verify());
             if($auth->validate() && $auth->verify()){
                 return $next($request);
             }else{

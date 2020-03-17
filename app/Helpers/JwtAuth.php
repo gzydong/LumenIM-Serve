@@ -29,22 +29,6 @@ class JwtAuth
     private $uid;
 
     /**
-     * 单例模式 禁止该类在外部被new
-     * JwtAuth constructor.
-     */
-    private function __construct()
-    {
-    }
-
-    /**
-     * 单例模式 禁止外部克隆
-     */
-    private function __clone()
-    {
-
-    }
-
-    /**
      * 该类的实例
      * @return JwtAuth
      */
@@ -60,9 +44,10 @@ class JwtAuth
      * 获取token
      * @return string
      */
-    public function getToken()
+    public function getToken($isString = true)
     {
-        return (string)$this->token;
+
+        return $isString ? (string)$this->token :$this->token;
     }
 
     /**
@@ -108,8 +93,8 @@ class JwtAuth
             ->setAudience($this->aud)// 配置访问群体（aud claim）
             ->setId($this->id, true)// 配置id（jti声明），复制为头项 。 该jwt的唯一ID编号
             ->setIssuedAt($time)//配置令牌的发出时间（iat声明）
-            ->setNotBefore($time + 60)// 配置令牌可以使用的时间（nbf声明）
-            ->setExpiration($time + 3600)// 配置令牌的到期时间（exp claim）
+            ->setNotBefore($time)// 配置令牌可以使用的时间（nbf声明）
+            ->setExpiration($time + 60*60*24*2)// 配置令牌的到期时间（exp claim）
             ->set('uid', $this->uid)// 配置一个名为“uid”的新声明
             ->sign(new Sha256(), $this->getSecrect())// 使用secrect作为密钥创建签名
             ->getToken(); // 检索生成的令牌
@@ -132,7 +117,7 @@ class JwtAuth
 
 
     private function getSecrect(){
-        return config('jwt.secret');
+        return config('config.jwt_secret');
     }
 
     /**
@@ -158,19 +143,14 @@ class JwtAuth
         return $res;
     }
 
-    public function getHeader($name = ''){
-        if(empty($name)){
-            return $this->token->getHeaders();
+    public static function parseToken(){
+        $token = app('request')->server->get('HTTP_AUTHORIZATION') ?: app('request')->server->get('REDIRECT_HTTP_AUTHORIZATION');
+        if(!empty($token)){
+            $token = str_replace('Bearer ','',$token);
         }else{
-            return $this->token->getHeader($name);
+            $token = app('request')->get('token','');
         }
-    }
 
-    public function getClaim($name = ''){
-        if(empty($name)){
-            return $this->token->getClaims();
-        }else{
-            return $this->token->getClaim($name);
-        }
+        return $token;
     }
 }

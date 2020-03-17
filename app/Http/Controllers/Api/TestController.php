@@ -2,7 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 
-use App\Helpers\JwtAuth;
+
 use Illuminate\Support\Facades\DB;
 use App\Models\EmoticonDetails;
 
@@ -24,21 +24,14 @@ class TestController
     public function index(Request $request)
     {
 
-        $token = '';
-        if($request->has('token')){
-            $token = $request->get('token','');
-        }else if($request->hasHeader('authorization')){
-            $token = $request->header('authorization','');
+        $array = [];
+        foreach ($array as $val){
+            dd($val);
         }
 
-        $auth = JwtAuth::getInstance();
-        $auth->setToken($token);
-        $auth->decode();
-
-        dd($auth->getUid());
-
-
         exit;
+
+//        dd(config());
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();
 

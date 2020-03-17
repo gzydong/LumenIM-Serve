@@ -129,7 +129,7 @@ class FileSplitUploadLogic
             return false;
         }
 
-        $dir = base_path('uploads');
+        $dir = config('filesystems.disks.uploads.root');
         $fileMerge = "tmp/{$hash_name}/{$fileInfo->original_name}.tmp";
         foreach ($files as $file) {
             file_put_contents($dir . '/' . $fileMerge, file_get_contents($dir . '/' . $file['save_dir']), FILE_APPEND);

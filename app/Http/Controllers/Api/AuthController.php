@@ -1,8 +1,6 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\Rsa;
 use App\Models\User;
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
@@ -72,7 +70,7 @@ class AuthController extends CController
             return $this->ajaxReturn(305, '登录密码错误...');
         }
 
-        $auth = JwtAuth::getInstance();
+        $auth = new JwtAuth();
         $auth->setUid($user->id);
         $auth->encode();
 
@@ -82,12 +80,11 @@ class AuthController extends CController
 
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,
-            'expires_in' =>  $auth->getClaim('exp') - time(),
+            'expires_in' =>  $auth->getToken(false)->getClaim('exp') - time(),
             'userInfo' => [
                 'uid' => $user->id,
                 'avatar' => $user->avatarurl,
-                'nickname' => $user->nickname,
-                'sign'=>Rsa::encrypt($user->id)
+                'nickname' => $user->nickname
             ]
         ]);
     }

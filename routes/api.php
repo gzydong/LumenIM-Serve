@@ -10,7 +10,7 @@ $router->get('/', ['as' => 'api', function () {
 
 //测试控制器
 $router->group([], function () use ($router) {
-    $router->get('/test/index', ['middleware' => ['myjwt'], 'uses' => 'TestController@index']);
+    $router->get('/test/index', ['middleware' => [], 'uses' => 'TestController@index']);
     $router->post('/test/index2', ['middleware' => [], 'uses' => 'TestController@index2']);
 });
 
@@ -18,7 +18,7 @@ $router->group([], function () use ($router) {
 $router->group([], function () use ($router) {
     $router->post('/auth/login', ['middleware' => [], 'uses' => 'AuthController@login']);
     $router->post('/auth/register', ['middleware' => [], 'uses' => 'AuthController@register']);
-    $router->post('/auth/logout', ['middleware' => ['jwt.auth'], 'uses' => 'AuthController@logout']);
+    $router->post('/auth/logout', ['middleware' => ['myjwt'], 'uses' => 'AuthController@logout']);
 
     $router->post('/auth/send-verify-code', ['middleware' => [], 'uses' => 'AuthController@sendVerifyCode']);
     $router->post('/auth/forget-password', ['middleware' => [], 'uses' => 'AuthController@forgetPassword']);
@@ -26,7 +26,7 @@ $router->group([], function () use ($router) {
 
 
 //UsersController 控制器分组
-$router->group(['middleware' => ['jwt.auth']], function () use ($router) {
+$router->group(['middleware' => ['myjwt']], function () use ($router) {
     $router->get('/user/friends', ['uses' => 'UsersController@getUserFriends']);
     $router->get('/user/user-groups', ['uses' => 'UsersController@getUserGroups']);
     $router->get('/user/detail', ['uses' => 'UsersController@getUserDetail']);
@@ -43,7 +43,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 
 
 //ChatController 控制器分组
-$router->group(['middleware' => ['jwt.auth']], function () use ($router) {
+$router->group(['middleware' => ['myjwt']], function () use ($router) {
     $router->get('/chat/chat-list', ['uses' => 'ChatController@getChatList']);
     $router->get('/chat/get-chat-item', ['uses' => 'ChatController@getChatItem']);
     $router->get('/chat/get-chats-records', ['uses' => 'ChatController@getChatsRecords']);
@@ -70,7 +70,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 });
 
 //UploadController 上传文件控制器分组
-$router->group(['middleware' => ['jwt.auth']], function () use ($router) {
+$router->group(['middleware' => ['myjwt']], function () use ($router) {
     $router->post('/upload/file-stream', ['uses' => 'UploadController@fileStream']);
     $router->post('/upload/file-subarea-upload', ['uses' => 'UploadController@fileSubareaUpload']);
     $router->get('/upload/get-file-split-info', ['uses' => 'UploadController@getFileSplitInfo']);
@@ -79,7 +79,7 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 
 
 //EmoticonController 表情包控制器分组
-$router->group(['middleware' => ['jwt.auth']], function () use ($router) {
+$router->group(['middleware' => ['myjwt']], function () use ($router) {
     $router->get('/emoticon/user-emoticon', ['uses' => 'EmoticonController@getUserEmoticon']);
     $router->get('/emoticon/system-emoticon', ['uses' => 'EmoticonController@getSystemEmoticon']);
     $router->post('/emoticon/set-user-emoticon', ['uses' => 'EmoticonController@setUserEmoticon']);
@@ -87,13 +87,13 @@ $router->group(['middleware' => ['jwt.auth']], function () use ($router) {
 });
 
 //DownloadController 下载文件控制器分组
-$router->group(['middleware' => ['jwt.auth']], function () use ($router) {
+$router->group(['middleware' => ['myjwt']], function () use ($router) {
     $router->get('/download/user-chat-file', ['uses' => 'DownloadController@userChatFile']);
 });
 
 
 //ArticleController控制器分组
-$router->group(['middleware' => ['jwt.auth']], function () use ($router) {
+$router->group(['middleware' => ['myjwt']], function () use ($router) {
     $router->get('/article/article-class', ['uses' => 'ArticleController@getArticleClass']);
     $router->get('/article/article-list', ['uses' => 'ArticleController@getArticleList']);
     $router->get('/article/article-detail', ['uses' => 'ArticleController@getArticleDetail']);

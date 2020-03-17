@@ -1,12 +1,9 @@
 <?php
-
 namespace App\Providers;
 
 use App\Helpers\SocketFdUtil;
 use Illuminate\Support\ServiceProvider;
-
 use App\Services\Socket\ChatService;
-
 
 class AppServiceProvider extends ServiceProvider
 {

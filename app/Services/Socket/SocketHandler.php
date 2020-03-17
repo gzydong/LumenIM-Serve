@@ -2,7 +2,7 @@
 
 namespace App\Services\Socket;
 
-use App\Helpers\Rsa;
+use App\Helpers\JwtAuth;
 use App\Models\UsersFriends;
 use Swoole\Websocket\Frame;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
@@ -20,10 +20,14 @@ class SocketHandler extends WebsocketHandler
      */
     public function onOpen($fd, Request $request)
     {
-        $sign = $request->get('sign','');
-        if(!$user_id = Rsa::decrypt($sign)){
-            return false;
-        }
+        $token = $request->get('token','');
+        $auth = new JwtAuth();
+        $auth->setToken($token);
+        $auth->decode();
+
+        $user_id = $auth->getUid();
+
+//        echo "用户ID： {$user_id} 已成功连接socket".PHP_EOL;
 
         $socket = app('SocketFdUtil');
 
@@ -78,6 +82,8 @@ class SocketHandler extends WebsocketHandler
 
         //获取用户所有客户端ID
         $socket->clearBindFd($fd);
+
+        echo "用户ID : {$user_id} - [{$fd}] 已成功退出socket连接".PHP_EOL;
 
         //多平台登录处理
         if(empty($socket->getUserFds($user_id))){

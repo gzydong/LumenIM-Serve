@@ -132,11 +132,8 @@ class SocketFdUtil
     public function bindUserGroupChat(int $group_id, int $user_id)
     {
         $room = $this->getRoomGroupName($group_id);
-        $fids = $this->getUserFds($user_id);
-        if ($fids) {
-            foreach ($fids as $fid) {
-                Room::add($fid, $room);
-            }
+        foreach ($this->getUserFds($user_id) as $fd) {
+            Room::add($fd, $room);
         }
     }
 
@@ -183,8 +180,7 @@ class SocketFdUtil
      */
     public function clearGroupRooms(int $fd)
     {
-        $rooms = Room::getRooms($fd);
-        if ($rooms) {
+        if ($rooms = Room::getRooms($fd)) {
             Room::delete($fd, $rooms);
         }
     }

@@ -2,33 +2,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-
+use App\Models\User;
 use App\Helpers\JwtAuth;
-
 
 class CController extends Controller
 {
-    /**
-     * 获取 API 的守卫
-     *
-     * @return mixed
-     */
-    protected function guard()
-    {
-        return Auth::guard('api');
-    }
-
-    /**
-     * 判断用户是否授权
-     *
-     * @return bool
-     */
-    protected function checkLogin()
-    {
-        return $this->guard()->user() ? true : false;
-    }
-
     /**
      * 获取用户ID
      *
@@ -36,8 +14,12 @@ class CController extends Controller
      */
     protected function uid()
     {
-        $user = $this->guard()->user();
-        return $user ? $user->id : 0;
+        $auth = new JwtAuth();
+        $auth->setToken(JwtAuth::parseToken());
+        $auth->decode();
+        $uid = $auth->getUid();
+
+        return $uid ? intval($uid) : 0;
     }
 
     /**
@@ -48,11 +30,16 @@ class CController extends Controller
      */
     protected function getUser($isArray = false)
     {
-        if (!$user = $this->guard()->user()) {
+        $uid = $this->uid();
+        if($uid == 0){
             return [];
         }
 
-        return $isArray ? $user->toArray() : $user;
+        if(!$isArray){
+            return User::where('id',$uid)->first();
+        }
+
+        return User::where('id',$uid)->first()->toArray();
     }
 
     /**
@@ -99,20 +86,5 @@ class CController extends Controller
     protected function ajaxParamError($msg = '请求参数错误')
     {
         return $this->ajaxReturn(301, $msg, []);
-    }
-
-
-    /**
-     * 获取用户JWT相关信息
-     *
-     * @param string $key
-     * @return mixed
-     */
-    protected function payload($key = ''){
-        if($key){
-            return $this->guard()->payload()->get($key);
-        }
-
-        return $this->guard()->payload()->getClaims()->toPlainArray();
     }
 }
