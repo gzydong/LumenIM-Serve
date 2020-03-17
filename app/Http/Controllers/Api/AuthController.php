@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
+use App\Helpers\JwtAuth;
 
 /**
  * 接口授权登录控制器
@@ -71,13 +72,17 @@ class AuthController extends CController
             return $this->ajaxReturn(305, '登录密码错误...');
         }
 
-        if (!$token = $this->guard()->login($user)) {
+        $auth = JwtAuth::getInstance();
+        $auth->setUid($user->id);
+        $auth->encode();
+
+        if (!$token = $auth->getToken()) {
             return $this->ajaxReturn(305, '获取登录状态失败');
         }
 
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,
-            'expires_in' => $this->guard()->factory()->getTTL() * 60,
+            'expires_in' =>  $auth->getClaim('exp') - time(),
             'userInfo' => [
                 'uid' => $user->id,
                 'avatar' => $user->avatarurl,
@@ -94,39 +99,7 @@ class AuthController extends CController
      */
     public function logout()
     {
-        try {
-            $this->guard()->logout(true);
-        } catch (\Exception $e) {
-        }
-        return $this->ajaxSuccess('退出成功');
-    }
-
-    /**
-     * 刷新授权 access_token
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function refreshToken()
-    {
-        if (!$this->guard()->getToken()) {
-            return $this->ajaxReturn(401, 'The token could not be parsed from the request');
-        }
-
-        $expires_in = $this->guard()->factory()->getTTL() * 60;
-        try {
-            $token = $this->guard()->refresh();
-        } catch (\Exception $e) {
-            return $this->ajaxReturn(305, $e->getMessage());
-        }
-
-        if ($token) {
-            return $this->ajaxSuccess('Refresh success', [
-                'access_token' => $token,
-                'expires_in' => $expires_in
-            ]);
-        }
-
-        return $this->ajaxError(305, 'Token has expired and can no longer be refreshed');
+        return $this->ajaxReturn(200, '退出成功...', []);
     }
 
     /**

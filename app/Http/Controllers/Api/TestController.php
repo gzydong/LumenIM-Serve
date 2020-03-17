@@ -24,9 +24,20 @@ class TestController
     public function index(Request $request)
     {
 
+        $token = '';
+        if($request->has('token')){
+            $token = $request->get('token','');
+        }else if($request->hasHeader('authorization')){
+            $token = $request->header('authorization','');
+        }
 
-        $token = JwtAuth::getInstance()->setUid(2054)->encode()->getToken();
-        dd($token);
+        $auth = JwtAuth::getInstance();
+        $auth->setToken($token);
+        $auth->decode();
+
+        dd($auth->getUid());
+
+
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();

@@ -25,6 +25,7 @@ class JwtAuth
                 $token = $request->header('authorization','');
             }
 
+
             if(empty($token)){
                 throw new UnauthorizedHttpException('jwt-auth', 'Token not provided');
             }
@@ -32,6 +33,7 @@ class JwtAuth
             $auth = Auth::getInstance();
             $auth->setToken($token);
 
+//            dd($auth->validate() && $auth->verify());
             if($auth->validate() && $auth->verify()){
                 return $next($request);
             }else{
