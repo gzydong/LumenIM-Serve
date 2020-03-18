@@ -301,6 +301,7 @@ class ChatController extends CController
      */
     public function createChatList()
     {
+        $uid = $this->uid();
         $type = $this->request->post('type', 1);//创建的类型
         $receive_id = $this->request->post('receive_id', 0);//接收者ID
 
@@ -308,7 +309,17 @@ class ChatController extends CController
             return $this->ajaxParamError();
         }
 
-        $id = $this->chatLogic->createChatList($this->uid(), $receive_id, $type);
+        if($type == 1){
+            if(!UsersFriends::checkFriends($uid,$receive_id)){
+                return $this->ajaxReturn(305,'暂不属于好友关系，无法进行聊天...');
+            }
+        }else{
+            if(!UsersGroup::checkGroupMember($receive_id,$uid)){
+                return $this->ajaxReturn(305,'暂不属于群成员，无法进行群聊 ...');
+            }
+        }
+
+        $id = $this->chatLogic->createChatList($uid, $receive_id, $type);
         return $id ? $this->ajaxSuccess('创建成功...', ['list_id' => $id]) : $this->ajaxError('创建失败...');
     }
 

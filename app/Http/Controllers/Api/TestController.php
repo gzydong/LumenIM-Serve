@@ -19,19 +19,9 @@ use Illuminate\Http\Request;
  */
 class TestController
 {
-
-
     public function index(Request $request)
     {
-
-        $array = [];
-        foreach ($array as $val){
-            dd($val);
-        }
-
         exit;
-
-//        dd(config());
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();
 

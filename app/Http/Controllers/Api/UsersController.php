@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\Cache\CacheHelper;
+use App\Models\Article;
+use App\Models\UsersFriends;
+use App\Models\UsersGroupMember;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Logic\UsersLogic;
@@ -20,13 +23,23 @@ class UsersController extends CController
     {
         $userInfo = $this->getUser(true);
 
+        $note_num = Article::where('user_id',$userInfo['id'])->count();
+        $groups_num = UsersGroupMember::where('user_id',$userInfo['id'])->where('status',0)->count();
+        $friends_num = UsersFriends::where(function($query) use($userInfo){
+            $query->where('user1',$userInfo['id'])->orWhere('user2',$userInfo['id']);
+        })->where('status',1)->count();
         return $this->ajaxSuccess('success', [
             'mobile' => $userInfo['mobile'],
             'nickname' => $userInfo['nickname'],
             'avatarurl' => $userInfo['avatarurl'],
             'motto' => $userInfo['motto'],
             'email'=>$userInfo['email'],
-            'gender'=>$userInfo['gender']
+            'gender'=>$userInfo['gender'],
+            'count'=>[
+                'friends_num'=>$friends_num,
+                'groups_num'=>$groups_num,
+                'note_num'=>$note_num,
+            ]
         ]);
     }
 
