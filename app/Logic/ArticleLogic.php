@@ -4,6 +4,7 @@ namespace App\Logic;
 use App\Models\Article;
 use App\Models\ArticleClass;
 use App\Models\ArticleDetail;
+use App\Models\ArticleTags;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -20,7 +21,7 @@ class ArticleLogic extends Logic
      */
     public function getUserArticleClass(int $uid){
         $items = [
-            ['id'=>0,'class_name'=>'默认文集']
+            ['id'=>0,'class_name'=>'我的笔记']
         ];
 
         $res = ArticleClass::where('user_id',$uid)->orderBy('sort','asc')->get(['id','class_name'])->toArray();
@@ -35,6 +36,17 @@ class ArticleLogic extends Logic
         return $items;
     }
 
+
+    /**
+     * 获取用户文章标签列表
+     *
+     * @param int $uid 用户ID
+     * @return mixed
+     */
+    public function getUserArticleTags(int $uid){
+      return ArticleTags::where('user_id',$uid)->orderBy('sort','asc')->get(['id','tag_name'])->toArray();
+    }
+
     /**
      * 获取用户文章列表
      *
@@ -45,8 +57,10 @@ class ArticleLogic extends Logic
      * @return array
      */
     public function getUserArticleList(int $user_id,int $page,int $page_size,$params = []){
+        $filed = ['article.id','article.article_class_id','article.title','article.image','article.abstract','article.updated_at','article_class.class_name'];
+
         $countSqlObj = Article::select();
-        $rowsSqlObj = Article::select(['article.id','article.article_class_id','article.title','article.abstract','article.updated_at','article_class.class_name'])
+        $rowsSqlObj = Article::select($filed)
             ->leftJoin('article_class','article_class.id','=','article.article_class_id');
 
         $countSqlObj->where('article.user_id',$user_id);

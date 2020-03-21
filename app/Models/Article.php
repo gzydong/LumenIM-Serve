@@ -26,7 +26,7 @@ class Article extends Model
      *
      * @var array
      */
-    protected $fillable = ['user_id','article_class_id','title','abstract','created_at','updated_at'];
+    protected $fillable = ['user_id','article_class_id','title','image','abstract','created_at','updated_at'];
 
     /**
      * 表明模型是否应该被打上时间戳

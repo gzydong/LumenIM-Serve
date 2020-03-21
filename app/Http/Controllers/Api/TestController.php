@@ -3,6 +3,8 @@ namespace App\Http\Controllers\Api;
 
 
 
+use App\Models\Article;
+use App\Models\ArticleDetail;
 use Illuminate\Support\Facades\DB;
 use App\Models\EmoticonDetails;
 
@@ -21,6 +23,19 @@ class TestController
 {
     public function index(Request $request)
     {
+
+        $all = ArticleDetail::select('article_id','content')->get()->toArray();
+
+        $i = 0;
+        foreach ($all as $value){
+            $img = getTtmlImgs(htmlspecialchars_decode($value['content']));
+            if($img){
+                $i++;
+                Article::where('id',$value['article_id'])->update(['image'=>$img[0]]);
+            }
+        }
+
+        dd($i);
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();

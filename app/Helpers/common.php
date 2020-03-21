@@ -355,3 +355,25 @@ function arraysSort(array $array,$field,$sort = SORT_DESC){
 function getSaveImgName(string $ext,int $width,int $height){
     return uniqid().random(18).uniqid().'_'.$width.'x'.$height.'.'.$ext;
 }
+
+
+/**
+ * 从HTML文本中提取所有图片
+ * @param $content
+ * @return array
+ */
+function getTtmlImgs($content){
+    $pattern="/<img.*?src=[\'|\"](.*?)[\'|\"].*?[\/]?>/";
+    preg_match_all($pattern,htmlspecialchars_decode($content),$match);
+    $data = [];
+    if(!empty($match[1])){
+        foreach ($match[1] as $img){
+            if(!empty($img)){
+                $data[] = $img;
+            }
+        }
+        return $data;
+    }
+
+    return $data;
+}
