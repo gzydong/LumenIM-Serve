@@ -5,6 +5,7 @@ namespace App\Logic;
 use App\Models\Article;
 use App\Models\ArticleClass;
 use App\Models\ArticleDetail;
+use App\Models\ArticleTags;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,7 +23,7 @@ class ArticleLogic extends Logic
     public function getUserArticleClass(int $uid)
     {
         $items = [
-            ['id' => 0, 'class_name' => '默认文集']
+            ['id'=>0,'class_name'=>'我的笔记']
         ];
 
         $res = ArticleClass::where('user_id', $uid)->orderBy('sort', 'asc')->get(['id', 'class_name'])->toArray();
@@ -37,6 +38,24 @@ class ArticleLogic extends Logic
         return $items;
     }
 
+
+    /**
+     * 获取用户文章标签列表
+     *
+     * @param int $uid 用户ID
+     * @return mixed
+     */
+    public function getUserArticleTags(int $uid){
+        $items = ArticleTags::where('user_id',$uid)->orderBy('sort','asc')->get(['id','tag_name'])->toArray();
+        if($items){
+            foreach ($items as &$item) {
+                $item['count'] = Article::where('user_id', $uid)->where('tag_id', $item['id'])->count();
+            }
+        }
+
+      return $items;
+    }
+
     /**
      * 获取用户文章列表
      *
@@ -46,15 +65,17 @@ class ArticleLogic extends Logic
      * @param array $params 查询参数
      * @return array
      */
-    public function getUserArticleList(int $user_id, int $page, int $page_size, $params = [])
-    {
+
+    public function getUserArticleList(int $user_id,int $page,int $page_size,$params = []){
+        $filed = ['article.id','article.article_class_id','article.title','article.image','article.abstract','article.updated_at','article_class.class_name'];
+
         $countSqlObj = Article::select();
-        $rowsSqlObj = Article::select(['article.id', 'article.article_class_id', 'article.title', 'article.abstract', 'article.updated_at', 'article_class.class_name'])
-            ->leftJoin('article_class', 'article_class.id', '=', 'article.article_class_id');
+        $rowsSqlObj = Article::select($filed)
+            ->leftJoin('article_class','article_class.id','=','article.article_class_id');
+
 
         $countSqlObj->where('article.user_id', $user_id);
         $rowsSqlObj->where('article.user_id', $user_id);
-
         if (isset($params['find_type']) && in_array($params['find_type'], [3, 4])) {
             $condition = $params['find_type'] == 3 ? 'article.article_class_id' :'article.tag_id';
             $countSqlObj->where($condition, $params['class_id']);
@@ -74,7 +95,13 @@ class ArticleLogic extends Logic
         $count = $countSqlObj->count();
         $rows = [];
         if ($count > 0) {
-            $rows = $rowsSqlObj->orderBy('id', 'desc')->forPage($page, $page_size)->get()->toArray();
+            if($params['find_type'] == 1){
+                $rowsSqlObj->orderBy('updated_at', 'desc');
+            }else{
+                $rowsSqlObj->orderBy('id', 'desc');
+            }
+
+            $rows = $rowsSqlObj->forPage($page, $page_size)->get()->toArray();
         }
 
         return $this->packData($rows, $count, $page, $page_size);
@@ -105,8 +132,6 @@ class ArticleLogic extends Logic
             'content' => htmlspecialchars_decode($detail->content)
         ];
 
-        unset($info);
-        unset($detail);
         return $data;
     }
 

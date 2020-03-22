@@ -24,8 +24,12 @@ class ArticleController extends CController
      */
     public function getArticleClass()
     {
-        $items = $this->articleLogic->getUserArticleClass($this->uid());
-        return $this->ajaxSuccess('success', $items);
+        $user_id = $this->uid();
+
+        return $this->ajaxSuccess('success', [
+            'classify'=>$this->articleLogic->getUserArticleClass($user_id),
+            'tags'=>$this->articleLogic->getUserArticleTags($user_id)
+        ]);
     }
 
     /**
