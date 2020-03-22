@@ -35,16 +35,21 @@ class ArticleController extends CController
      */
     public function getArticleList()
     {
+        //搜索关键词
+        $keyword = $this->request->get('keyword', '');
+        //查询类型 $findType 1:获取近期日记  2:获取星标日记  3:获取指定分类文章  4:获取指定标签文章 5:获取已删除文章
+        $findType = $this->request->get('find_type', 0);
+        //分类ID
         $cid = $this->request->get('cid', -1);
         $page = $this->request->get('page', 1);
-        $keyword = $this->request->get('keyword', '');
 
-        if ($cid < -1 || !isInt($page)) {
+        if(!in_array($findType,[1,2,3,4]) || !isInt($page)){
             return $this->ajaxParamError();
         }
 
         $params = [];
-        if ($cid >= 0) {
+        $params['find_type'] = $findType;
+        if (in_array($findType,[3,4])) {
             $params['class_id'] = $cid;
         }
 
@@ -52,7 +57,7 @@ class ArticleController extends CController
             $params['keyword'] = addslashes($keyword);
         }
 
-        $data = $this->articleLogic->getUserArticleList($this->uid(), $page, 15, $params);
+        $data = $this->articleLogic->getUserArticleList($this->uid(), $page, 1000, $params);
         return $this->ajaxSuccess('success', $data);
     }
 
