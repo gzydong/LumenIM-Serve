@@ -160,7 +160,7 @@ class ArticleLogic extends Logic
     public function editArticleClass(int $uid, int $class_id, string $class_name)
     {
         if ($class_id) {
-            if (!ArticleClass::where('id', $class_id)->where('user_id', $uid)->update(['class_name' => $class_name])) {
+            if (!ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default',0)->update(['class_name' => $class_name])) {
                 return false;
             }
             return $class_id;
@@ -281,6 +281,7 @@ class ArticleLogic extends Logic
                     'article_class_id' => $data['class_id'],
                     'title' => $data['title'],
                     'abstract' => $data['abstract'],
+                    'image'=>$data['image']?$data['image'][0]:'',
                     'updated_at' => date('Y-m-d H:i:s')
                 ]);
 
@@ -406,5 +407,24 @@ class ArticleLogic extends Logic
         return Article::where('article_class_id', $class_id)->where('user_id', $user_id)->update([
             'article_class_id' => $toid
         ]);
+    }
+
+    /**
+     * 笔记移动至指定分类
+     *
+     * @param int $user_id 用户ID
+     * @param int $article_id 笔记ID
+     * @param int $class_id 笔记分类ID
+     * @return bool
+     */
+    public function moveArticle(int $user_id, int $article_id, int $class_id){
+        $info = Article::where('id', $article_id)->where('user_id', $user_id)->first();
+        if(!$info || $info->article_class_id == $class_id){
+            return false;
+        }
+
+        $info->article_class_id = $class_id;
+        $info->save();
+        return true;
     }
 }

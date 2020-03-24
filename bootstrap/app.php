@@ -65,7 +65,7 @@ $app->singleton(
 
 //加载中间件组
 $app->routeMiddleware([
-    'myjwt'=>\App\Http\Middleware\JwtAuth::class
+    'jwt'=>\App\Http\Middleware\JwtAuth::class
 ]);
 
 //加载默认中间件

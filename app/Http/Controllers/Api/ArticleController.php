@@ -98,6 +98,7 @@ class ArticleController extends CController
             'title' => $title,
             'abstract' => mb_substr(strip_tags($content), 0, 200),
             'class_id' => $class_id,
+            'image'=>getTtmlImgs($content),
             'md_content' => htmlspecialchars($md_content),
             'content' => htmlspecialchars($content)
         ]);
@@ -233,6 +234,20 @@ class ArticleController extends CController
 
         $isTrue = $this->articleLogic->mergeArticleClass($this->uid(), $class_id, $toid);
         return $isTrue ? $this->ajaxSuccess('合并完成...') : $this->ajaxError('合并失败...');
+    }
+
+    /**
+     * 移动笔记至指定分类
+     */
+    public function moveArticle(){
+        $article_id = $this->request->post('article_id', 0);
+        $class_id = $this->request->post('class_id', 0);
+        if (!isInt($article_id) || !isInt($class_id)) {
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->articleLogic->moveArticle($this->uid(), $article_id, $class_id);
+        return $isTrue ? $this->ajaxSuccess('操作完成...') : $this->ajaxError('操作失败...');
     }
 
     /**

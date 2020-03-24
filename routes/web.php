@@ -12,5 +12,5 @@
 */
 
 $router->get('/', function () use ($router) {
-    echo 'lumen-im';
+    echo '欢迎来到 Lumen-im ...';
 });

@@ -23,6 +23,11 @@ class TestController
 {
     public function index(Request $request)
     {
+
+
+//        $result = (new ArticleLogic())->moveArticle(2054, 85,3);
+//        dd($result);
+
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();
