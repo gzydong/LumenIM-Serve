@@ -18,22 +18,34 @@ class ArticleController extends CController
     }
 
     /**
-     * 获取文章分类列表
+     * 获取笔记分类列表
      *
      * @return \Illuminate\Http\JsonResponse
      */
     public function getArticleClass()
     {
         $user_id = $this->uid();
-
+        $this->articleLogic->checkDefaultClass($user_id);
         return $this->ajaxSuccess('success', [
-            'classify'=>$this->articleLogic->getUserArticleClass($user_id),
-            'tags'=>$this->articleLogic->getUserArticleTags($user_id)
+            'rows' => $this->articleLogic->getUserArticleClass($user_id),
         ]);
     }
 
     /**
-     * 获取文章列表
+     * 获取笔记标签列表
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getArticleTags()
+    {
+        $user_id = $this->uid();
+        return $this->ajaxSuccess('success', [
+            'tags' => $this->articleLogic->getUserArticleTags($user_id)
+        ]);
+    }
+
+    /**
+     * 获取笔记列表
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -47,13 +59,13 @@ class ArticleController extends CController
         $cid = $this->request->get('cid', -1);
         $page = $this->request->get('page', 1);
 
-        if(!in_array($findType,[1,2,3,4]) || !isInt($page)){
+        if (!in_array($findType, [1, 2, 3, 4]) || !isInt($page)) {
             return $this->ajaxParamError();
         }
 
         $params = [];
         $params['find_type'] = $findType;
-        if (in_array($findType,[3,4])) {
+        if (in_array($findType, [3, 4])) {
             $params['class_id'] = $cid;
         }
 
@@ -66,7 +78,7 @@ class ArticleController extends CController
     }
 
     /**
-     * 编辑文章
+     * 编辑用户笔记
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -91,14 +103,13 @@ class ArticleController extends CController
         ]);
 
         if (!$id) {
-            return $this->ajaxReturn(303, '文章编辑失败...', ['id' => $id]);
+            return $this->ajaxReturn(303, '笔记编辑失败...', ['id' => null]);
         }
-
-        return $this->ajaxSuccess('文章编辑成功...', ['aid' => $id]);
+        return $this->ajaxSuccess('笔记编辑成功...', ['aid' => $id]);
     }
 
     /**
-     * 获取文章详情
+     * 获取笔记详情
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -113,12 +124,11 @@ class ArticleController extends CController
         if (empty($data)) {
             return $this->ajaxReturn(303, '文章信息不存在');
         }
-
         return $this->ajaxSuccess('success', $data);
     }
 
     /**
-     * 编辑文章分类
+     * 添加或编辑笔记分类
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -135,12 +145,32 @@ class ArticleController extends CController
         if (!$id) {
             return $this->ajaxError('编辑失败...');
         }
-
         return $this->ajaxSuccess('success', ['id' => $id]);
     }
 
     /**
-     * 删除文章分类
+     * 添加或编辑笔记标签
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function editArticleTags()
+    {
+        $tag_id = $this->request->post('tag_id', 0);
+        $tag_name = $this->request->post('tag_name', '');
+
+        if (!isInt($tag_id, true) || empty($tag_name)) {
+            return $this->ajaxParamError();
+        }
+
+        $id = $this->articleLogic->editArticleTag($this->uid(), $tag_id, $tag_name);
+        if (!$id) {
+            return $this->ajaxError('编辑失败...');
+        }
+        return $this->ajaxSuccess('success', ['id' => $id]);
+    }
+
+    /**
+     * 删除笔记分类
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -155,24 +185,43 @@ class ArticleController extends CController
         return $isTrue ? $this->ajaxSuccess('删除完成...') : $this->ajaxError('删除失败...');
     }
 
+    /**
+     * 删除笔记标签
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function delArticleTags()
+    {
+        $tag_id = $this->request->post('tag_id', 0);
+        if (!isInt($tag_id)) {
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->articleLogic->delArticleTags($this->uid(), $tag_id);
+        return $isTrue ? $this->ajaxSuccess('删除标签完成...') : $this->ajaxError('删除标签失败...');
+    }
 
     /**
-     * 文章列表排序接口
+     * 笔记分类列表排序接口
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function articleClassSort()
     {
         $class_id = $this->request->post('class_id', 0);
-        if (!isInt($class_id)) {
+        $sort_type = $this->request->post('sort_type', 0);
+        if (!isInt($class_id) || !in_array($sort_type, [1, 2])) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->articleClassSort($this->uid(), $class_id);
-        return $isTrue ? $this->ajaxSuccess('置顶完成...') : $this->ajaxError('置顶失败...');
+        $isTrue = $this->articleLogic->articleClassSort($this->uid(), $class_id, $sort_type);
+        return $isTrue ? $this->ajaxSuccess('排序完成...') : $this->ajaxError('排序失败...');
     }
 
-
     /**
-     * 文集合并接口
+     * 笔记分类合并接口
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function mergeArticleClass()
     {
@@ -183,17 +232,19 @@ class ArticleController extends CController
         }
 
         $isTrue = $this->articleLogic->mergeArticleClass($this->uid(), $class_id, $toid);
-
         return $isTrue ? $this->ajaxSuccess('合并完成...') : $this->ajaxError('合并失败...');
     }
 
     /**
-     * 上传笔记图片
+     * 笔记图片上传接口
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadArticleImage(){
+    public function uploadArticleImage()
+    {
         $file = $this->request->file('image');
 
-        if(!$file->isValid()){
+        if (!$file->isValid()) {
             return $this->ajaxParamError('图片上传失败，请稍后再试...');
         }
 
@@ -204,13 +255,12 @@ class ArticleController extends CController
         }
 
         $imgInfo = getimagesize($file->getRealPath());
-        $filename = getSaveImgName($ext,$imgInfo[0],$imgInfo[1]);
+        $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
 
         //保存图片
         if (!$save_path = Storage::disk('uploads')->putFileAs('images/' . date('Ymd'), $file, $filename)) {
             return $this->ajaxError('图片上传失败，请稍后再试...');
         }
-
-        return $this->ajaxSuccess('success',['save_path'=>getFileUrl($save_path)]);
+        return $this->ajaxSuccess('success', ['save_path' => getFileUrl($save_path)]);
     }
 }

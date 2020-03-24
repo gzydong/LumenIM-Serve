@@ -14,6 +14,25 @@ use Illuminate\Support\Facades\DB;
  */
 class ArticleLogic extends Logic
 {
+
+    /**
+     * 检测并创建用户的默认分类
+     *
+     * @param int $uid
+     */
+    public function checkDefaultClass(int $uid)
+    {
+        if (!ArticleClass::where('user_id', $uid)->where('is_default', 1)->exists()) {
+            ArticleClass::create([
+                'user_id' => $uid,
+                'class_name' => '我的笔记',
+                'is_default' => 1,
+                'sort' => 1,
+                'created_at' => time()
+            ]);
+        }
+    }
+
     /**
      * 获取用户文章分类列表
      *
@@ -22,15 +41,7 @@ class ArticleLogic extends Logic
      */
     public function getUserArticleClass(int $uid)
     {
-        $items = [
-            ['id'=>0,'class_name'=>'我的笔记']
-        ];
-
-        $res = ArticleClass::where('user_id', $uid)->orderBy('sort', 'asc')->get(['id', 'class_name'])->toArray();
-        if ($res) {
-            $items = array_merge($items, $res);
-        }
-
+        $items = ArticleClass::where('user_id', $uid)->orderBy('sort', 'asc')->get(['id', 'class_name', 'is_default'])->toArray();
         foreach ($items as &$item) {
             $item['count'] = Article::where('user_id', $uid)->where('article_class_id', $item['id'])->count();
         }
@@ -38,22 +49,22 @@ class ArticleLogic extends Logic
         return $items;
     }
 
-
     /**
      * 获取用户文章标签列表
      *
      * @param int $uid 用户ID
      * @return mixed
      */
-    public function getUserArticleTags(int $uid){
-        $items = ArticleTags::where('user_id',$uid)->orderBy('sort','asc')->get(['id','tag_name'])->toArray();
-        if($items){
+    public function getUserArticleTags(int $uid)
+    {
+        $items = ArticleTags::where('user_id', $uid)->orderBy('id', 'desc')->get(['id', 'tag_name'])->toArray();
+        if ($items) {
             foreach ($items as &$item) {
                 $item['count'] = Article::where('user_id', $uid)->where('tag_id', $item['id'])->count();
             }
         }
 
-      return $items;
+        return $items;
     }
 
     /**
@@ -66,18 +77,19 @@ class ArticleLogic extends Logic
      * @return array
      */
 
-    public function getUserArticleList(int $user_id,int $page,int $page_size,$params = []){
-        $filed = ['article.id','article.article_class_id','article.title','article.image','article.abstract','article.updated_at','article_class.class_name'];
+    public function getUserArticleList(int $user_id, int $page, int $page_size, $params = [])
+    {
+        $filed = ['article.id', 'article.article_class_id', 'article.title', 'article.image', 'article.abstract', 'article.updated_at', 'article_class.class_name'];
 
         $countSqlObj = Article::select();
         $rowsSqlObj = Article::select($filed)
-            ->leftJoin('article_class','article_class.id','=','article.article_class_id');
+            ->leftJoin('article_class', 'article_class.id', '=', 'article.article_class_id');
 
 
         $countSqlObj->where('article.user_id', $user_id);
         $rowsSqlObj->where('article.user_id', $user_id);
         if (isset($params['find_type']) && in_array($params['find_type'], [3, 4])) {
-            $condition = $params['find_type'] == 3 ? 'article.article_class_id' :'article.tag_id';
+            $condition = $params['find_type'] == 3 ? 'article.article_class_id' : 'article.tag_id';
             $countSqlObj->where($condition, $params['class_id']);
             $rowsSqlObj->where($condition, $params['class_id']);
         }
@@ -95,9 +107,10 @@ class ArticleLogic extends Logic
         $count = $countSqlObj->count();
         $rows = [];
         if ($count > 0) {
-            if($params['find_type'] == 1){
+            if ($params['find_type'] == 1) {
                 $rowsSqlObj->orderBy('updated_at', 'desc');
-            }else{
+                $page_size = 20;
+            } else {
                 $rowsSqlObj->orderBy('id', 'desc');
             }
 
@@ -131,12 +144,13 @@ class ArticleLogic extends Logic
             'md_content' => htmlspecialchars_decode($detail->md_content),
             'content' => htmlspecialchars_decode($detail->content)
         ];
+        unset($info);
 
         return $data;
     }
 
     /**
-     * 编辑文集分类
+     * 编辑笔记分类
      *
      * @param int $uid 用户ID
      * @param int $class_id 分类ID
@@ -152,16 +166,62 @@ class ArticleLogic extends Logic
             return $class_id;
         }
 
-        $sort = ArticleClass::where('user_id', $uid)->max('sort');
+        $arr = [];
+        $items = ArticleClass::where('user_id', $uid)->get(['id', 'sort']);
+        foreach ($items as $key => $item) {
+            $arr[] = ['id' => $item->id, 'sort' => $key + 2];
+        }
 
-        $insRes = ArticleClass::create(['user_id' => $uid, 'class_name' => $class_name, 'sort' => $sort + 1, 'created_at' => time()]);
-        if (!$insRes) return false;
+        unset($items);
+
+        DB::beginTransaction();
+        try {
+            foreach ($arr as $val) {
+                ArticleClass::where('id', $val['id'])->update(['sort' => $val['sort']]);
+            }
+
+            $insRes = ArticleClass::create(['user_id' => $uid, 'class_name' => $class_name, 'sort' => 1, 'created_at' => time()]);
+            if (!$insRes) {
+                throw new \Exception('添加错误..,.');
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
 
         return $insRes->id;
     }
 
     /**
-     * 删除文章分类
+     * 编辑笔记标签
+     *
+     * @param int $uid 用户ID
+     * @param int $tag_id 标签ID
+     * @param string $tag_name 标签名
+     * @return bool|int
+     */
+    public function editArticleTag(int $uid, int $tag_id, string $tag_name)
+    {
+        if ($tag_id) {
+            if (!ArticleTags::where('id', $tag_id)->where('user_id', $uid)->update(['tag_name' => $tag_name])) {
+                return false;
+            }
+
+            return $tag_id;
+        }
+
+        $insRes = ArticleTags::create(['user_id' => $uid, 'tag_name' => $tag_name, 'sort' => 1, 'created_at' => time()]);
+        if (!$insRes) {
+            return false;
+        }
+
+        return $insRes->id;
+    }
+
+    /**
+     * 删除笔记分类
      *
      * @param int $uid 用户ID
      * @param int $class_id 分类ID
@@ -173,21 +233,31 @@ class ArticleLogic extends Logic
             return false;
         }
 
-        DB::beginTransaction();
-        try {
-            $count = Article::where('user_id', $uid)->where('article_class_id', $class_id)->count();
-            if ($count > 0) {
-                throw new \Exception('该分类下存在文章...');
-            }
+        $count = Article::where('user_id', $uid)->where('article_class_id', $class_id)->count();
+        if ($count > 0) {
+            return false;
+        }
+        return (bool)ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default', 0)->delete();
+    }
 
-            ArticleClass::where('id', $class_id)->where('user_id', $uid)->delete();
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
+    /**
+     * 删除笔记标签
+     *
+     * @param int $uid 用户ID
+     * @param int $tag_id 标签ID
+     * @return bool
+     */
+    public function delArticleTags(int $uid, int $tag_id)
+    {
+        if (!ArticleTags::where('id', $tag_id)->where('user_id', $uid)->exists()) {
             return false;
         }
 
-        return true;
+        $count = Article::where('user_id', $uid)->where('tag_id', $tag_id)->count();
+        if ($count > 0) {
+            return false;
+        }
+        return (bool)ArticleTags::where('id', $tag_id)->where('user_id', $uid)->delete();
     }
 
     /**
@@ -255,43 +325,67 @@ class ArticleLogic extends Logic
     }
 
     /**
-     * 文集分类置顶
+     * 文集分类排序
      *
      * @param int $user_id 用户ID
      * @param int $class_id 文集分类ID
+     * @param int $sort_type 排序方式
      * @return bool
      */
-    public function articleClassSort(int $user_id, int $class_id)
+    public function articleClassSort(int $user_id, int $class_id, int $sort_type)
     {
-        if (!Article::where('id', $class_id)->where('user_id', $user_id)->exists()) {
+        if (!$info = ArticleClass::select(['id', 'sort'])->where('id', $class_id)->where('user_id', $user_id)->first()) {
             return false;
         }
 
-        $array = [];
-        $items = ArticleClass::where('user_id', $user_id)->orderBy('sort', 'asc')->get(['id', 'class_name']);
-        foreach ($items as $item) {
-            if ($item->id == $class_id) {
-                array_unshift($array, $item);
-            } else {
-                $array[] = $item;
-            }
-        }
-
-        unset($items);
-
-        DB::beginTransaction();
-        try {
-            foreach ($array as $sort => $val) {
-                ArticleClass::where('id', $val->id)->update(['sort' => $sort + 1]);
+        //向下排序
+        if ($sort_type == 1) {
+            $maxSort = ArticleClass::where('user_id', $user_id)->max('sort');
+            if ($maxSort == $info->sort) {
+                return false;
             }
 
-            DB::commit();
+            DB::beginTransaction();
+            try {
+                ArticleClass::where('user_id', $user_id)->where('sort', $info->sort + 1)->update([
+                    'sort' => $info->sort
+                ]);
+
+                ArticleClass::where('id', $class_id)->update([
+                    'sort' => $info->sort + 1
+                ]);
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return false;
+            }
+
             return true;
-        } catch (\Exception $e) {
-            DB::rollBack();
-        }
+        } else if ($sort_type == 2) {//向上排序
+            $minSort = ArticleClass::where('user_id', $user_id)->min('sort');
+            if ($minSort == $info->sort) {
+                return false;
+            }
 
-        return false;
+            DB::beginTransaction();
+            try {
+                ArticleClass::where('user_id', $user_id)->where('sort', $info->sort - 1)->update([
+                    'sort' => $info->sort
+                ]);
+
+                ArticleClass::where('id', $class_id)->where('user_id', $user_id)->update([
+                    'sort' => $info->sort - 1
+                ]);
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return false;
+            }
+
+            return true;
+        }
     }
 
     /**

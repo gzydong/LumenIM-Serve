@@ -23,9 +23,6 @@ class TestController
 {
     public function index(Request $request)
     {
-        $aa = Article::select(DB::raw('tag_id,count(*) as tag_count'))->where('user_id',2054)->where('tag_id','>',0)->groupBy('tag_id')->get();
-
-        dd($aa);
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();

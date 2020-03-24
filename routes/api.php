@@ -95,11 +95,16 @@ $router->group(['middleware' => ['myjwt']], function () use ($router) {
 //ArticleController控制器分组
 $router->group(['middleware' => ['myjwt']], function () use ($router) {
     $router->get('/article/article-class', ['uses' => 'ArticleController@getArticleClass']);
+    $router->get('/article/article-tags', ['uses' => 'ArticleController@getArticleTags']);
     $router->get('/article/article-list', ['uses' => 'ArticleController@getArticleList']);
     $router->get('/article/article-detail', ['uses' => 'ArticleController@getArticleDetail']);
     $router->post('/article/edit-article', ['uses' => 'ArticleController@editArticle']);
     $router->post('/article/edit-article-class', ['uses' => 'ArticleController@editArticleClass']);
     $router->post('/article/del-article-class', ['uses' => 'ArticleController@delArticleClass']);
+
+    $router->post('/article/edit-article-tag', ['uses' => 'ArticleController@editArticleTags']);
+    $router->post('/article/del-article-tag', ['uses' => 'ArticleController@delArticleTags']);
+
     $router->post('/article/article-class-sort', ['uses' => 'ArticleController@articleClassSort']);
     $router->post('/article/merge-article-class', ['uses' => 'ArticleController@mergeArticleClass']);
     $router->post('/article/upload-article-image', ['uses' => 'ArticleController@uploadArticleImage']);
