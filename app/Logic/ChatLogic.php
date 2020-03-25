@@ -564,7 +564,7 @@ class ChatLogic extends Logic
      * @param int $limit 数据大小
      * @return mixed
      */
-    public function findChatRecords(int $user_id, int $receive_id, int $source, int $find_type, int $find_mode, int $record_id,$limit = 30)
+    public function findChatRecords(int $user_id, int $receive_id, int $source, int $find_type, int $find_mode, int $record_id, $limit = 30)
     {
         $rowsSqlObj = UsersChatRecords::select([
             'users_chat_records.id',
@@ -589,7 +589,7 @@ class ChatLogic extends Logic
         ]);
 
 
-        $rowsSqlObj->leftJoin('users','users.id','=','users_chat_records.user_id');
+        $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_chat_records.user_id');
 
         $joinType = $find_type == 0 ? 'leftJoin' : 'join';
         $rowsSqlObj->{$joinType}('users_chat_files', function ($join) use ($find_type) {
@@ -601,34 +601,34 @@ class ChatLogic extends Logic
             }
         });
 
-        if($find_mode == 3){
+        if ($find_mode == 3) {
             $rowsSqlObj->where('users_chat_records.id', '>=', $record_id);
-        }else if($find_mode > 0){
+        } else if ($find_mode > 0) {
             $rowsSqlObj->where('users_chat_records.id', $find_mode == 1 ? '<' : '>', $record_id);
         }
 
-        if($source == 1){
-            $rowsSqlObj->where(function ($query) use($user_id,$receive_id) {
+        if ($source == 1) {
+            $rowsSqlObj->where(function ($query) use ($user_id, $receive_id) {
                 $query->where([
-                    ['users_chat_records.user_id','=',$user_id],
-                    ['users_chat_records.receive_id','=',$receive_id]
+                    ['users_chat_records.user_id', '=', $user_id],
+                    ['users_chat_records.receive_id', '=', $receive_id]
                 ])->orWhere([
-                    ['users_chat_records.user_id','=',$receive_id],
-                    ['users_chat_records.receive_id','=',$user_id]
+                    ['users_chat_records.user_id', '=', $receive_id],
+                    ['users_chat_records.receive_id', '=', $user_id]
                 ]);
             });
-        }else{
+        } else {
             $rowsSqlObj->where('users_chat_records.receive_id', $receive_id);
             $rowsSqlObj->where('users_chat_records.source', $source);
-            $rowsSqlObj->whereIn('users_chat_records.msg_type', [1,2]);
+            $rowsSqlObj->whereIn('users_chat_records.msg_type', [1, 2]);
         }
 
         $orderBy = 'asc';
-        if($find_mode == 0 || $find_mode == 1){
+        if ($find_mode == 0 || $find_mode == 1) {
             $orderBy = 'desc';
         }
 
-        $rowsSqlObj->orderBy('users_chat_records.id',$orderBy);
+        $rowsSqlObj->orderBy('users_chat_records.id', $orderBy);
         return $rowsSqlObj->limit($limit)->get()->toArray();
     }
 
@@ -644,7 +644,8 @@ class ChatLogic extends Logic
      * @param int $limit 分页大小
      * @return array
      */
-    public function searchChatRecords(int $user_id, int $receive_id, int $source, int $find_type,string $keywords,int $record_id,$limit = 30){
+    public function searchChatRecords(int $user_id, int $receive_id, int $source, int $find_type, string $keywords, int $record_id, $limit = 30)
+    {
         $rowsSqlObj = UsersChatRecords::select([
             'users_chat_records.id',
             'users_chat_records.source',
@@ -667,7 +668,7 @@ class ChatLogic extends Logic
             'users.avatarurl as avatar',
         ]);
 
-        $rowsSqlObj->leftJoin('users','users.id','=','users_chat_records.user_id');
+        $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_chat_records.user_id');
 
         $joinType = $find_type == 0 ? 'leftJoin' : 'join';
         $rowsSqlObj->{$joinType}('users_chat_files', function ($join) use ($find_type) {
@@ -679,29 +680,29 @@ class ChatLogic extends Logic
             }
         });
 
-        if($record_id){
-            $rowsSqlObj->where('users_chat_records.id','<', $record_id);
+        if ($record_id) {
+            $rowsSqlObj->where('users_chat_records.id', '<', $record_id);
         }
 
-        if($source == 1){
-            $rowsSqlObj->where(function ($query) use($user_id,$receive_id) {
+        if ($source == 1) {
+            $rowsSqlObj->where(function ($query) use ($user_id, $receive_id) {
                 $query->where([
-                    ['users_chat_records.user_id','=',$user_id],
-                    ['users_chat_records.receive_id','=',$receive_id]
+                    ['users_chat_records.user_id', '=', $user_id],
+                    ['users_chat_records.receive_id', '=', $receive_id]
                 ])->orWhere([
-                    ['users_chat_records.user_id','=',$receive_id],
-                    ['users_chat_records.receive_id','=',$user_id]
+                    ['users_chat_records.user_id', '=', $receive_id],
+                    ['users_chat_records.receive_id', '=', $user_id]
                 ]);
             });
-        }else{
+        } else {
             $rowsSqlObj->where('users_chat_records.receive_id', $receive_id);
             $rowsSqlObj->where('users_chat_records.source', $source);
-            $rowsSqlObj->whereIn('users_chat_records.msg_type', [1,2]);
+            $rowsSqlObj->whereIn('users_chat_records.msg_type', [1, 2]);
         }
 
         $rowsSqlObj->where('users_chat_records.content', 'like', "%{$keywords}%");
 
-        return $rowsSqlObj->orderBy('users_chat_records.id','desc')->limit(30)->get()->toArray();
+        return $rowsSqlObj->orderBy('users_chat_records.id', 'desc')->limit(30)->get()->toArray();
     }
 
     /**
@@ -714,7 +715,8 @@ class ChatLogic extends Logic
      * @param int $limit 分页大小
      * @return mixed
      */
-    public function getChatsRecords(int $user_id, int $receive_id, int $source,int $record_id,int $limit){
+    public function getChatsRecords(int $user_id, int $receive_id, int $source, int $record_id, int $limit)
+    {
         $rowsSqlObj = UsersChatRecords::select([
             'users_chat_records.id',
             'users_chat_records.source',
@@ -736,29 +738,29 @@ class ChatLogic extends Logic
             'users.avatarurl as avatar',
         ]);
 
-        $rowsSqlObj->leftJoin('users','users.id','=','users_chat_records.user_id');
-        $rowsSqlObj->leftJoin('users_chat_files','users_chat_files.id','=','users_chat_records.file_id');
+        $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_chat_records.user_id');
+        $rowsSqlObj->leftJoin('users_chat_files', 'users_chat_files.id', '=', 'users_chat_records.file_id');
 
-        if($record_id){
-            $rowsSqlObj->where('users_chat_records.id','<', $record_id);
+        if ($record_id) {
+            $rowsSqlObj->where('users_chat_records.id', '<', $record_id);
         }
 
-        if($source == 1){
-            $rowsSqlObj->where(function ($query) use($user_id,$receive_id) {
+        if ($source == 1) {
+            $rowsSqlObj->where(function ($query) use ($user_id, $receive_id) {
                 $query->where([
-                    ['users_chat_records.user_id','=',$user_id],
-                    ['users_chat_records.receive_id','=',$receive_id]
+                    ['users_chat_records.user_id', '=', $user_id],
+                    ['users_chat_records.receive_id', '=', $receive_id]
                 ])->orWhere([
-                    ['users_chat_records.user_id','=',$receive_id],
-                    ['users_chat_records.receive_id','=',$user_id]
+                    ['users_chat_records.user_id', '=', $receive_id],
+                    ['users_chat_records.receive_id', '=', $user_id]
                 ]);
             });
-        }else{
+        } else {
             $rowsSqlObj->where('users_chat_records.receive_id', $receive_id);
             $rowsSqlObj->where('users_chat_records.source', $source);
         }
 
-        $rowsSqlObj->orderBy('users_chat_records.id','desc');
+        $rowsSqlObj->orderBy('users_chat_records.id', 'desc');
 
         return $rowsSqlObj->limit($limit)->get()->toArray();
     }

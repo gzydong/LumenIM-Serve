@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\ArticleClass;
 use App\Models\ArticleDetail;
 use App\Models\ArticleTags;
+use App\Models\ArticleTagsRelation;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -43,7 +44,7 @@ class ArticleLogic extends Logic
     {
         $items = ArticleClass::where('user_id', $uid)->orderBy('sort', 'asc')->get(['id', 'class_name', 'is_default'])->toArray();
         foreach ($items as &$item) {
-            $item['count'] = Article::where('user_id', $uid)->where('article_class_id', $item['id'])->count();
+            $item['count'] = Article::where('user_id', $uid)->where('class_id', $item['id'])->count();
         }
 
         return $items;
@@ -60,7 +61,7 @@ class ArticleLogic extends Logic
         $items = ArticleTags::where('user_id', $uid)->orderBy('id', 'desc')->get(['id', 'tag_name'])->toArray();
         if ($items) {
             foreach ($items as &$item) {
-                $item['count'] = Article::where('user_id', $uid)->where('tag_id', $item['id'])->count();
+                $item['count'] = ArticleTagsRelation::where('user_id', $uid)->where('tag_id', $item['id'])->count();
             }
         }
 
@@ -79,24 +80,28 @@ class ArticleLogic extends Logic
 
     public function getUserArticleList(int $user_id, int $page, int $page_size, $params = [])
     {
-        $filed = ['article.id', 'article.article_class_id', 'article.title', 'article.image', 'article.abstract', 'article.updated_at', 'article_class.class_name'];
+        $filed = ['article.id', 'article.class_id', 'article.title', 'article.image', 'article.abstract', 'article.updated_at', 'article_class.class_name'];
 
         $countSqlObj = Article::select();
         $rowsSqlObj = Article::select($filed)
-            ->leftJoin('article_class', 'article_class.id', '=', 'article.article_class_id');
-
+            ->leftJoin('article_class', 'article_class.id', '=', 'article.class_id');
 
         $countSqlObj->where('article.user_id', $user_id);
         $rowsSqlObj->where('article.user_id', $user_id);
-        if (isset($params['find_type']) && in_array($params['find_type'], [3, 4])) {
-            $condition = $params['find_type'] == 3 ? 'article.article_class_id' : 'article.tag_id';
-            $countSqlObj->where($condition, $params['class_id']);
-            $rowsSqlObj->where($condition, $params['class_id']);
-        }
 
-        if (isset($params['find_type']) && $params['find_type'] == 2) {
-            $countSqlObj->where('article.is_favorite', 1);
-            $rowsSqlObj->where('article.is_favorite', 1);
+        if ($params['find_type'] == 3) {
+            $countSqlObj->where('article.class_id', $params['class_id']);
+            $rowsSqlObj->where('article.class_id', $params['class_id']);
+        } else if ($params['find_type'] == 4) {
+            $func = function ($join) use ($params) {
+                $join->on('article.id', '=', 'article_tags_relation.article_id')->where('article_tags_relation.tag_id', '=', $params['class_id']);
+            };
+
+            $countSqlObj->join('article_tags_relation', $func);
+            $rowsSqlObj->join('article_tags_relation', $func);
+        } else if ($params['find_type'] == 2) {
+            $countSqlObj->where('article.is_asterisk', 1);
+            $rowsSqlObj->where('article.is_asterisk', 1);
         }
 
         if (isset($params['keyword'])) {
@@ -129,7 +134,7 @@ class ArticleLogic extends Logic
      */
     public function getArticleDetail(int $article_id, $uid = 0)
     {
-        $info = Article::where('id', $article_id)->where('user_id', $uid)->first(['id', 'article_class_id', 'title', 'abstract', 'updated_at']);
+        $info = Article::where('id', $article_id)->where('user_id', $uid)->first(['id', 'class_id', 'title', 'abstract', 'is_asterisk', 'updated_at']);
         if (!$info) return [];
 
         $detail = $info->detail;
@@ -140,10 +145,15 @@ class ArticleLogic extends Logic
             'title' => $info->title,
             'abstract' => $info->abstract,
             'updated_at' => $info->updated_at,
-            'class_id' => $info->article_class_id,
+            'class_id' => $info->class_id,
             'md_content' => htmlspecialchars_decode($detail->md_content),
-            'content' => htmlspecialchars_decode($detail->content)
+            'content' => htmlspecialchars_decode($detail->content),
+            'is_asterisk' => $info->is_asterisk,
+            'tags' => ArticleTagsRelation::leftJoin('article_tags', 'article_tags.id', '=', 'article_tags_relation.tag_id')->where('article_tags_relation.article_id', $article_id)->get([
+                'article_tags.id', 'article_tags.tag_name'
+            ])
         ];
+
         unset($info);
 
         return $data;
@@ -160,7 +170,7 @@ class ArticleLogic extends Logic
     public function editArticleClass(int $uid, int $class_id, string $class_name)
     {
         if ($class_id) {
-            if (!ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default',0)->update(['class_name' => $class_name])) {
+            if (!ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default', 0)->update(['class_name' => $class_name])) {
                 return false;
             }
             return $class_id;
@@ -233,7 +243,7 @@ class ArticleLogic extends Logic
             return false;
         }
 
-        $count = Article::where('user_id', $uid)->where('article_class_id', $class_id)->count();
+        $count = Article::where('user_id', $uid)->where('class_id', $class_id)->count();
         if ($count > 0) {
             return false;
         }
@@ -278,10 +288,10 @@ class ArticleLogic extends Logic
             DB::beginTransaction();
             try {
                 Article::where('id', $article_id)->where('user_id', $user_id)->update([
-                    'article_class_id' => $data['class_id'],
+                    'class_id' => $data['class_id'],
                     'title' => $data['title'],
                     'abstract' => $data['abstract'],
-                    'image'=>$data['image']?$data['image'][0]:'',
+                    'image' => $data['image'] ? $data['image'][0] : '',
                     'updated_at' => date('Y-m-d H:i:s')
                 ]);
 
@@ -303,7 +313,7 @@ class ArticleLogic extends Logic
         try {
             $res = Article::create([
                 'user_id' => $user_id,
-                'article_class_id' => $data['class_id'],
+                'class_id' => $data['class_id'],
                 'title' => $data['title'],
                 'abstract' => $data['abstract'],
                 'created_at' => date('Y-m-d H:i:s'),
@@ -404,8 +414,8 @@ class ArticleLogic extends Logic
             return false;
         }
 
-        return Article::where('article_class_id', $class_id)->where('user_id', $user_id)->update([
-            'article_class_id' => $toid
+        return Article::where('class_id', $class_id)->where('user_id', $user_id)->update([
+            'class_id' => $toid
         ]);
     }
 
@@ -417,13 +427,38 @@ class ArticleLogic extends Logic
      * @param int $class_id 笔记分类ID
      * @return bool
      */
-    public function moveArticle(int $user_id, int $article_id, int $class_id){
-        $info = Article::where('id', $article_id)->where('user_id', $user_id)->first();
-        if(!$info || $info->article_class_id == $class_id){
+    public function moveArticle(int $user_id, int $article_id, int $class_id)
+    {
+        $info = Article::where('id', $article_id)->where('user_id', $user_id)->first(['id', 'class_id']);
+        if (!$info || $info->class_id == $class_id) {
             return false;
         }
 
-        $info->article_class_id = $class_id;
+        $info->class_id = $class_id;
+        $info->save();
+        return true;
+    }
+
+    /**
+     * 笔记标记星号
+     *
+     * @param int $user_id 用户ID
+     * @param int $article_id 笔记ID
+     * @param int $type 1:标记星号 2:取消星号标记
+     * @return bool
+     */
+    public function setAsteriskArticle(int $user_id, int $article_id, int $type)
+    {
+        $info = Article::where('id', $article_id)->where('user_id', $user_id)->first(['id', 'is_asterisk']);
+        if (!$info) {
+            return false;
+        }
+
+        if (($type == 1 && $info->is_asterisk == 1) || ($type == 2 && $info->is_asterisk == 0)) {
+            return true;
+        }
+
+        $info->is_asterisk = $type == 1 ? 1 : 0;
         $info->save();
         return true;
     }

@@ -87,12 +87,14 @@ $app->middleware([
 
 $app->register(App\Providers\AppServiceProvider::class);
 
+$app->register(App\Providers\EventServiceProvider::class);
+
+
 //注册支持Swoole服务
 $app->register(App\Providers\LumenIMServiceProvider::class);
 
 //注册redis服务
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
-
 
 //注册支持跨域服务
 $app->register(Barryvdh\Cors\ServiceProvider::class);

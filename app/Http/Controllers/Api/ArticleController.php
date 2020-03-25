@@ -238,6 +238,8 @@ class ArticleController extends CController
 
     /**
      * 移动笔记至指定分类
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function moveArticle(){
         $article_id = $this->request->post('article_id', 0);
@@ -248,6 +250,22 @@ class ArticleController extends CController
 
         $isTrue = $this->articleLogic->moveArticle($this->uid(), $article_id, $class_id);
         return $isTrue ? $this->ajaxSuccess('操作完成...') : $this->ajaxError('操作失败...');
+    }
+
+    /**
+     * 笔记标记星号接口
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function setAsteriskArticle(){
+        $article_id = $this->request->post('article_id', 0);
+        $type = $this->request->post('type', 0);
+        if(!isInt($article_id) || !in_array($type,[1,2])){
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->articleLogic->setAsteriskArticle($this->uid(), $article_id, $type);
+        return $isTrue ? $this->ajaxSuccess('success') : $this->ajaxError('fail');
     }
 
     /**

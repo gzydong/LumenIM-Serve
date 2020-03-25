@@ -2,9 +2,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
-use App\Models\ArticleDetail;
-
 class Article extends Model
 {
     /**
@@ -26,7 +23,7 @@ class Article extends Model
      *
      * @var array
      */
-    protected $fillable = ['user_id','article_class_id','title','image','abstract','created_at','updated_at'];
+    protected $fillable = ['user_id','class_id','title','image','abstract','is_asterisk','created_at','updated_at'];
 
     /**
      * 表明模型是否应该被打上时间戳

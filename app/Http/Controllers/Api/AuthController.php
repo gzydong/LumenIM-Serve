@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Events\UserLoginLogEvent;
 use App\Models\User;
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
@@ -78,6 +79,7 @@ class AuthController extends CController
             return $this->ajaxReturn(305, '获取登录状态失败');
         }
 
+        event(new UserLoginLogEvent($user->id,$request->getClientIp()));
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,
             'expires_in' =>  $auth->getToken(false)->getClaim('exp') - time(),

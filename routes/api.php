@@ -109,4 +109,5 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->post('/article/merge-article-class', ['uses' => 'ArticleController@mergeArticleClass']);
     $router->post('/article/upload-article-image', ['uses' => 'ArticleController@uploadArticleImage']);
     $router->post('/article/move-article', ['uses' => 'ArticleController@moveArticle']);
+    $router->post('/article/set-asterisk-article', ['uses' => 'ArticleController@setAsteriskArticle']);
 });

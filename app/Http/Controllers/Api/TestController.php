@@ -3,13 +3,15 @@ namespace App\Http\Controllers\Api;
 
 
 
+
 use App\Models\Article;
-use App\Models\ArticleDetail;
+use App\Models\ArticleClass;
 use Illuminate\Support\Facades\DB;
 use App\Models\EmoticonDetails;
 
 use App\Logic\ArticleLogic;
 use Illuminate\Http\Request;
+
 
 /**
  * 测试控制器
@@ -24,10 +26,7 @@ class TestController
     public function index(Request $request)
     {
 
-
-//        $result = (new ArticleLogic())->moveArticle(2054, 85,3);
-//        dd($result);
-
+        (new ArticleLogic())->getUserArticleClass(2054);
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();
