@@ -263,7 +263,7 @@ class ArticleLogic extends Logic
             return false;
         }
 
-        $count = Article::where('user_id', $uid)->where('tag_id', $tag_id)->count();
+        $count = ArticleTagsRelation::where('user_id', $uid)->where('tag_id', $tag_id)->count();
         if ($count > 0) {
             return false;
         }
