@@ -486,7 +486,7 @@ class ChatController extends CController
         $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
 
         //保存图片
-        if (!$save_path = Storage::disk('uploads')->putFileAs('images/' . date('Ymd'), $file, $filename)) {
+        if (!$save_path = Storage::disk('uploads')->putFileAs('images/talks/' . date('Ymd'), $file, $filename)) {
             return $this->ajaxError('图片上传失败');
         }
 

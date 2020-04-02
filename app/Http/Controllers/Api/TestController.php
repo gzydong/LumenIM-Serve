@@ -26,7 +26,7 @@ class TestController
     public function index(Request $request)
     {
 
-        (new ArticleLogic())->getUserArticleClass(2054);
+        (new ArticleLogic())->updateArticleStatus(2054,18,1);
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();

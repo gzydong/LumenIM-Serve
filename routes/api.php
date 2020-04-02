@@ -98,16 +98,29 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->get('/article/article-tags', ['uses' => 'ArticleController@getArticleTags']);
     $router->get('/article/article-list', ['uses' => 'ArticleController@getArticleList']);
     $router->get('/article/article-detail', ['uses' => 'ArticleController@getArticleDetail']);
-    $router->post('/article/edit-article', ['uses' => 'ArticleController@editArticle']);
+
+    //笔记分类
     $router->post('/article/edit-article-class', ['uses' => 'ArticleController@editArticleClass']);
     $router->post('/article/del-article-class', ['uses' => 'ArticleController@delArticleClass']);
+    $router->post('/article/article-class-sort', ['uses' => 'ArticleController@articleClassSort']);
+    $router->post('/article/merge-article-class', ['uses' => 'ArticleController@mergeArticleClass']);
 
+    //笔记标签
     $router->post('/article/edit-article-tag', ['uses' => 'ArticleController@editArticleTags']);
     $router->post('/article/del-article-tag', ['uses' => 'ArticleController@delArticleTags']);
 
-    $router->post('/article/article-class-sort', ['uses' => 'ArticleController@articleClassSort']);
-    $router->post('/article/merge-article-class', ['uses' => 'ArticleController@mergeArticleClass']);
+
+    //笔记相关接口
+    $router->post('/article/edit-article', ['uses' => 'ArticleController@editArticle']);
+    $router->post('/article/delete-article', ['uses' => 'ArticleController@deleteArticle']);
+    $router->post('/article/recover-article', ['uses' => 'ArticleController@recoverArticle']);
     $router->post('/article/upload-article-image', ['uses' => 'ArticleController@uploadArticleImage']);
-    $router->post('/article/move-article', ['uses' => 'ArticleController@moveArticle']);
     $router->post('/article/set-asterisk-article', ['uses' => 'ArticleController@setAsteriskArticle']);
+    $router->post('/article/move-article', ['uses' => 'ArticleController@moveArticle']);
+
+
+    //笔记附件
+    $router->post('/article/upload-article-annex', ['uses' => 'ArticleController@uploadArticleAnnex']);
+    $router->post('/article/delete-article-annex', ['uses' => 'ArticleController@deleteArticleAnnex']);
+    $router->post('/article/recover-article-annex', ['uses' => 'ArticleController@recoverArticleAnnex']);
 });

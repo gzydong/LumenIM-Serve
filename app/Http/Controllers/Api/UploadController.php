@@ -26,7 +26,7 @@ class UploadController extends CController
         $fileStream = $request->post('fileStream','');
 
         $data = base64_decode(str_replace(['data:image/png;base64,',' '],['','+'],$fileStream));
-        $path = 'avatar/'.date('Ymd').'/'.uniqid() . date('His') . '.png';
+        $path = 'images/avatar/'.date('Ymd').'/'.uniqid() . date('His') . '.png';
         if(!Storage::disk('uploads')->put($path, $data)){
             return $this->ajaxError('文件保存失败');
         }
@@ -80,7 +80,7 @@ class UploadController extends CController
             }
 
             $file_hahs_name = uniqid().Str::random().'.'.$info['ext'];
-            $save_dir = "user-file/".date('Ymd').'/'.$file_hahs_name;
+            $save_dir = "files/talks/".date('Ymd').'/'.$file_hahs_name;
             if(Storage::disk('uploads')->copy($fileInfo['path'],$save_dir)){
                 $ext = pathinfo($fileInfo['original_name'], PATHINFO_EXTENSION);
                 $res = UsersChatFiles::create([
@@ -102,5 +102,4 @@ class UploadController extends CController
 
         return $this->ajaxSuccess('文件上传成功...',['is_file_merge'=>false]);
     }
-
 }

@@ -3,6 +3,7 @@
 namespace App\Logic;
 
 use App\Models\Article;
+use App\Models\ArticleAnnex;
 use App\Models\ArticleClass;
 use App\Models\ArticleDetail;
 use App\Models\ArticleTags;
@@ -151,7 +152,10 @@ class ArticleLogic extends Logic
             'is_asterisk' => $info->is_asterisk,
             'tags' => ArticleTagsRelation::leftJoin('article_tags', 'article_tags.id', '=', 'article_tags_relation.tag_id')->where('article_tags_relation.article_id', $article_id)->get([
                 'article_tags.id', 'article_tags.tag_name'
-            ])
+            ]),
+            'files'=>ArticleAnnex::where('user_id',$uid)->where('article_id',$article_id)->where('status',1)->get([
+                'id','file_suffix','file_size','original_name','created_at'
+            ])->toArray()
         ];
 
         unset($info);
@@ -462,4 +466,83 @@ class ArticleLogic extends Logic
         $info->save();
         return true;
     }
+
+    /**
+     * 添加笔记附件
+     *
+     * @param int $user_id 用户id
+     * @param int $article_id 笔记ID
+     * @param array $annex 笔记附件信息
+     * @return bool
+     */
+    public function insertArticleAnnex(int $user_id, int $article_id, array $annex)
+    {
+        if (!Article::where('id', $article_id)->where('user_id', $user_id)->exists()) {
+            return false;
+        }
+
+        $result = ArticleAnnex::create([
+            'user_id'=>$user_id,
+            'article_id'=>$article_id,
+            'file_suffix'=>$annex['file_suffix'],
+            'file_size'=>$annex['file_size'],
+            'save_dir'=>$annex['save_dir'],
+            'original_name'=>$annex['original_name'],
+            'created_at'=>date('Y-m-d H:i:s')
+        ]);
+
+        return $result ? $result->id : false;
+    }
+
+    /**
+     * 更新笔记附件状态
+     *
+     * @param int $user_id 用户ID
+     * @param int $annex_id 附件ID
+     * @param int $status 附件状态 1:正常 2:已删除
+     * @return bool
+     */
+    public function updateArticleAnnexStatus(int $user_id,int $annex_id,int $status){
+        $data = ['status'=>$status];
+        if($status == 2){
+            $data['deleted_at'] = date('Y-m-d H:i:s');
+        }
+
+        return ArticleAnnex::where('id',$annex_id)->where('user_id',$user_id)->update($data) ? true : false;
+    }
+
+    /**
+     * 更新笔记状态
+     *
+     * @param int $user_id 用户ID
+     * @param int $article_id 笔记ID
+     * @param int $status 笔记状态 1:正常 2:已删除
+     * @return bool
+     */
+    public function updateArticleStatus(int $user_id,int $article_id,int $status){
+        $data = ['status'=>$status];
+        if($status == 2){
+            $data['deleted_at'] = date('Y-m-d H:i:s');
+        }
+
+        DB::beginTransaction();
+        try{
+            if(!Article::where('id',$article_id)->where('user_id',$user_id)->update($data)){
+                throw new \Exception('更新笔记状态失败');
+            }
+
+            if(!ArticleAnnex::where('user_id',$user_id)->where('article_id',$article_id)->update($data)){
+                throw new \Exception('更新笔记状态失败');
+            }
+
+            DB::commit();
+            return true;
+        }catch (\Exception $e){
+            DB::rollBack();
+        }
+
+        return false;
+    }
+
+
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Logic\ArticleLogic;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ArticleController extends CController
 {
@@ -291,9 +292,107 @@ class ArticleController extends CController
         $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
 
         //保存图片
-        if (!$save_path = Storage::disk('uploads')->putFileAs('images/' . date('Ymd'), $file, $filename)) {
+        if (!$save_path = Storage::disk('uploads')->putFileAs('images/notes/' . date('Ymd'), $file, $filename)) {
             return $this->ajaxError('图片上传失败，请稍后再试...');
         }
         return $this->ajaxSuccess('success', ['save_path' => getFileUrl($save_path)]);
+    }
+
+    /**
+     * 上传笔记附件
+     */
+    public function uploadArticleAnnex(){
+        $file = $this->request->file('annex');
+        $article_id = $this->request->post('article_id',0);
+        if (!$file->isValid() || !isInt($article_id)) {
+            return $this->ajaxParamError('附件上传失败，请稍后再试...');
+        }
+
+        $user_id = $this->uid();
+        $ext = $file->getClientOriginalExtension();
+
+        $annex = [
+            'file_suffix'=>$ext,
+            'file_size'=>$file->getSize(),
+            'save_dir'=>'',
+            'original_name'=>$file->getClientOriginalName()
+        ];
+
+        if (!$save_path = Storage::disk('uploads')->putFileAs('files/notes/' . date('Ymd'), $file, uniqid().Str::random().'.'.$ext)) {
+            return $this->ajaxError('附件上传失败，请稍后再试...');
+        }
+
+        $annex['save_dir'] = $save_path;
+        $insId = $this->articleLogic->insertArticleAnnex($user_id,$article_id,$annex);
+        if(!$insId){
+            return $this->ajaxError('附件上传失败，请稍后再试...');
+        }
+
+        $annex['id'] = $insId;
+        return $this->ajaxSuccess('success', $annex);
+    }
+
+    /**
+     * 删除笔记附件
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteArticleAnnex(){
+        $user_id = $this->uid();
+        $annex_id = $this->request->post('annex_id',0);
+        if(!isInt($annex_id)){
+            return $this->ajaxParamError();
+        }
+        $isTrue = $this->articleLogic->updateArticleAnnexStatus($user_id,$annex_id,2);
+        return $isTrue ?$this->ajaxSuccess('附件删除成功...'):$this->ajaxError('附件删除失败...');
+    }
+
+    /**
+     * 恢复笔记附件
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function recoverArticleAnnex(){
+        $user_id = $this->uid();
+        $annex_id = $this->request->post('annex_id',0);
+        if(!isInt($annex_id)){
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->articleLogic->updateArticleAnnexStatus($user_id,$annex_id,1);
+        return $isTrue ?$this->ajaxSuccess('附件恢复成功...'):$this->ajaxError('附件恢复失败...');
+    }
+
+
+    /**
+     * 删除笔记
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteArticle(){
+        $user_id = $this->uid();
+        $article_id = $this->request->post('article_id',0);
+        if(!isInt($article_id)){
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->articleLogic->updateArticleStatus($user_id,$article_id,2);
+        return $isTrue ?$this->ajaxSuccess('笔记删除成功...'):$this->ajaxError('笔记删除失败...');
+    }
+
+    /**
+     * 恢复笔记
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function recoverArticle(){
+        $user_id = $this->uid();
+        $article_id = $this->request->post('article_id',0);
+        if(!isInt($article_id)){
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->articleLogic->updateArticleStatus($user_id,$article_id,1);
+        return $isTrue ?$this->ajaxSuccess('笔记恢复成功...'):$this->ajaxError('笔记恢复失败...');
     }
 }
