@@ -16,8 +16,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         KeyGenerateCommand::class,
-        ClearTmpFileCommand::class,
-        ForkCommand::class,
+        ClearTmpFileCommand::class
     ];
 
     /**
