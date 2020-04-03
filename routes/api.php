@@ -89,8 +89,8 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
 //DownloadController 下载文件控制器分组
 $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->get('/download/user-chat-file', ['uses' => 'DownloadController@userChatFile']);
+    $router->get('/download/article-annex', ['uses' => 'DownloadController@articleAnnex']);
 });
-
 
 //ArticleController控制器分组
 $router->group(['middleware' => ['jwt']], function () use ($router) {
@@ -115,9 +115,9 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->post('/article/delete-article', ['uses' => 'ArticleController@deleteArticle']);
     $router->post('/article/recover-article', ['uses' => 'ArticleController@recoverArticle']);
     $router->post('/article/upload-article-image', ['uses' => 'ArticleController@uploadArticleImage']);
-    $router->post('/article/set-asterisk-article', ['uses' => 'ArticleController@setAsteriskArticle']);
     $router->post('/article/move-article', ['uses' => 'ArticleController@moveArticle']);
-
+    $router->post('/article/set-asterisk-article', ['uses' => 'ArticleController@setAsteriskArticle']);
+    $router->post('/article/update-article-tag', ['uses' => 'ArticleController@updateArticleTag']);
 
     //笔记附件
     $router->post('/article/upload-article-annex', ['uses' => 'ArticleController@uploadArticleAnnex']);

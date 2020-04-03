@@ -7,7 +7,6 @@ use App\Models\ArticleAnnex;
 use App\Models\ArticleClass;
 use App\Models\ArticleDetail;
 use App\Models\ArticleTags;
-use App\Models\ArticleTagsRelation;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -62,7 +61,7 @@ class ArticleLogic extends Logic
         $items = ArticleTags::where('user_id', $uid)->orderBy('id', 'desc')->get(['id', 'tag_name'])->toArray();
         if ($items) {
             foreach ($items as &$item) {
-                $item['count'] = ArticleTagsRelation::where('user_id', $uid)->where('tag_id', $item['id'])->count();
+                $item['count'] = Article::where('user_id', $uid)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
             }
         }
 
@@ -94,12 +93,8 @@ class ArticleLogic extends Logic
             $countSqlObj->where('article.class_id', $params['class_id']);
             $rowsSqlObj->where('article.class_id', $params['class_id']);
         } else if ($params['find_type'] == 4) {
-            $func = function ($join) use ($params) {
-                $join->on('article.id', '=', 'article_tags_relation.article_id')->where('article_tags_relation.tag_id', '=', $params['class_id']);
-            };
-
-            $countSqlObj->join('article_tags_relation', $func);
-            $rowsSqlObj->join('article_tags_relation', $func);
+            $countSqlObj->whereRaw("FIND_IN_SET({$params['class_id']},tags_id)");
+            $rowsSqlObj->whereRaw("FIND_IN_SET({$params['class_id']},tags_id)");
         } else if ($params['find_type'] == 2) {
             $countSqlObj->where('article.is_asterisk', 1);
             $rowsSqlObj->where('article.is_asterisk', 1);
@@ -135,7 +130,7 @@ class ArticleLogic extends Logic
      */
     public function getArticleDetail(int $article_id, $uid = 0)
     {
-        $info = Article::where('id', $article_id)->where('user_id', $uid)->first(['id', 'class_id', 'title', 'abstract', 'is_asterisk', 'updated_at']);
+        $info = Article::where('id', $article_id)->where('user_id', $uid)->first(['id', 'class_id', 'tags_id', 'title', 'abstract', 'is_asterisk', 'updated_at']);
         if (!$info) return [];
 
         $detail = $info->detail;
@@ -150,11 +145,9 @@ class ArticleLogic extends Logic
             'md_content' => htmlspecialchars_decode($detail->md_content),
             'content' => htmlspecialchars_decode($detail->content),
             'is_asterisk' => $info->is_asterisk,
-            'tags' => ArticleTagsRelation::leftJoin('article_tags', 'article_tags.id', '=', 'article_tags_relation.tag_id')->where('article_tags_relation.article_id', $article_id)->get([
-                'article_tags.id', 'article_tags.tag_name'
-            ]),
-            'files'=>ArticleAnnex::where('user_id',$uid)->where('article_id',$article_id)->where('status',1)->get([
-                'id','file_suffix','file_size','original_name','created_at'
+            'tags' => $info->tags_id ? ArticleTags::whereIn('id', explode(',', $info->tags_id))->get(['id', 'tag_name']) : [],
+            'files' => ArticleAnnex::where('user_id', $uid)->where('article_id', $article_id)->where('status', 1)->get([
+                'id', 'file_suffix', 'file_size', 'original_name', 'created_at'
             ])->toArray()
         ];
 
@@ -218,20 +211,26 @@ class ArticleLogic extends Logic
      */
     public function editArticleTag(int $uid, int $tag_id, string $tag_name)
     {
+        $id = ArticleTags::where('user_id', $uid)->where('tag_name', $tag_name)->value('id');
         if ($tag_id) {
+            if($id && $id != $tag_id) return false;
+
             if (!ArticleTags::where('id', $tag_id)->where('user_id', $uid)->update(['tag_name' => $tag_name])) {
                 return false;
             }
 
             return $tag_id;
+        } else {
+            //判断新添加的标签名是否存在
+            if ($id) return false;
+
+            $insRes = ArticleTags::create(['user_id' => $uid, 'tag_name' => $tag_name, 'sort' => 1, 'created_at' => time()]);
+            if (!$insRes)   return false;
+
+            return $insRes->id;
         }
 
-        $insRes = ArticleTags::create(['user_id' => $uid, 'tag_name' => $tag_name, 'sort' => 1, 'created_at' => time()]);
-        if (!$insRes) {
-            return false;
-        }
-
-        return $insRes->id;
+        return false;
     }
 
     /**
@@ -267,7 +266,7 @@ class ArticleLogic extends Logic
             return false;
         }
 
-        $count = ArticleTagsRelation::where('user_id', $uid)->where('tag_id', $tag_id)->count();
+        $count = Article::where('user_id', $uid)->whereRaw("FIND_IN_SET({$tag_id},tags_id)")->count();
         if ($count > 0) {
             return false;
         }
@@ -482,13 +481,13 @@ class ArticleLogic extends Logic
         }
 
         $result = ArticleAnnex::create([
-            'user_id'=>$user_id,
-            'article_id'=>$article_id,
-            'file_suffix'=>$annex['file_suffix'],
-            'file_size'=>$annex['file_size'],
-            'save_dir'=>$annex['save_dir'],
-            'original_name'=>$annex['original_name'],
-            'created_at'=>date('Y-m-d H:i:s')
+            'user_id' => $user_id,
+            'article_id' => $article_id,
+            'file_suffix' => $annex['file_suffix'],
+            'file_size' => $annex['file_size'],
+            'save_dir' => $annex['save_dir'],
+            'original_name' => $annex['original_name'],
+            'created_at' => date('Y-m-d H:i:s')
         ]);
 
         return $result ? $result->id : false;
@@ -502,13 +501,14 @@ class ArticleLogic extends Logic
      * @param int $status 附件状态 1:正常 2:已删除
      * @return bool
      */
-    public function updateArticleAnnexStatus(int $user_id,int $annex_id,int $status){
-        $data = ['status'=>$status];
-        if($status == 2){
+    public function updateArticleAnnexStatus(int $user_id, int $annex_id, int $status)
+    {
+        $data = ['status' => $status];
+        if ($status == 2) {
             $data['deleted_at'] = date('Y-m-d H:i:s');
         }
 
-        return ArticleAnnex::where('id',$annex_id)->where('user_id',$user_id)->update($data) ? true : false;
+        return ArticleAnnex::where('id', $annex_id)->where('user_id', $user_id)->update($data) ? true : false;
     }
 
     /**
@@ -519,30 +519,43 @@ class ArticleLogic extends Logic
      * @param int $status 笔记状态 1:正常 2:已删除
      * @return bool
      */
-    public function updateArticleStatus(int $user_id,int $article_id,int $status){
-        $data = ['status'=>$status];
-        if($status == 2){
+    public function updateArticleStatus(int $user_id, int $article_id, int $status)
+    {
+        $data = ['status' => $status];
+        if ($status == 2) {
             $data['deleted_at'] = date('Y-m-d H:i:s');
         }
 
         DB::beginTransaction();
-        try{
-            if(!Article::where('id',$article_id)->where('user_id',$user_id)->update($data)){
+        try {
+            if (!Article::where('id', $article_id)->where('user_id', $user_id)->update($data)) {
                 throw new \Exception('更新笔记状态失败');
             }
 
-            if(!ArticleAnnex::where('user_id',$user_id)->where('article_id',$article_id)->update($data)){
+            if (!ArticleAnnex::where('user_id', $user_id)->where('article_id', $article_id)->update($data)) {
                 throw new \Exception('更新笔记状态失败');
             }
 
             DB::commit();
             return true;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
         }
 
         return false;
     }
 
-
+    /**
+     * 更新笔记关联标签
+     *
+     * @param int $uid 用户ID
+     * @param int $article_id 笔记ID
+     * @param array $tags 关联标签ID
+     * @return bool
+     */
+    public function updateArticleTag(int $uid, int $article_id, array $tags)
+    {
+        $ids = implode(',', $tags);
+        return (bool)Article::where('id', $article_id)->where('user_id', $uid)->update(['tags_id' => $ids]);
+    }
 }

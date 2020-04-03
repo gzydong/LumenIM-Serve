@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 
 
+
+use App\Helpers\JwtAuth;
 use App\Models\Article;
 use App\Models\ArticleClass;
 use Illuminate\Support\Facades\DB;
@@ -25,8 +27,9 @@ class TestController
 {
     public function index(Request $request)
     {
-
-        (new ArticleLogic())->updateArticleStatus(2054,18,1);
+        $id = 3;
+        $res = Article::whereRaw("FIND_IN_SET({$id},tags_id)")->get()->toArray();
+        dd($res);
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();

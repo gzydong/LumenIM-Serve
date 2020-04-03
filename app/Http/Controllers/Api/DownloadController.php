@@ -54,18 +54,16 @@ class DownloadController extends CController
             return $this->ajaxError('文件不存在或没有下载权限...');
         }
 
-        return Storage::disk('uploads')->download($fileInfo->save_dir,null,[
-            //解决中文下载问题
-            'Content-Disposition'=>"attachment; filename=\"{$fileInfo->original_name}\""
-        ]);
+        return $this->download($fileInfo->save_dir,$fileInfo->original_name);
     }
 
     /**
      * 下载笔记附件
      *
+     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function noteAnnex(Request $request){
+    public function articleAnnex(Request $request){
         $annex_id = $request->get('annex_id',0);
         $uid = $this->uid();
 
@@ -78,9 +76,20 @@ class DownloadController extends CController
             return $this->ajaxError('文件不存在或没有下载权限...');
         }
 
-        return Storage::disk('uploads')->download($info->save_dir,null,[
+        return $this->download($info->save_dir,$info->original_name);
+    }
+
+    /**
+     * 下载文件方法
+     *
+     * @param string $save_dir 文件相对地址
+     * @param string $original_name 下载文件保存名称
+     * @return mixed
+     */
+    private function download(string $save_dir,string $original_name){
+        return Storage::disk('uploads')->download($save_dir,null,[
             //解决中文下载问题
-            'Content-Disposition'=>"attachment; filename=\"{$info->original_name}\""
+            'Content-Disposition'=>"attachment; filename=\"{$original_name}\""
         ]);
     }
 }

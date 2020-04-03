@@ -22,7 +22,7 @@ class JwtAuth
                 throw new UnauthorizedHttpException('jwt-auth', 'Token not provided');
             }
 
-            $auth = Auth::getInstance();
+            $auth = new Auth();
             $auth->setToken($token);
             if($auth->validate() && $auth->verify()){
                 return $next($request);

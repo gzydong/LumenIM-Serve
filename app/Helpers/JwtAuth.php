@@ -14,8 +14,6 @@ use Lcobucci\JWT\ValidationData;
  */
 class JwtAuth
 {
-    private static $instance;
-
     // jwt参数
     private $iss = 'http://www.on-line-im.com/api';//该JWT的签发者
     private $aud = 'http://www.on-line-im.com';//配置听众
@@ -27,18 +25,6 @@ class JwtAuth
     private $decodeToken;
     // 用户ID
     private $uid;
-
-    /**
-     * 该类的实例
-     * @return JwtAuth
-     */
-    public static function getInstance()
-    {
-        if (is_null(self::$instance)) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
 
     /**
      * 获取token
