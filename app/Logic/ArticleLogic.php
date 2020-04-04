@@ -100,6 +100,9 @@ class ArticleLogic extends Logic
             $rowsSqlObj->where('article.is_asterisk', 1);
         }
 
+        $countSqlObj->where('article.status', $params['find_type'] == 5 ? 2 : 1);
+        $rowsSqlObj->where('article.status', $params['find_type'] == 5 ? 2 : 1);
+
         if (isset($params['keyword'])) {
             $countSqlObj->where('article.title', 'like', "%{$params['keyword']}%");
             $rowsSqlObj->where('article.title', 'like', "%{$params['keyword']}%");
@@ -213,7 +216,7 @@ class ArticleLogic extends Logic
     {
         $id = ArticleTags::where('user_id', $uid)->where('tag_name', $tag_name)->value('id');
         if ($tag_id) {
-            if($id && $id != $tag_id) return false;
+            if ($id && $id != $tag_id) return false;
 
             if (!ArticleTags::where('id', $tag_id)->where('user_id', $uid)->update(['tag_name' => $tag_name])) {
                 return false;
@@ -225,7 +228,7 @@ class ArticleLogic extends Logic
             if ($id) return false;
 
             $insRes = ArticleTags::create(['user_id' => $uid, 'tag_name' => $tag_name, 'sort' => 1, 'created_at' => time()]);
-            if (!$insRes)   return false;
+            if (!$insRes) return false;
 
             return $insRes->id;
         }

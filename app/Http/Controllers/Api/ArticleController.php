@@ -54,13 +54,13 @@ class ArticleController extends CController
     {
         //搜索关键词
         $keyword = $this->request->get('keyword', '');
-        //查询类型 $findType 1:获取近期日记  2:获取星标日记  3:获取指定分类文章  4:获取指定标签文章 5:获取已删除文章
+        //查询类型 $findType 1:获取近期日记  2:获取星标日记  3:获取指定分类文章  4:获取指定标签文章 5:获取已删除文章 6:关键词搜索
         $findType = $this->request->get('find_type', 0);
         //分类ID
         $cid = $this->request->get('cid', -1);
         $page = $this->request->get('page', 1);
 
-        if (!in_array($findType, [1, 2, 3, 4]) || !isInt($page)) {
+        if (!in_array($findType, [1, 2, 3, 4, 5, 6]) || !isInt($page)) {
             return $this->ajaxParamError();
         }
 
@@ -74,7 +74,7 @@ class ArticleController extends CController
             $params['keyword'] = addslashes($keyword);
         }
 
-        $data = $this->articleLogic->getUserArticleList($this->uid(), $page, 1000, $params);
+        $data = $this->articleLogic->getUserArticleList($this->uid(), $page, 2000, $params);
         return $this->ajaxSuccess('success', $data);
     }
 
