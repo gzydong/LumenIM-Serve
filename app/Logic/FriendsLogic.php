@@ -20,16 +20,22 @@ class FriendsLogic extends Logic
      */
     public static function addFriendApply(int $user_id, int $friend_id, string $remarks)
     {
-        $res = UsersFriendsApply::create([
-            'user_id' => $user_id,
-            'friend_id' => $friend_id,
-            'status' => 0,
-            'remarks' => $remarks,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
+        $result = UsersFriendsApply::where('user_id',$user_id)->where('friend_id',$friend_id)->where('status',0)->first();
+        if($result){
+            $result->updated_at = date('Y-m-d H:i:s');
+            $result->save();
+        }else{
+            $result = UsersFriendsApply::create([
+                'user_id' => $user_id,
+                'friend_id' => $friend_id,
+                'status' => 0,
+                'remarks' => $remarks,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+        }
 
-        return $res ? true : false;
+        return $result ? true : false;
     }
 
     /**
