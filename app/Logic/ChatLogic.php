@@ -206,7 +206,7 @@ class ChatLogic extends Logic
             }
 
             if (!isset($cahtArr[$uid])) {
-                $insertArr1[] = ['type' => 2, 'uid' => $uid, 'friend_id' => 0, 'group_id' => $group_id, 'status' => 1, 'created_at' => date('Y-m-d H:i:s')];
+                $insertArr1[] = ['type' => 2, 'uid' => $uid, 'friend_id' => 0, 'group_id' => $group_id, 'status' => 1, 'created_at' => date('Y-m-d H:i:s'),'updated_at'=>date('Y-m-d H:i:s')];
             } else if ($cahtArr[$uid]['status'] == 0) {
                 $updateArr1[] = $cahtArr[$uid]['id'];
             }

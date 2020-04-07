@@ -3,17 +3,12 @@ namespace App\Http\Controllers\Api;
 
 
 
-
-
-use App\Helpers\JwtAuth;
-use App\Models\Article;
-use App\Models\ArticleClass;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Models\EmoticonDetails;
 
 use App\Logic\ArticleLogic;
 use Illuminate\Http\Request;
-
 
 /**
  * 测试控制器
@@ -27,9 +22,8 @@ class TestController
 {
     public function index(Request $request)
     {
-        $id = 3;
-        $res = Article::whereRaw("FIND_IN_SET({$id},tags_id)")->get()->toArray();
-        dd($res);
+        $avatar = User::where('id',2055)->value('avatarurl');
+        dd($avatar);
         exit;
         $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
         $logic = new ArticleLogic();

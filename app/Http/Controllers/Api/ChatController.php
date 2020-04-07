@@ -168,19 +168,8 @@ class ChatController extends CController
                 app('SocketFdUtil')->bindUserGroupChat( $data['group_info']['id'],$uuid);
             }
 
-            //推送退群消息
             app('SocketFdUtil')->sendResponseMessage('join_group', app('SocketFdUtil')->getRoomGroupName($data['group_info']['id']), [
-                'message' => [
-                    'avatar' => '',
-                    'send_user' => 0,
-                    'receive_user' => $data['group_info']['id'],
-                    'source_type' => 2,
-                    'msg_type' => 3,
-                    'content' => customSort(User::select('id', 'nickname')->whereIn('id', $data['uids'])->get()->toArray(), $data['uids']),
-                    'send_time' => date('Y-m-d H:i:s'),
-                    'sendUserInfo' => []
-                ],
-                'group_info' => UsersGroup::select(['id', 'group_name', 'people_num', 'avatarurl'])->where('id', $data['group_info']['id'])->first()->toArray()
+                'group_name'=>$group_name,
             ]);
 
             return $this->ajaxSuccess('创建群聊成功...', $data);
@@ -205,29 +194,25 @@ class ChatController extends CController
 
         $isTrue = $this->chatLogic->inviteFriendsGroupChat($this->uid(), $group_id, $uids);
         if ($isTrue) {
+            $userInfo = $this->getUser(true);
+            $clientFds = app('SocketFdUtil')->getRoomGroupName($group_id);
+            $users = [['id' => $userInfo['id'], 'nickname' => $userInfo['nickname']]];
+            $joinFds = [];
             foreach ($uids as $uuid) {
+                $joinFds = array_merge($joinFds,app('SocketFdUtil')->getUserFds($uuid));
                 app('SocketFdUtil')->bindUserGroupChat( $group_id,$uuid);
             }
 
-            $userInfo = $this->getUser(true);
+            //推送群聊消息
+            app('SocketFdUtil')->sendResponseMessage('chat_message', $clientFds, ChatService::getChatMessage(0,$group_id,2,1,[
+                'id' => null,
+                'msg_type' => 3,
+                'content' => array_merge($users, User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray()),
+            ]));
 
-            $users = [
-                ['id' => $userInfo['id'], 'nickname' => $userInfo['nickname']]
-            ];
-
-            //推送入群消息
-            app('SocketFdUtil')->sendResponseMessage('join_group', app('SocketFdUtil')->getRoomGroupName($group_id), [
-                'message' => [
-                    'avatar' => '',
-                    'send_user' => 0,
-                    'receive_user' => $group_id,
-                    'source_type' => 2,
-                    'msg_type' => 3,
-                    'content' => array_merge($users, User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray()),
-                    'send_time' => date('Y-m-d H:i:s'),
-                    'sendUserInfo' => []
-                ],
-                'group_info' => UsersGroup::select(['id', 'group_name', 'people_num', 'avatarurl'])->where('id', $group_id)->first()->toArray()
+            $group_name = UsersGroup::where('id', $group_id)->value('group_name');
+            app('SocketFdUtil')->sendResponseMessage('join_group', $joinFds, [
+                'group_name'=>$group_name
             ]);
         }
 

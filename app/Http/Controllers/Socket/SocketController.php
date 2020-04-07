@@ -101,70 +101,53 @@ class SocketController extends Controller
 
         //推送的数据包
         $push_message = [
-            'send_user' => $msgData['send_user'],       //发送消息的用户ID
-            'receive_user' => $msgData['receive_user'],   //接受者消息ID(用户ID或群ID)
-            'source_type' => $msgData['source_type'],       //聊天类型  1:私聊     2:群聊
-            'msg_type' => $record['msg_type'],        //消息类型  1:文本消息 2:文件消息
-            'data' => [
-                'id' => $insert_id,//消息记录ID
-                'msg_type' => $record['msg_type'],
-                'source' => $msgData['source_type'],
-                'user_id' => $msgData['send_user'],
-                'receive_id' => $msgData['receive_user'],
-                'send_time' => $record['send_time'],
-
-                //发送者个人信息
-                'avatar' => '',
-                'nickname' => '',
-                'friend_remarks' => '',
-
-                //文本消息信息
-                'content' => '',
-
-                //文件消息信息
-                'file_id' => $record['file_id'],
-                'file_original_name' => '',
-                'file_size' => '',
-                'file_suffix' => '',
-                'file_type' => '',
-                'file_url' => '',
-                'flie_source' => ''
-            ]
+            'id' => $insert_id,//消息记录ID
+            'msg_type' => $record['msg_type'],
+            'source' => $msgData['source_type'],
+            'user_id' => $msgData['send_user'],
+            'receive_id' => $msgData['receive_user'],
+            'send_time' => $record['send_time']
         ];
 
-        $msgData = null;
-
         //获取群聊用户信息
-        if ($push_message['source_type'] == 2) {
-            if ($info = ChatService::getUsersGroupMemberInfo($push_message['receive_user'], $push_message['send_user'])) {
-                $push_message['data']['avatar'] = $info['avatar'];
-                $push_message['data']['nickname'] = $info['nickname'];
-                $push_message['data']['friend_remarks'] = $info['visit_card'];
+        if ($msgData['source_type'] == 2) {
+            if ($info = ChatService::getUsersGroupMemberInfo($msgData['receive_user'], $msgData['send_user'])) {
+                $push_message['avatar'] = $info['avatar'];
+                $push_message['nickname'] = $info['nickname'];
+                $push_message['friend_remarks'] = $info['visit_card'];
             }
         }
 
-        //替换表情
-        if ($push_message['msg_type'] == 1) {
-            $push_message['data']["content"] = emojiReplace($record['content']);
-        } else if ($push_message['msg_type'] == 2) {
+        if ($record['msg_type'] == 1) {
+            $push_message['content'] = emojiReplace($record['content']); //替换表情
+        } else if ($record['msg_type'] == 2) {
             if ($fileInfo = UsersChatFiles::where('id', $record['file_id'])->first(['file_type', 'file_suffix', 'file_size', 'save_dir', 'original_name'])) {
-                $push_message['data']['file_type'] = $fileInfo->file_type;
-                $push_message['data']['file_suffix'] = $fileInfo->file_suffix;
-                $push_message['data']['file_size'] = $fileInfo->file_size;
-                $push_message['data']['file_original_name'] = $fileInfo->original_name;
-                $push_message['data']['file_url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) : '';
+                $push_message['file_id'] = $record['file_id'];
+                $push_message['file_type'] = $fileInfo->file_type;
+                $push_message['file_suffix'] = $fileInfo->file_suffix;
+                $push_message['file_size'] = $fileInfo->file_size;
+                $push_message['file_original_name'] = $fileInfo->original_name;
+                $push_message['file_url'] = $fileInfo->file_type == 1 ? getFileUrl($fileInfo->save_dir) : '';
             }
         }
 
         //获取消息推送的客户端
         $clientFds = [];
-        if ($push_message['source_type'] == 1) {//私聊
-            $clientFds = array_unique(array_merge($socket->getUserFds($push_message['receive_user']), $socket->getUserFds($push_message['send_user'])));
-        } else if ($push_message['source_type'] == 2) {
-            $clientFds = $socket->getRoomGroupName($push_message['receive_user']);
+        if ($msgData['source_type'] == 1) {//私聊
+            $clientFds = array_unique(array_merge($socket->getUserFds($msgData['receive_user']), $socket->getUserFds($msgData['send_user'])));
+        } else if ($msgData['source_type'] == 2) {
+            $clientFds = $socket->getRoomGroupName($msgData['receive_user']);
         }
 
-        $socket->sendResponseMessage('chat_message', $clientFds, $push_message);
+        $socket->sendResponseMessage('chat_message', $clientFds, ChatService::getChatMessage(
+            $msgData['send_user'],
+            $msgData['receive_user'],
+            $msgData['source_type'],
+            $record['msg_type'],
+            $push_message
+        ));
+
+        $push_message =  $msgData = $clientFds = $record = $socket = null;
     }
 
     /**

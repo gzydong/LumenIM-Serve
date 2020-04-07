@@ -83,7 +83,7 @@ class SocketHandler extends WebsocketHandler
         //获取用户所有客户端ID
         $socket->clearBindFd($fd);
 
-        echo "用户ID : {$user_id} - [{$fd}] 已成功退出socket连接".PHP_EOL;
+//        echo "用户ID : {$user_id} - [{$fd}] 已成功退出socket连接".PHP_EOL;
 
         //多平台登录处理
         if(empty($socket->getUserFds($user_id))){

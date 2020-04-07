@@ -2,6 +2,7 @@
 
 namespace App\Services\Socket;
 
+use App\Models\User;
 use App\Models\UsersChatFiles;
 use App\Models\UsersGroupMember;
 use App\Models\UsersChatRecords;
@@ -51,7 +52,6 @@ class ChatService
         }
     }
 
-
     /**
      * 获取群聊成员的用户信息
      *
@@ -61,24 +61,17 @@ class ChatService
      */
     public static function getUsersGroupMemberInfo(int $group_id, int $user_id)
     {
-        $info = CacheHelper::getUserGroupVisitCard($group_id, $user_id);
-        if (!$info) {
-            $res = UsersGroupMember::from('users_group_member as ugm')
-                ->select(['users.nickname', 'users.avatarurl', 'ugm.visit_card'])
-                ->leftJoin('users', 'users.id', '=', 'ugm.user_id')
-                ->where('ugm.group_id', $group_id)->where('ugm.user_id', $user_id)
-                ->first();
+        $res = UsersGroupMember::from('users_group_member as ugm')
+            ->select(['users.nickname', 'users.avatarurl', 'ugm.visit_card'])
+            ->leftJoin('users', 'users.id', '=', 'ugm.user_id')
+            ->where('ugm.group_id', $group_id)->where('ugm.user_id', $user_id)
+            ->first();
 
-            $info = [
-                'avatar' => $res->avatarurl,
-                'nickname' => $res->nickname,
-                'visit_card' => $res->visit_card
-            ];
-
-            CacheHelper::setUserGroupVisitCard($group_id, $user_id, $info);
-        }
-
-        return $info;
+        return [
+            'avatar' => $res->avatarurl,
+            'nickname' => $res->nickname,
+            'visit_card' => $res->visit_card
+        ];
     }
 
     /**
@@ -124,5 +117,59 @@ class ChatService
 
         CacheHelper::setLastChatCache(['send_time' => $message['send_time'], 'text' => $text], $message['receive_id'], $message['source'] == 1 ? $message['user_id'] : 0);
         return $recordRes->id;
+    }
+
+    /**
+     * 包装聊天对话数据
+     *
+     * @param int $send_user 发送消息的用户ID
+     * @param int $receive_user 接受者消息ID(用户ID或群ID)
+     * @param int $source_type 聊天类型  1:私聊     2:群聊
+     * @param int $msg_type 消息类型 1:文本消息   2:文件消息
+     * @param array $data 数据包
+     * @return array
+     */
+    public static function getChatMessage(int $send_user, int $receive_user, int $source_type, int $msg_type, array $data)
+    {
+        if (isset($data['avatar'])) {
+            $avatar = $data['avatar'];
+        } else {
+            $avatar = User::where('id', $send_user)->value('avatarurl');
+        }
+
+        $arr = [
+            'id' => null,
+            'user_id' => $send_user,
+            'receive_id' => $receive_user,
+            'msg_type' => 0,
+            'source' => $source_type,
+            'send_time' => date('Y-m-d H:i:s'),
+
+            //发送者个人信息
+            'avatar' => $avatar,
+            'nickname' => '',
+            'friend_remarks' => '',
+
+            'content' => '',
+
+            //文件消息信息
+            'file_id' => 0,
+            'file_original_name' => '',
+            'file_size' => '',
+            'file_suffix' => '',
+            'file_type' => '',
+            'file_url' => '',
+            'flie_source' => '',
+
+            'float' => 'center',
+        ];
+
+        return [
+            'send_user' => $send_user,
+            'receive_user' => $receive_user,
+            'source_type' => $source_type,
+            'msg_type' => $msg_type == 2 ? 2 : 1,
+            'data' => array_merge($arr, array_intersect_key($data, $arr))
+        ];
     }
 }
