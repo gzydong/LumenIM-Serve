@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Logic\UsersLogic;
 use App\Logic\FriendsLogic;
+use App\Helpers\SmsCode;
 
 class UsersController extends CController
 {
@@ -260,5 +261,67 @@ class UsersController extends CController
     {
         $rows = $usersLogic->getUserChatGroups($this->uid());
         return $this->ajaxSuccess('success', $rows);
+    }
+
+    /**
+     * 更换用户手机号
+     *
+     * @param Request $request
+     * @param UsersLogic $usersLogic
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function changeMobile(Request $request, UsersLogic $usersLogic){
+        $sms_code = $request->post('sms_code', '');
+        $mobile = $request->post('mobile', '');
+        $password = $request->post('password', '');
+
+        if (!isMobile($mobile)){
+            return $this->ajaxParamError('手机号格式不正确');
+        }
+        if(empty($sms_code)){
+            return $this->ajaxParamError('短信验证码不正确');
+        }
+
+        $sms = new SmsCode();
+        if(!$sms->check(SmsCode::CHANGE_MOBILE,$mobile,$sms_code)){
+            return $this->ajaxParamError('验证码填写错误...');
+        }
+
+        $uid = $this->uid();
+
+        $user_password = User::where('id',$uid)->value('password');
+        if(!$usersLogic->checkAccountPassword($password,$user_password)){
+            return $this->ajaxError('账号密码验证失败');
+        }
+
+        [$isTrue,$message] = $usersLogic->renewalUserMobile($this->uid(),$mobile);
+
+        if($isTrue){
+            $sms->delCode(SmsCode::CHANGE_MOBILE,$mobile);
+        }
+
+        return $isTrue ? $this->ajaxSuccess('手机号更换成功') :$this->ajaxError($message);
+    }
+
+    /**
+     * 修改手机号发送验证码
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function sendMobileCode(Request $request){
+        $mobile = $request->post('mobile', '');
+
+        if (!isMobile($mobile)){
+            return $this->ajaxParamError('手机号格式不正确');
+        }
+
+        if(User::where('mobile',$mobile)->exists()){
+            return $this->ajaxError('手机号已被他人注册');
+        }
+
+        $sms = new SmsCode();
+        $sms->send(SmsCode::CHANGE_MOBILE,$mobile);
+        return $this->ajaxSuccess('验证码发送成功...');
     }
 }

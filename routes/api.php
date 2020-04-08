@@ -31,7 +31,7 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->get('/user/user-groups', ['uses' => 'UsersController@getUserGroups']);
     $router->get('/user/detail', ['uses' => 'UsersController@getUserDetail']);
     $router->post('/user/edit-user-detail', ['uses' => 'UsersController@editUserDetail']);
-    $router->post('/user/change-password', ['uses' => 'UsersController@changePassword']);
+
     $router->post('/user/edit-avatar', ['uses' => 'UsersController@editAvatar']);
     $router->post('/user/search-user', ['uses' => 'UsersController@searchUserInfo']);
     $router->post('/user/edit-friend-remark', ['uses' => 'UsersController@editFriendRemark']);
@@ -39,6 +39,11 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->post('/user/handle-friend-apply', ['uses' => 'UsersController@handleFriendApply']);
     $router->get('/user/friend-apply-records', ['uses' => 'UsersController@getFriendApplyRecords']);
     $router->get('/user/friend-apply-num', ['uses' => 'UsersController@getApplyUnreadNum']);
+
+
+    $router->post('/user/change-password', ['uses' => 'UsersController@changePassword']);
+    $router->post('/user/change-mobile', ['uses' => 'UsersController@changeMobile']);
+    $router->post('/user/send-mobile-code', ['uses' => 'UsersController@sendMobileCode']);
 });
 
 

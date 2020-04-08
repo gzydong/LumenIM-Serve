@@ -1,5 +1,5 @@
 # Lumen IM 即时聊天系统
-本次项目是用采用 Lumen 框架，并使用了 Composer laravel-swoole 组件进行开发、利用 laravel-swoole 组件中 websocket 服务开发开发即时消息通讯。
+本次项目是用采用 Lumen 框架，并结合了 Composer laravel-swoole 组件、利用 laravel-swoole 组件中 websocket 服务开发开发即时消息通讯。
 
 
 ##### 项目环境依赖

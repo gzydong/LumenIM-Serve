@@ -7,7 +7,7 @@
  * @return bool
  */
 function isMobile($mobile) {
-    return (boolean)preg_match('/^[1][3,4,5,7,8][0-9]{9}$/', $mobile);
+    return (boolean)preg_match('/^[1][3,4,5,6,7,8,9][0-9]{9}$/', $mobile);
 }
 
 /**

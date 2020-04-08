@@ -15,6 +15,12 @@ use Illuminate\Support\Str;
  */
 class UsersLogic extends Logic
 {
+
+    public function checkAccountPassword(string $str,string $password){
+        return Hash::check($str, $password);
+    }
+
+
     /**
      * 账号注册逻辑
      * @param array $data
@@ -143,5 +149,20 @@ class UsersLogic extends Logic
         }
 
         return [true,'密码修改成功'];
+    }
+
+    /**
+     * 换绑手机号
+     *
+     * @param int $user_id 用户ID
+     * @param string $mobile 换绑手机号
+     * @return array|bool
+     */
+    public function renewalUserMobile(int $user_id,string $mobile){
+        $uid = User::where('mobile',$mobile)->value('id');
+        if($uid)  return [false,'手机号已被他人绑定'];
+
+        $isTrue = (bool)User::where('id',$user_id)->update(['mobile'=>$mobile]);
+        return [$isTrue,null];
     }
 }

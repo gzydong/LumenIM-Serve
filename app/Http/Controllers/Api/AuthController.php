@@ -1,14 +1,13 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Events\UserLoginLogEvent;
 use App\Models\User;
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Redis;
 use App\Helpers\JwtAuth;
+use App\Helpers\SmsCode;
 
 /**
  * 接口授权登录控制器
@@ -18,7 +17,6 @@ use App\Helpers\JwtAuth;
  */
 class AuthController extends CController
 {
-
     /**
      * 账号注册接口
      *
@@ -53,9 +51,10 @@ class AuthController extends CController
      * 账号登录接口
      *
      * @param Request $request
+     * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request)
+    public function login(Request $request,UsersLogic $usersLogic)
     {
         if (!$request->filled(['mobile', 'password'])) {
             return $this->ajaxParamError();
@@ -67,7 +66,7 @@ class AuthController extends CController
             return $this->ajaxReturn(302, '登录账号不存在...');
         }
 
-        if (!Hash::check($data['password'], $user->password)) {
+        if (!$usersLogic->checkAccountPassword($data['password'],$user->password)) {
             return $this->ajaxReturn(305, '登录密码错误...');
         }
 
@@ -79,10 +78,10 @@ class AuthController extends CController
             return $this->ajaxReturn(305, '获取登录状态失败');
         }
 
-        event(new UserLoginLogEvent($user->id,$request->getClientIp()));
+        event(new UserLoginLogEvent($user->id, $request->getClientIp()));
         return $this->ajaxReturn(200, '授权登录成功', [
             'access_token' => $token,
-            'expires_in' =>  $auth->getToken(false)->getClaim('exp') - time(),
+            'expires_in' => $auth->getToken(false)->getClaim('exp') - time(),
             'userInfo' => [
                 'uid' => $user->id,
                 'avatar' => $user->avatarurl,
@@ -107,44 +106,34 @@ class AuthController extends CController
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function sendVerifyCode(Request $request){
-        $mobile = $request->post('mobile','18798276809');
-        if(!isMobile($mobile)){
+    public function sendVerifyCode(Request $request)
+    {
+        $mobile = $request->post('mobile', '');
+        if (!isMobile($mobile)) {
             return $this->ajaxParamError('手机号格式错误...');
         }
 
-        $userInfo = User::where('mobile',$mobile)->first();
-        if(!$userInfo){
+        if (!$userInfo = User::where('mobile', $mobile)->first()) {
             return $this->ajaxParamError('手机号未被注册使用...');
         }
 
-        $tips = ['tips'=>'','url'=>''];
-        $email = '';
+        $sms = new SmsCode();
+        $sms->send(SmsCode::FORGET_PASSWORD, $mobile);
+
+        $tips = ['tips' => '', 'url' => ''];
         $mobileInfo = getMobileInfo($mobile);
-        if($mobileInfo['type'] == '中国电信'){
+        if ($mobileInfo['type'] == '中国电信') {
             $tips['tips'] = '验证码已发至您的电信189邮箱，请注意查收 ...';
             $tips['url'] = 'https://webmail30.189.cn/w2';
-            $email = $mobile.'@189.com';
-        }else if($mobileInfo['type'] == '中国移动'){
+        } else if ($mobileInfo['type'] == '中国移动') {
             $tips['tips'] = '验证码已发至您的139邮箱，请注意查收 ...';
             $tips['url'] = 'https://mail.10086.cn/';
-            $email = $mobile.'@139.com';
-        }else if($mobileInfo['type'] == '中国联通'){
+        } else if ($mobileInfo['type'] == '中国联通') {
             $tips['tips'] = '验证码已发至您的联通沃邮箱，请注意查收 ...';
             $tips['url'] = 'https://mail.wo.cn';
-            $email = $mobile.'@wo.cn';
         }
 
-        if(!$sms_code = Redis::get("str:forget_password:{$mobile}")){
-            $sms_code = random(6,'number');
-        }
-
-        Redis::setex("str:forget_password:{$mobile}", 60 * 15, $sms_code);
-        Mail::send('emails.verify-code',['service_name'=>'重置密码','sms_code'=>$sms_code,'domain'=>'http://47.105.180.123:83/forget'], function($message) use($email){
-            $message->to($email)->subject('On-line IM 重置密码(验证码)');
-        });
-
-        return $this->ajaxSuccess('发送成功',$tips);
+        return $this->ajaxSuccess('发送成功', $tips);
     }
 
     /**
@@ -154,27 +143,28 @@ class AuthController extends CController
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function forgetPassword(Request $request, UsersLogic $usersLogic){
-        $mobile = $request->post('mobile','');
-        $code = $request->post('sms_code','');
-        $password = $request->post('password','');
+    public function forgetPassword(Request $request, UsersLogic $usersLogic)
+    {
+        $mobile = $request->post('mobile', '');
+        $code = $request->post('sms_code', '');
+        $password = $request->post('password', '');
 
-        if(!isMobile($mobile) || empty($code) || empty($password)){
+        if (!isMobile($mobile) || empty($code) || empty($password)) {
             return $this->ajaxParamError();
         }
 
-        if(!isPassword($password)){
+        if (!isPassword($password)) {
             return $this->ajaxParamError('密码格式不正确...');
         }
 
-        $sms_code = Redis::get("str:forget_password:{$mobile}");
-        if(!$sms_code || $sms_code != $code){
+        $sms = new SmsCode();
+        if (!$sms->check(SmsCode::FORGET_PASSWORD, $mobile, $code)) {
             return $this->ajaxParamError('验证码填写错误...');
         }
 
-        $isTrue = $usersLogic->resetPassword($mobile,$password);
-        if($isTrue){
-            Redis::del("str:forget_password:{$mobile}");
+        $isTrue = $usersLogic->resetPassword($mobile, $password);
+        if ($isTrue) {
+            $sms->delCode(SmsCode::FORGET_PASSWORD, $mobile);
         }
 
         return $isTrue ? $this->ajaxSuccess('重置密码成功...') : $this->ajaxError('重置密码失败...');
