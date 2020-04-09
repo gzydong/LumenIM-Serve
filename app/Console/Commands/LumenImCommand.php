@@ -26,6 +26,16 @@ class LumenImCommand extends HttpServerCommand
      */
     protected $description = 'Swoole HTTP Server controller.';
 
+    protected $logo = <<<LOGO
+   ____              _ _               _____ __  __     _____                          
+  / __ \            | (_)             |_   _|  \/  |   /____|                         
+ | |  | |_ __ ______| |_ _ __   ___     | | | \  / |  | (___   ___ _ ____   _____ _ __ 
+ | |  | | '_ \______| | | '_ \ / _ \    | | | |\/| |   \___ \ / _ \ '__\ \ / / _ \ '__|
+ | |__| | | | |     | | | | | |  __/   _| |_| |  | |   ____) |  __/ |   \ V /  __/ |   
+  \____/|_| |_|     |_|_|_| |_|\___|  |_____|_|  |_|  |_____/ \___|_|    \_/ \___|_|   
+                                                                                     
+LOGO;
+
     /**
      * Run swoole_http_server.
      */
@@ -37,6 +47,8 @@ class LumenImCommand extends HttpServerCommand
         }
 
         (new SocketFdUtil)->clearRedisCache();
+
+        $this->info($this->logo);
 
         parent::start();
     }
