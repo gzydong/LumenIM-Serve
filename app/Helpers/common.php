@@ -329,7 +329,7 @@ function shortCode(string $string)
  * @return string
  */
 function getFileUrl(string $path){
-    return config('config.upload.upload_domain','').'/'.$path;
+    return config('config.file_domain','').'/'.$path;
 }
 
 /**

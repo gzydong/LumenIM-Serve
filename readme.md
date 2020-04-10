@@ -8,24 +8,63 @@
 - Redis 3.2+
 
 
-##### 项目部署
-1. 使用git下载项目源码:  git clone git@github.com:gzydong/lumenim.git lumenim
-2. 切换到项目根目录 执行 composer install  安装项目composer依赖包
-3. 执行 chmod -R 755 storage 赋予storage目录权限
-4. 执行 php artisan lumenim:swoole start 启动项目
+##### 项目安装
 
+```shell
+## 首先，需要将源码包克隆到本地：
+git clone git@github.com:gzydong/lumenim.git lumen-im
 
-##### 前端资源
-- 有关前端的相关源码请移步至 https://github.com/gzydong/lumenim-web
+## 切换项目根目录,安装项目composer依耐包 ：
+composer install
 
+## 赋予storage目录权限:
+chmod -R 755 storage
 
-##### 设置Nginx代理
+##执行项目安装命令：
+php artisan lumenim:install
+```
+
+###### 启动Swoole服务：
+```shell
+php artisan lumenim:swoole start
+```
+---
+#### 项目相关参数配置
+
+###### 配置文件上传保存路径：
+修改config目录下filesystems.php 文件，自定义文件上传路径
+```php
+<?php
+return [
+    'disks' => [
+        'uploads' => [
+            'driver' => 'local',
+             ## 这里配置文件上传保存的绝对路径，需要单独配置域名指向这个文件夹
+            'root' => '/xxx/xxx/yourpath/' 
+        ]
+    ]
+];
+```
+
+###### 配置文件访问域名：
+修改config目录下config.php 文件，设置文件图片访问的域名
+```php
+<?php
+return [
+    //设置文件图片访问的域名
+    'file_domain'=>'http://img.yourdomain.com'
+];
+```
+
+---
+
+##### 设置Nginx代理Swoole服务
 swoole在官网也提到过：swoole_http_server对Http协议的支持并不完整，建议仅作为应用服务器。并且在前端增加Nginx作为代理。
 那么，我们就增加需要配置nginx.conf里的server：
-```
+```shell
 server {
     listen 80;
-    server_name your.domain.com;
+    server_name www.yourdomain.com;
     root /path/to/laravel/public;
     index index.php;
 
@@ -58,3 +97,34 @@ server {
     }
 }
 ```
+
+##### 设置文件域名地址
+```shell
+server {
+    listen 80;
+    server_name img.yourdomain.com;
+    ### 此目录是文件上传的保存目录
+    root /xxx/xxx/yourpath/;
+    index  index.html;
+     
+    #禁止访问非图片文件
+    location /files/ {
+       deny all;
+    }
+
+    #禁止访问上传临时文件
+    location /tmp/ {
+       deny all;
+    }
+
+    location ~ .*\.(gif|jpg|jpeg|png|bmp|swf|flv|ico)$ {
+      expires 30d;
+      access_log on;
+    }
+}
+```
+---
+
+### 前端资源
+- 有关前端的相关源码请移步至 https://github.com/gzydong/lumenim-web
+
