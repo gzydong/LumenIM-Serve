@@ -7,7 +7,6 @@ $router->get('/', ['as' => 'api', function () {
     return response()->json(['code' => 305, 'msg' => '非法请求...']);
 }]);
 
-
 //测试控制器
 $router->group([], function () use ($router) {
     $router->get('/test/test', ['middleware' => [], 'uses' => 'TestController@test']);
@@ -25,7 +24,6 @@ $router->group([], function () use ($router) {
     $router->post('/auth/forget-password', ['middleware' => [], 'uses' => 'AuthController@forgetPassword']);
 });
 
-
 //UsersController 控制器分组
 $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->get('/user/friends', ['uses' => 'UsersController@getUserFriends']);
@@ -41,12 +39,10 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->get('/user/friend-apply-records', ['uses' => 'UsersController@getFriendApplyRecords']);
     $router->get('/user/friend-apply-num', ['uses' => 'UsersController@getApplyUnreadNum']);
 
-
     $router->post('/user/change-password', ['uses' => 'UsersController@changePassword']);
     $router->post('/user/change-mobile', ['uses' => 'UsersController@changeMobile']);
     $router->post('/user/send-mobile-code', ['uses' => 'UsersController@sendMobileCode']);
 });
-
 
 //ChatController 控制器分组
 $router->group(['middleware' => ['jwt']], function () use ($router) {
@@ -70,7 +66,6 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->get('/chat/find-chat-records', ['uses' => 'ChatController@findChatRecords']);
     $router->get('/chat/search-chat-records', ['uses' => 'ChatController@searchChatRecords']);
 
-
     //发送聊天图片
     $router->post('/chat/send-image', ['uses' => 'ChatController@uploadImage']);
 });
@@ -81,8 +76,6 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->post('/upload/file-subarea-upload', ['uses' => 'UploadController@fileSubareaUpload']);
     $router->get('/upload/get-file-split-info', ['uses' => 'UploadController@getFileSplitInfo']);
 });
-
-
 
 //EmoticonController 表情包控制器分组
 $router->group(['middleware' => ['jwt']], function () use ($router) {
@@ -114,7 +107,6 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     //笔记标签
     $router->post('/article/edit-article-tag', ['uses' => 'ArticleController@editArticleTags']);
     $router->post('/article/del-article-tag', ['uses' => 'ArticleController@delArticleTags']);
-
 
     //笔记相关接口
     $router->post('/article/edit-article', ['uses' => 'ArticleController@editArticle']);

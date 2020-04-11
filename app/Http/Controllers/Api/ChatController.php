@@ -14,6 +14,8 @@ use App\Models\UsersGroupMember;
 use App\Logic\ChatLogic;
 use App\Logic\UsersLogic;
 
+use App\Helpers\RequestProxy;
+
 class ChatController extends CController
 {
     public $request;
@@ -144,9 +146,10 @@ class ChatController extends CController
     /**
      * 创建群聊
      *
+     * @param RequestProxy $requestProxy
      * @return \Illuminate\Http\JsonResponse
      */
-    public function launchGroupChat()
+    public function launchGroupChat(RequestProxy $requestProxy)
     {
         $group_avatar = $this->request->post('group_avatar', '');
         $group_name = $this->request->post('group_name', '');
@@ -164,12 +167,12 @@ class ChatController extends CController
 
         [$isTrue, $data] = $this->chatLogic->launchGroupChat($this->uid(), $group_name, $group_avatar, $group_profile, array_unique($uids));
         if ($isTrue) {//群聊创建成功后需要创建聊天室并发送消息通知
-            foreach ($data['uids'] as $uuid) {
-                app('SocketFdUtil')->bindUserGroupChat( $data['group_info']['id'],$uuid);
-            }
-
-            app('SocketFdUtil')->sendResponseMessage('join_group', app('SocketFdUtil')->getRoomGroupName($data['group_info']['id']), [
-                'group_name'=>$group_name,
+            $requestProxy->send('proxy/event/launch-group-chat',[
+                'uuid'=>$uids,
+                'group_id'=>$data['group_info']['id'],
+                'message'=>[
+                    'group_name'=>$group_name
+                ]
             ]);
 
             return $this->ajaxSuccess('创建群聊成功...', $data);
@@ -181,9 +184,10 @@ class ChatController extends CController
     /**
      * 邀请好友加入群聊
      *
+     * @param RequestProxy $requestProxy
      * @return \Illuminate\Http\JsonResponse
      */
-    public function inviteGroupChat()
+    public function inviteGroupChat(RequestProxy $requestProxy)
     {
         $group_id = $this->request->post('group_id', 0);
         $uids = array_filter(explode(',', $this->request->post('uids', '')));
@@ -192,27 +196,13 @@ class ChatController extends CController
             return $this->ajaxParamError();
         }
 
+        $user_id = $this->uid();
         $isTrue = $this->chatLogic->inviteFriendsGroupChat($this->uid(), $group_id, $uids);
         if ($isTrue) {
-            $userInfo = $this->getUser(true);
-            $clientFds = app('SocketFdUtil')->getRoomGroupName($group_id);
-            $users = [['id' => $userInfo['id'], 'nickname' => $userInfo['nickname']]];
-            $joinFds = [];
-            foreach ($uids as $uuid) {
-                $joinFds = array_merge($joinFds,app('SocketFdUtil')->getUserFds($uuid));
-                app('SocketFdUtil')->bindUserGroupChat( $group_id,$uuid);
-            }
-
-            //推送群聊消息
-            app('SocketFdUtil')->sendResponseMessage('chat_message', $clientFds, ChatService::getChatMessage(0,$group_id,2,1,[
-                'id' => null,
-                'msg_type' => 3,
-                'content' => array_merge($users, User::select('id', 'nickname')->whereIn('id', $uids)->get()->toArray()),
-            ]));
-
-            $group_name = UsersGroup::where('id', $group_id)->value('group_name');
-            app('SocketFdUtil')->sendResponseMessage('join_group', $joinFds, [
-                'group_name'=>$group_name
+            $requestProxy->send('proxy/event/invite-group-members',[
+                'user_id'=>$user_id,
+                'group_id'=>$group_id,
+                'members_id'=>$uids
             ]);
         }
 
@@ -222,9 +212,10 @@ class ChatController extends CController
     /**
      * 用户踢出群聊
      *
+     * @param RequestProxy $requestProxy
      * @return \Illuminate\Http\JsonResponse
      */
-    public function removeGroupChat()
+    public function removeGroupChat(RequestProxy $requestProxy)
     {
         $group_id = $this->request->post('group_id', 0);
         $member_id = $this->request->post('member_id', 0);
@@ -235,30 +226,28 @@ class ChatController extends CController
 
         $isTrue = $this->chatLogic->removeGroupChat($group_id, $this->uid(), $member_id);
         if ($isTrue) {
-            //将用户移出聊天室
-            app('SocketFdUtil')->clearGroupRoom($member_id, $group_id);
-
             $user = $this->getUser();
-            $message = [
-                'msg_type' => 4,
-                'content' => [
-                    [
-                        'id' => $user['id'],
-                        'nickname' => $user['nickname']
+            $requestProxy->send('proxy/event/remove-group-members',[
+                'member_id'=>$member_id,
+                'group_id'=>$group_id,
+                'message'=>[
+                    'msg_type' => 4,
+                    'content' => [
+                        [
+                            'id' => $user['id'],
+                            'nickname' => $user['nickname']
+                        ],
+                        [
+                            'id' => $member_id,
+                            'nickname' => User::where('id', $member_id)->value('nickname')
+                        ]
                     ],
-                    [
-                        'id' => $member_id,
-                        'nickname' => User::where('id', $member_id)->value('nickname')
-                    ]
-                ],
-                'receive_user' => $group_id,
-                'send_user' => 0,
-                'send_time' => date('Y-m-d H:i:s'),
-                'source_type' => 2
-            ];
-
-            //推送退群消息
-            app('SocketFdUtil')->sendResponseMessage('chat_message', app('SocketFdUtil')->getRoomGroupName($group_id), $message);
+                    'receive_user' => $group_id,
+                    'send_user' => 0,
+                    'send_time' => date('Y-m-d H:i:s'),
+                    'source_type' => 2
+                ]
+            ]);
         }
         return $isTrue ? $this->ajaxSuccess('群聊用户已被移除..') : $this->ajaxError('群聊用户移除失败...');
     }
@@ -396,22 +385,21 @@ class ChatController extends CController
     /**
      * 用户退出群聊
      *
+     * @param RequestProxy $requestProxy
      * @return \Illuminate\Http\JsonResponse
      */
-    public function quitGroupChat()
+    public function quitGroupChat(RequestProxy $requestProxy)
     {
         $group_id = $this->request->post('group_id', 0);
         if (!isInt($group_id)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->chatLogic->quitGroupChat($group_id, $this->uid());
+        $user_id = $this->uid();
+        $isTrue = $this->chatLogic->quitGroupChat($group_id, $user_id);
         if ($isTrue) {
-            //将用户移出聊天室
-            app('SocketFdUtil')->clearGroupRoom($this->uid(), $group_id);
-
             $user = $this->getUser();
-            $message = [
+            $requestProxy->send('proxy/event/remove-group-members',[
                 'msg_type' => 6,
                 'content' => [
                     [
@@ -423,10 +411,7 @@ class ChatController extends CController
                 'send_user' => 0,
                 'send_time' => date('Y-m-d H:i:s'),
                 'source_type' => 2
-            ];
-
-            //推送退群消息
-            app('SocketFdUtil')->sendResponseMessage('chat_message', app('SocketFdUtil')->getRoomGroupName($group_id), $message);
+            ]);
         }
 
         return $isTrue ? $this->ajaxSuccess('已成功退出群聊...') : $this->ajaxError('退出群聊失败...');

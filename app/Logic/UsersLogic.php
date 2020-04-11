@@ -15,11 +15,27 @@ use Illuminate\Support\Str;
  */
 class UsersLogic extends Logic
 {
-
+    /**
+     * 验证用户密码是否正确
+     *
+     * @param string $str 用户输入密码
+     * @param string $password 账户密码
+     * @return bool
+     */
     public function checkAccountPassword(string $str,string $password){
         return Hash::check($str, $password);
     }
 
+    /**
+     * 获取用户信息
+     *
+     * @param int $user_id 用户ID
+     * @param array $filed 查询字段
+     * @return mixed
+     */
+    public function getUserInfo(int $user_id,$filed = ['*']){
+        return User::where('id',$user_id)->first($filed);
+    }
 
     /**
      * 账号注册逻辑

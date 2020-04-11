@@ -10,4 +10,9 @@ return [
     'file_domain'=>'http://47.105.180.123:5000',
 
     'jwt_secret' => env('JWT_SECRET',''),
+
+    'swoole_proxy'=>[
+        'host'=>'127.0.0.1',
+        'port'=>'9501'
+    ]
 ];
