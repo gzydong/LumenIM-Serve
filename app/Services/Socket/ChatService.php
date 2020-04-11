@@ -62,13 +62,13 @@ class ChatService
     public static function getUsersGroupMemberInfo(int $group_id, int $user_id)
     {
         $res = UsersGroupMember::from('users_group_member as ugm')
-            ->select(['users.nickname', 'users.avatarurl', 'ugm.visit_card'])
+            ->select(['users.nickname', 'users.avatar', 'ugm.visit_card'])
             ->leftJoin('users', 'users.id', '=', 'ugm.user_id')
             ->where('ugm.group_id', $group_id)->where('ugm.user_id', $user_id)
             ->first();
 
         return [
-            'avatar' => $res->avatarurl,
+            'avatar' => $res->avatar,
             'nickname' => $res->nickname,
             'visit_card' => $res->visit_card
         ];
@@ -134,7 +134,7 @@ class ChatService
         if (isset($data['avatar'])) {
             $avatar = $data['avatar'];
         } else {
-            $avatar = User::where('id', $send_user)->value('avatarurl');
+            $avatar = User::where('id', $send_user)->value('avatar');
         }
 
         $arr = [

@@ -10,6 +10,7 @@ $router->get('/', ['as' => 'api', function () {
 
 //测试控制器
 $router->group([], function () use ($router) {
+    $router->get('/test/test', ['middleware' => [], 'uses' => 'TestController@test']);
     $router->get('/test/index', ['middleware' => [], 'uses' => 'TestController@index']);
     $router->post('/test/index2', ['middleware' => [], 'uses' => 'TestController@index2']);
 });

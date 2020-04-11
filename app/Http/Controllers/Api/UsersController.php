@@ -32,7 +32,7 @@ class UsersController extends CController
         return $this->ajaxSuccess('success', [
             'mobile' => $userInfo['mobile'],
             'nickname' => $userInfo['nickname'],
-            'avatarurl' => $userInfo['avatarurl'],
+            'avatar' => $userInfo['avatar'],
             'motto' => $userInfo['motto'],
             'email'=>$userInfo['email'],
             'gender'=>$userInfo['gender'],
@@ -70,7 +70,7 @@ class UsersController extends CController
      */
     public function editUserDetail(Request $request)
     {
-        $params = ['nickname', 'avatarurl', 'motto','email','gender'];
+        $params = ['nickname', 'avatar', 'motto','email','gender'];
         if (!$request->has($params) || !isInt($request->post('gender'),true)) {
             return $this->ajaxParamError();
         }
@@ -108,11 +108,11 @@ class UsersController extends CController
      */
     public function editAvatar(Request $request)
     {
-        if (!$request->filled(['avatarurl'])) {
+        if (!$request->filled(['avatar'])) {
             return $this->ajaxParamError();
         }
 
-        [$isTrue, $message] = User::editHeadPortrait($this->uid(), $request->post('avatarurl'));
+        [$isTrue, $message] = User::editHeadPortrait($this->uid(), $request->post('avatar'));
         return $this->ajaxReturn($isTrue ? 200 : 305, $message);
     }
 

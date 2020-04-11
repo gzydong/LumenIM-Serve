@@ -67,7 +67,7 @@ class UsersLogic extends Logic
      * @return mixed
      */
     public function getUserChatGroups(int $user_id){
-        return UsersGroupMember::select(['users_group.id','users_group.group_name','users_group.avatarurl','users_group.group_profile','users_group_member.not_disturb'])
+        return UsersGroupMember::select(['users_group.id','users_group.group_name','users_group.avatar','users_group.group_profile','users_group_member.not_disturb'])
             ->join('users_group','users_group.id','=','users_group_member.group_id')
             ->where('users_group_member.user_id',$user_id)->where('users_group_member.status',0)->orderBy('id','desc')->get()->toarray();
     }
@@ -90,7 +90,7 @@ class UsersLogic extends Logic
      * @return array
      */
     public function searchUserInfo(array $where,int $user_id){
-        $info = User::select(['id','mobile','nickname','avatarurl','gender','motto']);
+        $info = User::select(['id','mobile','nickname','avatar','gender','motto']);
         if(isset($where['uid'])){
             $info->where('id',$where['uid']);
         }

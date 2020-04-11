@@ -178,7 +178,7 @@ class InstallDatabase
                 $table->unsignedInteger('id',true)->comment('用户ID');
                 $table->string('mobile', 11)->default('')->unique()->comment('手机号');
                 $table->string('nickname', 20)->default('')->comment('用户昵称');
-                $table->string('avatarurl', 255)->default('')->comment('用户头像地址');
+                $table->string('avatar', 255)->default('')->comment('用户头像地址');
                 $table->unsignedTinyInteger('gender')->default(0)->unsigned()->comment('用户性别  0:未知  1:男   2:女');
                 $table->string('password', 255)->default('')->comment('用户密码');
                 $table->string('invite_code', 6)->default('')->comment('邀请码');
@@ -318,7 +318,7 @@ class InstallDatabase
                 $table->string('group_profile', 100)->default('')->comment('群介绍');
                 $table->unsignedSmallInteger('people_num')->default(1)->comment('群人数');
                 $table->tinyInteger('status')->default(0)->comment('群状态 0:正常 1:已解散');
-                $table->string('avatarurl', 255)->default('')->comment('群头像');
+                $table->string('avatar', 255)->default('')->comment('群头像');
                 $table->dateTime('created_at')->nullable()->comment('创建时间');
             });
             DB::statement("ALTER TABLE `lar_users_group` comment '用户聊天群'");

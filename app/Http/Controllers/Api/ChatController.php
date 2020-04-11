@@ -70,12 +70,12 @@ class ChatController extends CController
 
 
         if ($type == 1) {
-            $friendInfo = User::select(['nickname', 'avatarurl'])->where('id', $receive_id)->first();
+            $friendInfo = User::select(['nickname', 'avatar'])->where('id', $receive_id)->first();
             if (!$friendInfo) {
                 return $this->ajaxError('获取列表信息失败...');
             }
             $item['name'] = $friendInfo->nickname;
-            $item['avatar'] = $friendInfo->avatarurl;
+            $item['avatar'] = $friendInfo->avatar;
             unset($friendInfo);
 
             $info = UsersFriends::select(['user1', 'user1_remark', 'user2_remark'])->where('user1', $uid < $receive_id ? $uid : $receive_id)->where('user2', $uid > $receive_id ? $uid : $receive_id)->where('status', 1)->first();
@@ -89,12 +89,12 @@ class ChatController extends CController
             $item['unread_num'] = intval(CacheHelper::getChatUnreadNum($uid, $receive_id));
             $item['friend_id'] = $receive_id;
         } else {
-            $groupInfo = UsersGroup::select(['group_name', 'avatarurl'])->where('id', $receive_id)->where('status', 0)->first();
+            $groupInfo = UsersGroup::select(['group_name', 'avatar'])->where('id', $receive_id)->where('status', 0)->first();
             if (!$groupInfo) {
                 return $this->ajaxError('获取列表信息失败...');
             }
             $item['name'] = $groupInfo->group_name;
-            $item['avatar'] = $groupInfo->avatarurl;
+            $item['avatar'] = $groupInfo->avatar;
             unset($groupInfo);
 
             $groupMemberInfo = UsersGroupMember::select(['not_disturb'])->where('group_id', $receive_id)->where('user_id', $uid)->where('status', 0)->first();
@@ -384,7 +384,7 @@ class ChatController extends CController
         if ($isTrue) {
             $user = $this->getUser();
             CacheHelper::setUserGroupVisitCard($group_id, $this->uid(), [
-                'avatar' => $user->avatarurl,
+                'avatar' => $user->avatar,
                 'nickname' => $user->nickname,
                 'visit_card' => $visit_card
             ]);

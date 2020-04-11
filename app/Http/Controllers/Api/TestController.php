@@ -1,14 +1,10 @@
 <?php
 namespace App\Http\Controllers\Api;
 
-
-
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use App\Models\EmoticonDetails;
-
-use App\Logic\ArticleLogic;
 use Illuminate\Http\Request;
+use App\Helpers\Curl;
 
 /**
  * 测试控制器
@@ -20,29 +16,18 @@ use Illuminate\Http\Request;
  */
 class TestController
 {
+    public function test(){
+        $port = config('swoole_http.server.port');
+        $curl = new Curl();
+        $curl->get("http://127.0.0.1:{$port}/api/test/index", ['username' => 'test']);
+        $response = $curl->getBody();
+        dd($response);
+    }
+
     public function index(Request $request)
     {
-        $avatar = User::where('id',2055)->value('avatarurl');
-        dd($avatar);
-        exit;
-        $list = DB::table('article_test')->select(['title','describe','content','markdown_content'])->where('status',1)->get();
-        $logic = new ArticleLogic();
-
-        foreach ($list as $v){
-            $logic->editArticle(2054,0,[
-                'title'=>$v->title,
-                'abstract'=>mb_substr(strip_tags(htmlspecialchars_decode($v->content)),0,200),
-                'class_id'=>mt_rand(1,6),
-                'md_content'=>$v->markdown_content,
-                'content'=>$v->content
-            ]);
-        }
-
-        exit;
-        $page = $request->get('page',1);
-        $items = EmoticonDetails::where('describe','=','')->forPage($page, 1000)->get()->toArray();
-
-        return response()->json(['code' => 200, 'msg' => 'success', 'data' => $items]);
+        $userList = User::limit(10)->get()->toArray();
+        return response()->json(['code' => 200, 'msg' => 'success', 'data' => ['users'=>$userList]]);
     }
 
     public function index2(Request $request)

@@ -26,7 +26,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $fillable = [
-        'mobile', 'nickname','avatarurl','gender','motto','email','password','created_at'
+        'mobile', 'nickname','avatar','gender','motto','email','password','created_at'
     ];
 
     /**
@@ -78,7 +78,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @return array
      */
     public static function editHeadPortrait(int $user_id,string $img){
-        if(!self::where('id',$user_id)->update(['avatarurl'=>$img])){
+        if(!self::where('id',$user_id)->update(['avatar'=>$img])){
             return [false,'头像修改失败'];
         }
 

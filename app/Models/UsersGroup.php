@@ -24,7 +24,7 @@ class UsersGroup extends Model
      *
      * @var array
      */
-    protected $fillable = ['group_id','user_id','group_name','group_profile','people_num','status','avatarurl','created_at'];
+    protected $fillable = ['group_id','user_id','group_name','group_profile','people_num','status','avatar','created_at'];
 
     /**
      * 表明模型是否应该被打上时间戳

@@ -84,7 +84,7 @@ class AuthController extends CController
             'expires_in' => $auth->getToken(false)->getClaim('exp') - time(),
             'userInfo' => [
                 'uid' => $user->id,
-                'avatar' => $user->avatarurl,
+                'avatar' => $user->avatar,
                 'nickname' => $user->nickname
             ]
         ]);

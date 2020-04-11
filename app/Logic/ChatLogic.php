@@ -64,7 +64,7 @@ class ChatLogic extends Logic
 
         $friendInfos = $groupInfos = [];
         if ($group_ids) {
-            $groupInfos = UsersGroupMember::select(['users_group.id', 'users_group.group_name', 'users_group.people_num', 'users_group.avatarurl', 'users_group_member.not_disturb'])
+            $groupInfos = UsersGroupMember::select(['users_group.id', 'users_group.group_name', 'users_group.people_num', 'users_group.avatar', 'users_group_member.not_disturb'])
                 ->join('users_group', 'users_group.id', '=', 'users_group_member.group_id')
                 ->where('users_group_member.user_id', $user_id)
                 ->whereIn('users_group_member.group_id', $group_ids)
@@ -73,13 +73,13 @@ class ChatLogic extends Logic
         }
 
         if ($friend_ids) {
-            $friendInfos = User::whereIn('id', $friend_ids)->get(['id', 'nickname', 'avatarurl'])->toArray();
+            $friendInfos = User::whereIn('id', $friend_ids)->get(['id', 'nickname', 'avatar'])->toArray();
             $friendInfos = replaceArrayKey('id', $friendInfos);
         }
 
         foreach ($rows as $key2 => $v2) {
             if ($v2['type'] == 1) {
-                $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatarurl'] ?? '';
+                $rows[$key2]['avatar'] = $friendInfos[$v2['friend_id']]['avatar'] ?? '';
                 $rows[$key2]['name'] = $friendInfos[$v2['friend_id']]['nickname'] ?? '';
 
                 $remark = CacheHelper::getFriendRemarkCache($user_id, $v2['friend_id']);
@@ -96,7 +96,7 @@ class ChatLogic extends Logic
                     CacheHelper::setFriendRemarkCache($user_id, $v2['friend_id'], $rows[$key2]['remark_name']);
                 }
             } else {
-                $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatarurl'] ?? '';
+                $rows[$key2]['avatar'] = $groupInfos[$v2['group_id']]['avatar'] ?? '';
                 $rows[$key2]['name'] = $groupInfos[$v2['group_id']]['group_name'] ?? '';
                 $rows[$key2]['not_disturb'] = $groupInfos[$v2['group_id']]['not_disturb'] ?? 0;
             }
@@ -122,7 +122,7 @@ class ChatLogic extends Logic
 
         DB::beginTransaction();
         try {
-            $insRes = UsersGroup::create(['user_id' => $user_id, 'group_name' => $group_name, 'avatarurl' => $group_avatar, 'group_profile' => $group_profile, 'people_num' => count($uids), 'status' => 0, 'created_at' => date('Y-m-d H:i:s')]);
+            $insRes = UsersGroup::create(['user_id' => $user_id, 'group_name' => $group_name, 'avatar' => $group_avatar, 'group_profile' => $group_profile, 'people_num' => count($uids), 'status' => 0, 'created_at' => date('Y-m-d H:i:s')]);
             if (!$insRes) {
                 throw new \Exception('创建群失败');
             }
@@ -395,7 +395,7 @@ class ChatLogic extends Logic
      */
     public function getGroupDetail(int $user_id, int $group_id)
     {
-        $groupInfo = UsersGroup::select(['id', 'user_id', 'group_name', 'people_num', 'group_profile', 'avatarurl', 'created_at'])->where('id', $group_id)->where('status', 0)->first();
+        $groupInfo = UsersGroup::select(['id', 'user_id', 'group_name', 'people_num', 'group_profile', 'avatar', 'created_at'])->where('id', $group_id)->where('status', 0)->first();
         if (!$groupInfo) {
             return [];
         }
@@ -407,7 +407,7 @@ class ChatLogic extends Logic
 
         $members = UsersGroupMember::select([
             'users_group_member.id', 'users_group_member.group_owner', 'users_group_member.visit_card',
-            'users_group_member.user_id', 'users.avatarurl', 'users.nickname', 'users.mobile', 'users.gender',
+            'users_group_member.user_id', 'users.avatar', 'users.nickname', 'users.mobile', 'users.gender',
             'users_group_member.not_disturb'
         ])
             ->leftJoin('users', 'users.id', '=', 'users_group_member.user_id')
@@ -432,7 +432,7 @@ class ChatLogic extends Logic
             'group_name' => $groupInfo->group_name,
             'group_profile' => $groupInfo->group_profile,
             'people_num' => $groupInfo->people_num,
-            'group_avatar' => $groupInfo->avatarurl,
+            'group_avatar' => $groupInfo->avatar,
             'not_disturb' => $disturb,
             'created_at' => $groupInfo->created_at,
             'members' => $members
@@ -523,11 +523,11 @@ class ChatLogic extends Logic
         $members = UsersGroupMember::leftJoin('users', 'users.id', '=', 'users_group_member.user_id')->where([
             ['users_group_member.group_id', '=', $group_id],
             ['users_group_member.status', '=', 0],
-        ])->orderBy('users_group_member.created_at', 'asc')->limit(9)->get(['users.avatarurl', 'users.id'])->toArray();
+        ])->orderBy('users_group_member.created_at', 'asc')->limit(9)->get(['users.avatar', 'users.id'])->toArray();
 
         $images = $user_ids = [];
         foreach ($members as $member) {
-            $images[] = $member['avatarurl'];
+            $images[] = $member['avatar'];
             $user_ids[] = shortCode($member['id']);
         }
 
@@ -545,7 +545,7 @@ class ChatLogic extends Logic
                 return false;
             }
 
-            UsersGroup::where('id', $group_id)->update(['avatarurl' => getFileUrl($path)]);
+            UsersGroup::where('id', $group_id)->update(['avatar' => getFileUrl($path)]);
             return true;
         } catch (\Exception $e) {
             return false;
@@ -585,7 +585,7 @@ class ChatLogic extends Logic
             'users_chat_files.original_name',
 
             'users.nickname',
-            'users.avatarurl as avatar',
+            'users.avatar as avatar',
         ]);
 
 
@@ -665,7 +665,7 @@ class ChatLogic extends Logic
             'users_chat_files.original_name',
 
             'users.nickname',
-            'users.avatarurl as avatar',
+            'users.avatar as avatar',
         ]);
 
         $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_chat_records.user_id');
@@ -735,7 +735,7 @@ class ChatLogic extends Logic
             'users_chat_files.original_name as file_original_name',
 
             'users.nickname',
-            'users.avatarurl as avatar',
+            'users.avatar as avatar',
         ]);
 
         $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_chat_records.user_id');

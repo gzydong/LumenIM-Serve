@@ -143,7 +143,7 @@ class FriendsLogic extends Logic
     public function friendApplyRecords(int $user_id, $page = 1, $page_size = 30)
     {
         $countSqlObj = UsersFriendsApply::select();
-        $rowsSqlObj = UsersFriendsApply::select(['users_friends_apply.id', 'users_friends_apply.status', 'users_friends_apply.remarks', 'users_friends_apply.reason', 'users.nickname', 'users.avatarurl', 'users.mobile']);
+        $rowsSqlObj = UsersFriendsApply::select(['users_friends_apply.id', 'users_friends_apply.status', 'users_friends_apply.remarks', 'users_friends_apply.reason', 'users.nickname', 'users.avatar', 'users.mobile']);
 
         //join 查询
         $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_friends_apply.user_id');
