@@ -36,7 +36,9 @@ class TalkController extends CController
     public function __construct(Request $request, ChatLogic $chatLogic, RequestProxy $requestProxy)
     {
         $this->request = $request;
+
         $this->chatLogic = $chatLogic;
+
         $this->requestProxy = $requestProxy;
     }
 
