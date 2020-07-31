@@ -43,7 +43,7 @@ class SocketHandler extends WebsocketHandler
                 }
 
                 if($ffds){
-                    SocketResourceHandle::sendResponseMessage('login_notify',$ffds,['user_id'=>$user_id,'status'=>1,'notify'=>'好友上线通知...']);
+                    SocketResourceHandle::responseResource('login_notify',$ffds,['user_id'=>$user_id,'status'=>1,'notify'=>'好友上线通知...']);
                 }
             }
         }

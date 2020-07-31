@@ -43,7 +43,7 @@ class EventController extends Controller
         }
 
         if ($message) {
-            SocketResourceHandle::sendResponseMessage('join_group',
+            SocketResourceHandle::responseResource('join_group',
                 SocketResourceHandle::getRoomGroupName($group_id),
                 $message
             );
@@ -104,7 +104,7 @@ class EventController extends Controller
         //将用户移出聊天室
         SocketResourceHandle::clearGroupRoom($member_id, $group_id);
         if ($message) {
-            SocketResourceHandle::sendResponseMessage('chat_message',
+            SocketResourceHandle::responseResource('chat_message',
                 SocketResourceHandle::getRoomGroupName($group_id),
                 ChatService::getChatMessage(0, $group_id, 2, 1, $message)
             );

@@ -91,7 +91,6 @@ $app->register(App\Providers\AppServiceProvider::class);
 
 $app->register(App\Providers\EventServiceProvider::class);
 
-
 //注册支持Swoole服务
 $app->register(App\Providers\LumenIMServiceProvider::class);
 

@@ -136,16 +136,6 @@ class TalkController extends CController
         $rows = $this->chatLogic->getUserChatList($this->uid());
         if ($rows) {
             $rows = arraysSort($rows, 'updated_at');
-            $left = $right = [];
-            foreach ($rows as $row) {
-                if ($row['is_top'] == 1) {
-                    $left[] = $row;
-                } else {
-                    $right[] = $row;
-                }
-            }
-
-            $rows = array_merge($left, $right);
         }
 
         return $this->ajaxSuccess('success', $rows);
