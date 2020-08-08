@@ -84,12 +84,14 @@ class UsersLogic extends Logic
      * @return mixed
      */
     public function getUserChatGroups(int $user_id){
-        $items = UsersGroupMember::select(['users_group.id','users_group.group_name','users_group.avatar','users_group.group_profile'])
+        $items = UsersGroupMember::select(['users_group.id','users_group.group_name','users_group.avatar','users_group.group_profile','users_group.user_id as group_user_id'])
             ->join('users_group','users_group.id','=','users_group_member.group_id')
             ->where('users_group_member.user_id',$user_id)->where('users_group_member.status',0)->orderBy('id','desc')->get()->toarray();
 
         if($items){
             foreach ($items as $key=>$item){
+                $items[$key]['isGroupLeader'] = $item['group_user_id'] == $user_id;
+                unset($items[$key]['group_user_id']);
                 $items[$key]['not_disturb'] = UsersChatList::where('uid',$user_id)->where('type',2)->where('group_id',$item['id'])->value('not_disturb');
             }
         }
