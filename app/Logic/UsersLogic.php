@@ -7,6 +7,8 @@ use App\Models\UsersFriends;
 use App\Models\UsersFriendsApply;
 use App\Models\UsersGroupMember;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 /**
@@ -191,5 +193,25 @@ class UsersLogic extends Logic
 
         $isTrue = (bool)User::where('id',$user_id)->update(['mobile'=>$mobile]);
         return [$isTrue,null];
+    }
+
+    /**
+     * 发送邮箱验证吗
+     *
+     * @param string $email
+     * @return bool
+     */
+    public function sendEmailCode(string $email){
+        $key = "email_code:{$email}";
+        $sms_code = random(6, 'number');
+        $res = Redis::setex($key, 60*15, $sms_code);
+        if($res){
+            $title = '绑定邮箱';
+            Mail::send('emails.email-code', ['service_name' => $title, 'sms_code' => $sms_code, 'domain' => 'http://47.105.180.123:83'], function ($message) use ($email,$title) {
+                $message->to($email)->subject("Lumen Im {$title}(验证码)");
+            });
+        }
+
+        return true;
     }
 }

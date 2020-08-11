@@ -14,5 +14,7 @@ return [
     'swoole_proxy'=>[
         'host'=>'127.0.0.1',
         'port'=>'9501'
-    ]
+    ],
+
+    'web_url'=>'http://im.gzydong.club',
 ];

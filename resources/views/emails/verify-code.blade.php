@@ -25,13 +25,13 @@
                 <div style="line-height:1.5;font-size:14px;margin-bottom:25px;color:#4d4d4d;">
                     <strong style="display:block;margin-bottom:15px;">尊敬的用户：<span style="color:#f60;font-size: 16px;"></span>您好！</strong>
                     <strong style="display:block;margin-bottom:15px;">
-                        您正在进行<span style="color: red">{{$service_name}}</span>操作，请在验证码输入框中输入：<span style="color:#f60;font-size: 24px">{{$sms_code}}</span>，以完成操作,验证码有效期<span style="color:#f60;font-size: 24px">15</span>分钟。
+                        您正在进行 <span style="color: red">{{$service_name}}</span> 操作，请在验证码输入框中输入：<span style="color:#f60;font-size: 24px">{{$sms_code}}</span>，以完成操作,验证码有效期<span style="color:#f60;font-size: 24px">15</span>分钟。
                     </strong>
                 </div>
                 <div style="margin-bottom:30px;">
                     <small style="display:block;margin-bottom:20px;font-size:12px;">
                         <p style="color:#747474;">
-                            注意：此操作可能会修改您的密码、登录邮箱或绑定手机。如非本人操作，请及时登录并修改密码以保证帐户安全
+                            注意：此操作可能会修改您的密码、修改邮箱或绑定手机。如非本人操作，请及时登录并修改密码以保证帐户安全
                             <br>（工作人员不会向你索取此验证码，请勿泄漏！)
                         </p>
                     </small>
@@ -42,7 +42,7 @@
                     <p>此为系统邮件，请勿回复<br>
                         请保管好您的邮箱，避免账号被他人盗用
                     </p>
-                    <p style="margin-top: 15px"><a href="{{$domain}}" style="text-decoration: none;color: #3f99e6;">On-line IM 在线聊天</a></p>
+                    <p style="margin-top: 15px"><a href="{{$domain}}" style="text-decoration: none;color: #3f99e6;">Lumen IM 在线聊天</a></p>
                 </div>
             </div>
         </td>

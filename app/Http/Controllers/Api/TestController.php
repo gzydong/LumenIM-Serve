@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Facades\SocketResourceHandle;
+use App\Helpers\MobileInfo;
+use App\Helpers\SendEmailCode;
 use App\Logic\ArticleLogic;
 use App\Models\User;
 use App\Models\UsersFriends;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Mail;
 
 set_time_limit(0);
 
@@ -20,9 +25,9 @@ set_time_limit(0);
  */
 class TestController extends CController
 {
-    public function test(ArticleLogic $articleLogic,Request $request)
+    public function test()
     {
-        Log::info('--------');
+
     }
 
     public function index(Request $request)

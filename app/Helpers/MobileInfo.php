@@ -24,6 +24,16 @@ class MobileInfo
 
         $data = json_decode($response,true);
         if($data['resultcode'] == '200' && $data['error_code'] == 0){
+            $email = '';
+            if ($data['result']['company'] == '电信') {
+                $email = $mobile . '@189.com';
+            } else if ($data['result']['company'] == '移动') {
+                $email = $mobile . '@139.com';
+            } else if ($data['result']['company'] == '联通') {
+                $email = $mobile . '@wo.cn';
+            }
+
+            $data['result']['email'] = $email;
             return $data['result'];
         }
 

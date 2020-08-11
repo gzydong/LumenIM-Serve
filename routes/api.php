@@ -37,9 +37,12 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->get('user/friend-apply-records', ['uses' => 'UsersController@getFriendApplyRecords']);
     $router->get('user/friend-apply-num', ['uses' => 'UsersController@getApplyUnreadNum']);
 
-    $router->post('user/change-password', ['uses' => 'UsersController@changePassword']);
-    $router->post('user/change-mobile', ['uses' => 'UsersController@changeMobile']);
+    $router->post('user/change-password', ['uses' => 'UsersController@editUserPassword']);
+    $router->post('user/change-mobile', ['uses' => 'UsersController@editUserMobile']);
+    $router->post('user/change-email', ['uses' => 'UsersController@editUserEmail']);
+
     $router->post('user/send-mobile-code', ['uses' => 'UsersController@sendMobileCode']);
+    $router->post('user/send-change-email-code', ['uses' => 'UsersController@sendChangeEmailCode']);
 });
 
 /**

@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\MobileInfo;
 use Illuminate\Http\Request;
 use App\Models\{Article, UsersFriends, UsersGroupMember, User};
 use App\Logic\{UsersLogic, FriendsLogic, ChatLogic};
 use App\Helpers\Cache\CacheHelper;
-use App\Helpers\SmsCode;
+use App\Helpers\SendEmailCode;
 use App\Facades\SocketResourceHandle;
 
 class UsersController extends CController
@@ -51,7 +52,7 @@ class UsersController extends CController
     {
         $rows = $usersLogic->getUserFriends($this->uid());
 
-        array_walk($rows,function($item){
+        array_walk($rows, function ($item) {
             $item->online = SocketResourceHandle::getUserFds($item->id) ? 1 : 0;
         });
 
@@ -66,13 +67,12 @@ class UsersController extends CController
      */
     public function editUserDetail(Request $request)
     {
-        $params = ['nickname', 'avatar', 'motto', 'email', 'gender'];
+        $params = ['nickname', 'avatar', 'motto', 'gender'];
         if (!$request->has($params) || !isInt($request->post('gender'), true)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = User::where('id',$this->uid())->update($request->only($params));
-
+        $isTrue = User::where('id', $this->uid())->update($request->only($params));
         return $isTrue ? $this->ajaxSuccess('个人信息修改成功') : $this->ajaxError('个人信息修改失败');
     }
 
@@ -83,7 +83,7 @@ class UsersController extends CController
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePassword(Request $request, UsersLogic $usersLogic)
+    public function editUserPassword(Request $request, UsersLogic $usersLogic)
     {
         if (!$request->filled(['old_password', 'new_password'])) {
             return $this->ajaxParamError();
@@ -105,12 +105,12 @@ class UsersController extends CController
      */
     public function editAvatar(Request $request)
     {
-        $avatar = $request->post('avatar','');
-        if(empty($avatar)){
+        $avatar = $request->post('avatar', '');
+        if (empty($avatar)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = User::where('id',$this->uid())->update(['avatar'=>$avatar]);
+        $isTrue = User::where('id', $this->uid())->update(['avatar' => $avatar]);
 
         return $isTrue ? $this->ajaxSuccess('头像修改成功') : $this->ajaxError('头像修改失败');
     }
@@ -273,7 +273,7 @@ class UsersController extends CController
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changeMobile(Request $request, UsersLogic $usersLogic)
+    public function editUserMobile(Request $request, UsersLogic $usersLogic)
     {
         $sms_code = $request->post('sms_code', '');
         $mobile = $request->post('mobile', '');
@@ -286,22 +286,26 @@ class UsersController extends CController
             return $this->ajaxParamError('短信验证码不正确');
         }
 
-        $sms = new SmsCode();
-        if (!$sms->check(SmsCode::CHANGE_MOBILE, $mobile, $sms_code)) {
+        //  这里使用邮箱发送验证码，可自行根据业务替换
+        $result = MobileInfo::info($mobile);
+        if(!isset($result['email'])){
+            return $this->ajaxParamError('验证码填写错误...');
+        }
+
+        $sendEmailCode = new SendEmailCode();
+        if(!$sendEmailCode->check(SendEmailCode::CHANGE_MOBILE,$result['email'],$sms_code)){
             return $this->ajaxParamError('验证码填写错误...');
         }
 
         $uid = $this->uid();
-
         $user_password = User::where('id', $uid)->value('password');
         if (!$usersLogic->checkAccountPassword($password, $user_password)) {
             return $this->ajaxError('账号密码验证失败');
         }
 
         [$isTrue, $message] = $usersLogic->renewalUserMobile($this->uid(), $mobile);
-
         if ($isTrue) {
-            $sms->delCode(SmsCode::CHANGE_MOBILE, $mobile);
+            $sendEmailCode->delCode(SendEmailCode::CHANGE_MOBILE, $result['email']);
         }
 
         return $isTrue ? $this->ajaxSuccess('手机号更换成功') : $this->ajaxError($message);
@@ -325,8 +329,12 @@ class UsersController extends CController
             return $this->ajaxError('手机号已被他人注册');
         }
 
-        $sms = new SmsCode();
-        $sms->send(SmsCode::CHANGE_MOBILE, $mobile);
+        $result = MobileInfo::info($mobile);
+        if(isset($result['email'])){
+            $sendEmailCode = new SendEmailCode();
+            $sendEmailCode->send(SendEmailCode::CHANGE_MOBILE,'绑定手机',$result['email']);
+        }
+
         return $this->ajaxSuccess('验证码发送成功...');
     }
 
@@ -355,5 +363,62 @@ class UsersController extends CController
         $chatLogic->delChatList($friend_id, $user_id, 2);
 
         return $this->ajaxSuccess('success');
+    }
+
+    /**
+     * 发送绑定邮箱的验证码
+     *
+     * @param Request $request
+     * @param SendEmailCode $sendEmailCode
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function sendChangeEmailCode(Request $request,SendEmailCode $sendEmailCode)
+    {
+        $email = $request->post('email', '');
+        if (empty($email)) {
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $sendEmailCode->send(SendEmailCode::CHANGE_EMAIL,'绑定邮箱',$email);
+        if(!$isTrue){
+            return $this->ajaxError('验证码发送失败...');
+        }
+
+        return $this->ajaxSuccess('验证码发送成功...');
+    }
+
+    /**
+     * 修改用户邮箱接口
+     *
+     * @param Request $request
+     * @param UsersLogic $usersLogic
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function editUserEmail(Request $request,UsersLogic $usersLogic){
+        $email = $request->post('email', '');
+        $email_code = $request->post('email_code', '');
+        $password = $request->post('password', '');
+
+        if(empty($email) || empty($email_code) || empty($password)){
+            return $this->ajaxParamError();
+        }
+
+        $sendEmailCode = new SendEmailCode();
+        if(!$sendEmailCode->check(SendEmailCode::CHANGE_EMAIL,$email,$email_code)){
+            return $this->ajaxParamError('验证码填写错误...');
+        }
+
+        $uid = $this->uid();
+        $user_password = User::where('id', $uid)->value('password');
+        if (!$usersLogic->checkAccountPassword($password, $user_password)) {
+            return $this->ajaxError('账号密码验证失败');
+        }
+
+        $isTrue = User::where('id',$uid)->update(['email'=>$email]);
+        if($isTrue){
+            $sendEmailCode->delCode(SendEmailCode::CHANGE_EMAIL,$email);
+        }
+
+        return $isTrue ? $this->ajaxSuccess('邮箱设置成功...') : $this->ajaxError('邮箱设置失败...');
     }
 }
