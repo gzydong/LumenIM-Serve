@@ -239,15 +239,23 @@ class GroupController extends CController
     {
         $group_id = $this->request->get('group_id', 0);
         $friends = $usersLogic->getUserFriends($this->uid());
+
+
+        array_walk($friends,function(&$item){
+            $item = (array)$item;
+        });
+
         if ($group_id > 0) {
             $ids = UsersGroupMember::getGroupMenberIds($group_id);
             if ($friends && $ids) {
                 foreach ($friends as $k => $item) {
-                    if (in_array($item->id, $ids)) {
+                    if (in_array($item['id'], $ids)) {
                         unset($friends[$k]);
                     }
                 }
             }
+
+            $friends = array_values($friends);
         }
 
         return $this->ajaxSuccess('success', $friends);

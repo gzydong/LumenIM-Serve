@@ -16,7 +16,7 @@ class UserLoginLogEvent
     public function __construct(int $user_id,string $ip)
     {
         $this->user_id = $user_id;
-        $this->login_ip = ip2long($ip);
+        $this->login_ip = $ip;
         $this->created_at = date('Y-m-d H:i:s');
     }
 }

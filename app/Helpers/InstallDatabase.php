@@ -207,7 +207,7 @@ class InstallDatabase
             Schema::create('user_login_log', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('登录日志ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
-                $table->unsignedInteger('ip')->unsigned()->comment('登录地址IP');
+                $table->string('ip',20)->comment('登录地址IP');
                 $table->dateTime('created_at')->comment('登录时间');
 
                 $table->charset = 'utf8';
