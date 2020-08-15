@@ -73,14 +73,20 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
  * GroupController 用户群控制器分组
  */
 $router->group(['middleware' => ['jwt']], function () use ($router) {
-    $router->get('group/detail', ['uses' => 'GroupController@detail']);
     $router->post('group/create', ['uses' => 'GroupController@create']);
     $router->post('group/invite', ['uses' => 'GroupController@invite']);
-    $router->post('group/remove-members', ['uses' => 'GroupController@removeMembers']);
     $router->post('group/dismiss', ['uses' => 'GroupController@dismiss']);
     $router->post('group/secede', ['uses' => 'GroupController@secede']);
+
     $router->post('group/set-group-card', ['uses' => 'GroupController@setGroupCard']);
-    $router->get('group/get-group-members', ['uses' => 'GroupController@getGroupMember']);
+    $router->post('group/edit-notice', ['uses' => 'GroupController@editNotice']);
+    $router->post('group/delete-notice', ['uses' => 'GroupController@deleteNotice']);
+    $router->post('group/remove-members', ['uses' => 'GroupController@removeMembers']);
+
+    $router->get('group/detail', ['uses' => 'GroupController@detail']);
+    $router->get('group/invite-friends', ['uses' => 'GroupController@getInviteFriends']);
+    $router->get('group/members', ['uses' => 'GroupController@getGroupMembers']);
+    $router->get('group/notices', ['uses' => 'GroupController@getGroupNotices']);
 });
 
 /**

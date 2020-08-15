@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Logic;
 
 use App\Models\{
@@ -29,7 +30,7 @@ class GroupLogic extends Logic
         }
 
         //判断用户是否是群成员
-        if (!UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('status', 0)->exists()) {
+        if (!UsersGroup::checkGroupMember($group_id, $user_id)) {
             return [];
         }
 
@@ -234,20 +235,20 @@ class GroupLogic extends Logic
      * 将指定的用户踢出群聊
      *
      * @param int $group_id 群ID
-     * @param int $group_owner_id 操作用户ID
-     * @param int $group_member_id 群成员ID
+     * @param int $user_id 操作用户ID
+     * @param array $member_ids 群成员ID
      * @return bool
      */
-    public function removeGroupChat(int $group_id, int $group_owner_id, int $group_member_id)
+    public function removeGroupChat(int $group_id, int $user_id, array $member_ids)
     {
-        if (!UsersGroup::where('id', $group_id)->where('user_id', $group_owner_id)->exists()) {
+        if (!UsersGroup::where('id', $group_id)->where('user_id', $user_id)->exists()) {
             return false;
         }
 
         DB::beginTransaction();
         try {
             //更新用户状态
-            if (!UsersGroupMember::where('group_id', $group_id)->where('user_id', $group_member_id)->where('group_owner', 0)->update(['status' => 0])) {
+            if (!UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $member_ids)->where('group_owner', 0)->update(['status' => 0])) {
                 throw new \Exception('修改群成员状态失败');
             }
 
@@ -264,8 +265,8 @@ class GroupLogic extends Logic
             $result2 = UsersChatRecordsGroupNotify::create([
                 'record_id' => $result->id,
                 'type' => 1,
-                'operate_user_id' => $group_owner_id,
-                'user_ids' => $group_member_id
+                'operate_user_id' => $user_id,
+                'user_ids' => implode(',',$member_ids)
             ]);
 
             if (!$result2) throw new \Exception('添加群通知记录失败2');
