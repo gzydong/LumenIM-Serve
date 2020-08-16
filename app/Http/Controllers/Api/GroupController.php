@@ -8,7 +8,7 @@ use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
 use App\Helpers\Cache\CacheHelper;
 
-use App\Models\{User, UsersGroup, UsersGroupMember, UsersGroupNotice};
+use App\Models\{User, UsersChatList, UsersGroup, UsersGroupMember, UsersGroupNotice};
 
 /**
  * 聊天群组控制器
@@ -41,8 +41,33 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        $data = $this->groupLogic->getGroupDetail($this->uid(), $group_id);
-        return $this->ajaxSuccess('success', $data);
+        $user_id = $this->uid();
+        $groupInfo = UsersGroup::leftJoin('users', 'users.id', '=', 'users_group.user_id')
+            ->where('users_group.id', $group_id)->where('users_group.status', 0)->first([
+                'users_group.id', 'users_group.user_id',
+                'users_group.group_name', 'users_group.people_num',
+                'users_group.group_profile', 'users_group.avatar',
+                'users_group.created_at',
+                'users.nickname'
+            ]);
+
+        if (!$groupInfo) {
+            return $this->ajaxSuccess('success', []);
+        }
+
+        $notice = UsersGroupNotice::where('group_id', $group_id)->where('is_delete', 0)->orderBy('id', 'desc')->first(['title', 'content']);
+        return $this->ajaxSuccess('success', [
+            'group_id' => $groupInfo->id,
+            'group_name' => $groupInfo->group_name,
+            'group_profile' => $groupInfo->group_profile,
+            'avatar' => $groupInfo->avatar,
+            'created_at' => $groupInfo->created_at,
+            'is_manager' => $groupInfo->user_id == $user_id,
+            'manager_nickname' => $groupInfo->nickname,
+            'visit_card' => UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->value('visit_card'),
+            'not_disturb' => UsersChatList::where('uid', $user_id)->where('group_id', $group_id)->where('type', 2)->value('not_disturb') ?? 0,
+            'notice' => $notice ? $notice->toArray() : []
+        ]);
     }
 
     /**
@@ -75,6 +100,27 @@ class GroupController extends CController
         }
 
         return $this->ajaxError('创建群聊失败，请稍后再试...');
+    }
+
+    /**
+     * 编辑群信息
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function editDetail()
+    {
+        $params = $this->request->only(['group_id', 'group_name', 'group_profile', 'avatar']);
+        if (count($params) != 4 || empty($params['group_name'])) {
+            return $this->ajaxParamError();
+        }
+
+        $result = UsersGroup::where('id', $params['group_id'])->where('user_id', $this->uid())->update([
+            'group_name' => $params['group_name'],
+            'group_profile' => $params['group_profile'],
+            'avatar' => $params['avatar'],
+        ]);
+
+        return $result ? $this->ajaxSuccess('信息修改成功...') : $this->ajaxError('信息修改失败...');
     }
 
     /**
@@ -139,6 +185,10 @@ class GroupController extends CController
         }
 
         $isTrue = $this->groupLogic->dismissGroupChat($group_id, $this->uid());
+        if ($isTrue) {
+            // ... 推送群消息
+        }
+
         return $isTrue ? $this->ajaxSuccess('群聊已解散成功..') : $this->ajaxError('群聊解散失败...');
     }
 
@@ -261,7 +311,7 @@ class GroupController extends CController
             ->where([
                 ['users_group_member.group_id', '=', $group_id],
                 ['users_group_member.status', '=', 0],
-            ])->get()->toArray();
+            ])->orderBy('is_manager', 'desc')->get()->toArray();
 
         return $this->ajaxSuccess('success', $members);
     }
@@ -347,7 +397,7 @@ class GroupController extends CController
         $group_id = $this->request->post('group_id', 0);
         $notice_id = $this->request->post('notice_id', 0);
 
-        if(!isInt($group_id) || !isInt($notice_id)){
+        if (!isInt($group_id) || !isInt($notice_id)) {
             return $this->ajaxParamError();
         }
 

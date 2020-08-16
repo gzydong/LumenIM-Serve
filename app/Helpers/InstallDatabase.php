@@ -447,7 +447,7 @@ class InstallDatabase
             Schema::create('users_group', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('用户组ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
-                $table->string('group_name', 20)->default('')->charset('utf8mb4')->comment('群名称');
+                $table->string('group_name', 30)->default('')->charset('utf8mb4')->comment('群名称');
                 $table->string('group_profile', 100)->default('')->comment('群介绍');
                 $table->unsignedSmallInteger('people_num')->default(1)->comment('群人数');
                 $table->tinyInteger('status')->default(0)->comment('群状态 0:正常 1:已解散');
@@ -474,7 +474,7 @@ class InstallDatabase
                 $table->collation = 'utf8_general_ci';
                 $table->engine = 'InnoDB';
 
-                $table->index(['group_id', 'user_id', 'status'], 'idx_group_id_uid_status');
+                $table->index(['group_id', 'status'], 'idx_group_id_status');
             });
 
             DB::statement("ALTER TABLE `{$prefix}users_group_member` comment '群聊成员'");

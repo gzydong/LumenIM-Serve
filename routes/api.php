@@ -74,6 +74,7 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
  */
 $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->post('group/create', ['uses' => 'GroupController@create']);
+    $router->post('group/edit', ['uses' => 'GroupController@editDetail']);
     $router->post('group/invite', ['uses' => 'GroupController@invite']);
     $router->post('group/dismiss', ['uses' => 'GroupController@dismiss']);
     $router->post('group/secede', ['uses' => 'GroupController@secede']);

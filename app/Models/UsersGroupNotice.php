@@ -24,7 +24,7 @@ class UsersGroupNotice extends Model
      *
      * @var array
      */
-    protected $fillable = ['group_id', 'title', 'content', 'is_delete', 'created_at','updated_at','deleted_at'];
+    protected $fillable = ['group_id','user_id', 'title', 'content', 'is_delete', 'created_at','updated_at','deleted_at'];
 
     /**
      * 表明模型是否应该被打上时间戳

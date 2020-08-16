@@ -15,51 +15,6 @@ use Illuminate\Support\Facades\DB;
 
 class GroupLogic extends Logic
 {
-    /**
-     * 获取聊天群
-     *
-     * @param int $user_id 用户ID
-     * @param int $group_id 聊天群ID
-     * @return array
-     */
-    public function getGroupDetail(int $user_id, int $group_id)
-    {
-        $groupInfo = UsersGroup::select(['id', 'user_id', 'group_name', 'people_num', 'group_profile', 'avatar', 'created_at'])->where('id', $group_id)->where('status', 0)->first();
-        if (!$groupInfo) {
-            return [];
-        }
-
-        //判断用户是否是群成员
-        if (!UsersGroup::checkGroupMember($group_id, $user_id)) {
-            return [];
-        }
-
-        $members = UsersGroupMember::select([
-            'users_group_member.id', 'users_group_member.group_owner', 'users_group_member.visit_card',
-            'users_group_member.user_id', 'users.avatar', 'users.nickname', 'users.mobile', 'users.gender',
-        ])
-            ->leftJoin('users', 'users.id', '=', 'users_group_member.user_id')
-            ->where([
-                ['users_group_member.group_id', '=', $group_id],
-                ['users_group_member.status', '=', 0],
-            ])->get()->toArray();
-
-
-        $not_disturb = UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->value('not_disturb');
-        return [
-            'group_id' => $group_id,
-            'user_id' => $groupInfo->user_id,
-            'group_owner' => User::where('id', $groupInfo->user_id)->value('nickname'),
-            'group_name' => $groupInfo->group_name,
-            'group_profile' => $groupInfo->group_profile,
-            'people_num' => $groupInfo->people_num,
-            'group_avatar' => $groupInfo->avatar,
-            'not_disturb' => $not_disturb,
-            'created_at' => $groupInfo->created_at,
-            'members' => $members
-        ];
-    }
-
 
     /**
      * 创建群聊
@@ -248,7 +203,7 @@ class GroupLogic extends Logic
         DB::beginTransaction();
         try {
             //更新用户状态
-            if (!UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $member_ids)->where('group_owner', 0)->update(['status' => 0])) {
+            if (!UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $member_ids)->where('group_owner', 0)->update(['status' => 1])) {
                 throw new \Exception('修改群成员状态失败');
             }
 
@@ -264,9 +219,9 @@ class GroupLogic extends Logic
 
             $result2 = UsersChatRecordsGroupNotify::create([
                 'record_id' => $result->id,
-                'type' => 1,
+                'type' => 2,
                 'operate_user_id' => $user_id,
-                'user_ids' => implode(',',$member_ids)
+                'user_ids' => implode(',', $member_ids)
             ]);
 
             if (!$result2) throw new \Exception('添加群通知记录失败2');
