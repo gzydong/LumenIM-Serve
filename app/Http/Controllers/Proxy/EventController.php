@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Proxy;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UsersChatRecords;
+use App\Models\UsersChatRecordsGroupNotify;
 use App\Models\UsersGroup;
 use Illuminate\Http\Request;
 use App\Logic\UsersLogic;
@@ -53,64 +54,60 @@ class EventController extends Controller
     }
 
     /**
-     * 处理邀请好友入群事件
-     *
-     * @param UsersLogic $usersLogic
-     * @return \Illuminate\Http\JsonResponse
+     *  邀请入群通知  踢出群聊通知  自动退出群聊
      */
-    public function inviteGroupMember(UsersLogic $usersLogic)
+    public function groupNotify()
     {
-        $user_id = $this->request->post('user_id', 0);
-        $group_id = $this->request->post('group_id', 0);
-        $members_id = $this->request->post('members_id', []);
-
-        $userInfo = $usersLogic->getUserInfo($user_id, ['id', 'nickname']);
-        $clientFds = SocketResourceHandle::getRoomGroupName($group_id);
-
-        $joinFds = [];
-        foreach ($members_id as $uid) {
-            $joinFds = array_merge($joinFds, SocketResourceHandle::getUserFds($uid));
-            SocketResourceHandle::bindUserGroupChat($group_id, $uid);
+        $record_id = $this->request->post('record_id', 0);
+        if (!isInt($record_id)) {
+            return $this->ajaxReturn(301, '请求参数错误');
         }
 
-        //推送群聊消息
-        SocketResourceHandle::responseResource('chat_message', $clientFds, ChatService::getChatMessage(0, $group_id, 2, 1, [
-            'id' => null,
-            'msg_type' => 3,
-            'group_notify' => [
-                'type' => 1,
-                'operate_user' => ['id' => $userInfo->id, 'nickname' => $userInfo->nickname],
-                'users' => User::select('id', 'nickname')->whereIn('id', $members_id)->get()->toArray()
-            ]
-        ]));
-
-        SocketResourceHandle::responseResource('join_group', $joinFds, [
-            'group_name' => UsersGroup::where('id', $group_id)->value('group_name')
+        $recordInfo = UsersChatRecords::where('id', $record_id)->where('source', 2)->first([
+            'id', 'msg_type', 'user_id', 'receive_id', 'send_time'
         ]);
 
-        return $this->ajaxReturn(200, 'success');
-    }
-
-    /**
-     * 处理用户群聊事件
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function removeGroupMember()
-    {
-        $group_id = $this->request->post('group_id', 0);
-        $member_id = $this->request->post('member_id', 0);
-        $message = $this->request->post('message', []);
-
-        //将用户移出聊天室
-        SocketResourceHandle::clearGroupRoom($member_id, $group_id);
-        if ($message) {
-            SocketResourceHandle::responseResource('chat_message',
-                SocketResourceHandle::getRoomGroupName($group_id),
-                ChatService::getChatMessage(0, $group_id, 2, 1, $message)
-            );
+        if (!$recordInfo) {
+            return $this->ajaxReturn(305, 'fail');
         }
 
-        return $this->ajaxReturn(200, 'success');
+        $notifyInfo = UsersChatRecordsGroupNotify::where('record_id', $record_id)->first([
+            'record_id', 'type', 'operate_user_id', 'user_ids'
+        ]);
+
+        if (!$notifyInfo) {
+            return $this->ajaxReturn(305, 'fail');
+        }
+
+        $userInfo = User::where('id', $notifyInfo->operate_user_id)->first(['nickname', 'id']);
+
+        $membersIds = explode(',', $notifyInfo->user_ids);
+
+        if ($notifyInfo->type == 1) {//好友入群
+            foreach ($membersIds as $member_id) {
+                SocketResourceHandle::bindUserGroupChat($recordInfo->receive_id, $member_id);
+            }
+        } else if ($notifyInfo->type == 2 || $notifyInfo->type == 3) {//好友退群或被踢出群
+            foreach ($membersIds as $member_id) {
+                SocketResourceHandle::clearGroupRoom($member_id, $recordInfo->receive_id);
+            }
+        }
+
+        // 获取客户端列表
+        $clientFds = SocketResourceHandle::getRoomGroupName($recordInfo->receive_id);
+
+        //推送群聊消息
+        SocketResourceHandle::responseResource('chat_message', $clientFds,
+            ChatService::getChatMessage(0, $recordInfo->receive_id, 2, 1, [
+                'id' => $record_id,
+                'msg_type' => 3,
+                'group_notify' => [
+                    'type' => $notifyInfo->type,
+                    'operate_user' => ['id' => $userInfo->id, 'nickname' => $userInfo->nickname],
+                    'users' => User::select('id', 'nickname')->whereIn('id', $membersIds)->get()->toArray()
+                ]
+            ])
+        );
     }
 
     /**
@@ -178,7 +175,6 @@ class EventController extends Controller
                 'forward.text as forward_info',
                 'forward.records_id as records_id',
             ]);
-
 
         foreach ($rows as $records) {
             if ($records->source == 1) {

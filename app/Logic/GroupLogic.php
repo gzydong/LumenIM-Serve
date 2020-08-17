@@ -113,9 +113,9 @@ class GroupLogic extends Logic
         $info = UsersGroupMember::select(['id', 'status'])->where('group_id', $group_id)->where('user_id', $user_id)->first();
 
         //判断主动邀请方是否属于聊天群成员
-        if (!$info && $info->status == 1) return false;
+        if (!$info && $info->status == 1) return [false, 0];
 
-        if (empty($uids)) return false;
+        if (empty($uids)) return [false, 0];
 
         $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
 
@@ -180,10 +180,10 @@ class GroupLogic extends Logic
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return false;
+            return [false, 0];
         }
 
-        return true;
+        return [true, $result->id];
     }
 
     /**
@@ -192,12 +192,12 @@ class GroupLogic extends Logic
      * @param int $group_id 群ID
      * @param int $user_id 操作用户ID
      * @param array $member_ids 群成员ID
-     * @return bool
+     * @return array
      */
     public function removeGroupChat(int $group_id, int $user_id, array $member_ids)
     {
         if (!UsersGroup::where('id', $group_id)->where('user_id', $user_id)->exists()) {
-            return false;
+            return [false, 0];
         }
 
         DB::beginTransaction();
@@ -231,10 +231,11 @@ class GroupLogic extends Logic
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return false;
+            return [false, 0];
         }
 
-        return true;
+
+        return [true, $result->id];
     }
 
     /**
@@ -273,10 +274,11 @@ class GroupLogic extends Logic
      *
      * @param int $user_id 用户ID
      * @param int $group_id 群聊ID
-     * @return bool
+     * @return array
      */
     public function quitGroupChat(int $user_id, int $group_id)
     {
+        $record_id = 0;
         DB::beginTransaction();
         try {
             $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status' => 1]);
@@ -304,14 +306,16 @@ class GroupLogic extends Logic
                 if (!$result2) throw new \Exception('添加群通知记录失败2  : quitGroupChat');
 
                 UsersGroup::where('id', $group_id)->update(['people_num' => UsersGroupMember::where('group_id', $group_id)->where('group_owner', 0)->count()]);
+
+                $record_id = $result->id;
             }
 
             DB::commit();
         } catch (\Exception $e) {
-            $res = false;
             DB::rollBack();
+            return [false, 0];
         }
 
-        return $res ? true : false;
+        return [true, $record_id];
     }
 }

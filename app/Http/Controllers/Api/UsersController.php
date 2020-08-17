@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\MobileInfo;
 use Illuminate\Http\Request;
-use App\Models\{Article, UsersFriends, UsersGroupMember, User};
+use App\Models\{User};
 use App\Logic\{UsersLogic, FriendsLogic, ChatLogic};
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\SendEmailCode;
@@ -21,23 +21,39 @@ class UsersController extends CController
     public function getUserDetail()
     {
         $userInfo = $this->getUser(true);
-
-        $note_num = Article::where('user_id', $userInfo['id'])->count();
-        $groups_num = UsersGroupMember::where('user_id', $userInfo['id'])->where('status', 0)->count();
-        $friends_num = UsersFriends::where(function ($query) use ($userInfo) {
-            $query->where('user1', $userInfo['id'])->orWhere('user2', $userInfo['id']);
-        })->where('status', 1)->count();
         return $this->ajaxSuccess('success', [
             'mobile' => $userInfo['mobile'],
             'nickname' => $userInfo['nickname'],
             'avatar' => $userInfo['avatar'],
             'motto' => $userInfo['motto'],
             'email' => $userInfo['email'],
-            'gender' => $userInfo['gender'],
-            'count' => [
-                'friends_num' => $friends_num,
-                'groups_num' => $groups_num,
-                'note_num' => $note_num,
+            'gender' => $userInfo['gender']
+        ]);
+    }
+
+    /**
+     * 用户相关设置
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserSetting()
+    {
+        $userInfo = $this->getUser();
+
+        return $this->ajaxSuccess('success', [
+            'user_info' => [
+                'uid'=>$userInfo->id,
+                'nickname' => $userInfo->nickname,
+                'avatar' => $userInfo->avatar,
+                'motto' => $userInfo->motto,
+                'gender' => $userInfo->gender,
+            ],
+            'setting' => [
+                'theme_mode' => '',
+                'theme_bag_img' => '',
+                'theme_color' => '',
+                'notify_cue_tone' => '',
+                'keyboard_event_notify' => '',
             ]
         ]);
     }
@@ -288,12 +304,12 @@ class UsersController extends CController
 
         //  这里使用邮箱发送验证码，可自行根据业务替换
         $result = MobileInfo::info($mobile);
-        if(!isset($result['email'])){
+        if (!isset($result['email'])) {
             return $this->ajaxParamError('验证码填写错误...');
         }
 
         $sendEmailCode = new SendEmailCode();
-        if(!$sendEmailCode->check(SendEmailCode::CHANGE_MOBILE,$result['email'],$sms_code)){
+        if (!$sendEmailCode->check(SendEmailCode::CHANGE_MOBILE, $result['email'], $sms_code)) {
             return $this->ajaxParamError('验证码填写错误...');
         }
 
@@ -330,9 +346,9 @@ class UsersController extends CController
         }
 
         $result = MobileInfo::info($mobile);
-        if(isset($result['email'])){
+        if (isset($result['email'])) {
             $sendEmailCode = new SendEmailCode();
-            $sendEmailCode->send(SendEmailCode::CHANGE_MOBILE,'绑定手机',$result['email']);
+            $sendEmailCode->send(SendEmailCode::CHANGE_MOBILE, '绑定手机', $result['email']);
         }
 
         return $this->ajaxSuccess('验证码发送成功...');
@@ -372,15 +388,15 @@ class UsersController extends CController
      * @param SendEmailCode $sendEmailCode
      * @return \Illuminate\Http\JsonResponse
      */
-    public function sendChangeEmailCode(Request $request,SendEmailCode $sendEmailCode)
+    public function sendChangeEmailCode(Request $request, SendEmailCode $sendEmailCode)
     {
         $email = $request->post('email', '');
         if (empty($email)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = $sendEmailCode->send(SendEmailCode::CHANGE_EMAIL,'绑定邮箱',$email);
-        if(!$isTrue){
+        $isTrue = $sendEmailCode->send(SendEmailCode::CHANGE_EMAIL, '绑定邮箱', $email);
+        if (!$isTrue) {
             return $this->ajaxError('验证码发送失败...');
         }
 
@@ -394,17 +410,18 @@ class UsersController extends CController
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editUserEmail(Request $request,UsersLogic $usersLogic){
+    public function editUserEmail(Request $request, UsersLogic $usersLogic)
+    {
         $email = $request->post('email', '');
         $email_code = $request->post('email_code', '');
         $password = $request->post('password', '');
 
-        if(empty($email) || empty($email_code) || empty($password)){
+        if (empty($email) || empty($email_code) || empty($password)) {
             return $this->ajaxParamError();
         }
 
         $sendEmailCode = new SendEmailCode();
-        if(!$sendEmailCode->check(SendEmailCode::CHANGE_EMAIL,$email,$email_code)){
+        if (!$sendEmailCode->check(SendEmailCode::CHANGE_EMAIL, $email, $email_code)) {
             return $this->ajaxParamError('验证码填写错误...');
         }
 
@@ -414,9 +431,9 @@ class UsersController extends CController
             return $this->ajaxError('账号密码验证失败');
         }
 
-        $isTrue = User::where('id',$uid)->update(['email'=>$email]);
-        if($isTrue){
-            $sendEmailCode->delCode(SendEmailCode::CHANGE_EMAIL,$email);
+        $isTrue = User::where('id', $uid)->update(['email' => $email]);
+        if ($isTrue) {
+            $sendEmailCode->delCode(SendEmailCode::CHANGE_EMAIL, $email);
         }
 
         return $isTrue ? $this->ajaxSuccess('邮箱设置成功...') : $this->ajaxError('邮箱设置失败...');

@@ -84,14 +84,23 @@ class AuthController extends CController
             return $this->ajaxReturn(305, '获取登录状态失败');
         }
 
+        // 记录登录日志
         event(new UserLoginLogEvent($user->id, $request->getClientIp()));
+
         return $this->ajaxReturn(200, '授权登录成功', [
-            'access_token' => $token,
-            'expires_in' => $auth->getToken(false)->getClaim('exp') - time(),
+            // 授权信息
+            'authorize'=>[
+                'access_token' => $token,
+                'expires_in' => $auth->getToken(false)->getClaim('exp') - time(),
+            ],
+
+            // 用户信息
             'userInfo' => [
                 'uid' => $user->id,
+                'nickname' => $user->nickname,
                 'avatar' => $user->avatar,
-                'nickname' => $user->nickname
+                'motto' => $user->motto,
+                'gender' => $user->gender,
             ]
         ]);
     }

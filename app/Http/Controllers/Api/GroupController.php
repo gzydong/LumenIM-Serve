@@ -138,12 +138,10 @@ class GroupController extends CController
         }
 
         $user_id = $this->uid();
-        $isTrue = $this->groupLogic->inviteFriendsGroupChat($user_id, $group_id, array_unique($uids));
+        [$isTrue, $record_id] = $this->groupLogic->inviteFriendsGroupChat($user_id, $group_id, array_unique($uids));
         if ($isTrue) {
-            $this->requestProxy->send('proxy/event/invite-group-members', [
-                'user_id' => $user_id,
-                'group_id' => $group_id,
-                'members_id' => $uids
+            $this->requestProxy->send('proxy/event/group-notify', [
+                'record_id' => $record_id
             ]);
         }
 
@@ -164,9 +162,11 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->groupLogic->removeGroupChat($group_id, $this->uid(), $member_ids);
+        [$isTrue, $record_id] = $this->groupLogic->removeGroupChat($group_id, $this->uid(), $member_ids);
         if ($isTrue) {
-            // ... 推送群消息
+            $this->requestProxy->send('proxy/event/group-notify', [
+                'record_id' => $record_id
+            ]);
         }
 
         return $isTrue ? $this->ajaxSuccess('群聊用户已被移除..') : $this->ajaxError('群聊用户移除失败...');
@@ -203,26 +203,10 @@ class GroupController extends CController
         if (!isInt($group_id)) return $this->ajaxParamError();
 
         $user_id = $this->uid();
-        $isTrue = $this->groupLogic->quitGroupChat($user_id, $group_id);
+        [$isTrue, $record_id] = $this->groupLogic->quitGroupChat($user_id, $group_id);
         if ($isTrue) {
-            $user = $this->getUser();
-            $this->requestProxy->send('proxy/event/remove-group-members', [
-                'group_id' => $group_id,
-                'member_id' => $user_id,
-                'message' => [
-                    'msg_type' => 3,
-                    'group_notify' => [
-                        'type' => 3,
-                        'operate_user' => [
-                            'id' => $user['id'],
-                            'nickname' => $user['nickname']
-                        ],
-                        'users' => [
-                            'id' => $user['id'],
-                            'nickname' => $user['nickname']
-                        ]
-                    ]
-                ]
+            $this->requestProxy->send('proxy/event/group-notify', [
+                'record_id' => $record_id
             ]);
         }
 

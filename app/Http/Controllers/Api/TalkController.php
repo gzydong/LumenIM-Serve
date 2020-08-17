@@ -177,8 +177,12 @@ class TalkController extends CController
         }
 
         //判断是否属于群成员
-        if ($source == 2 && !ChatService::checkGroupMember($receive_id, $user_id)) {
-            $this->ajaxReturn(301, '非群聊成员不能查看群聊信息');
+        if ($source == 2 && UsersGroup::checkGroupMember($receive_id, $user_id) == false) {
+            return $this->ajaxSuccess('非群聊成员不能查看群聊信息', [
+                'rows' => [],
+                'record_id' => 0,
+                'limit' => $limit
+            ]);
         }
 
         if ($result = $this->chatLogic->getChatsRecords($user_id, $receive_id, $source, $record_id, $limit)) {

@@ -27,6 +27,7 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->post('user/remove-friend', ['uses' => 'UsersController@removeFriend']);
     $router->get('user/user-groups', ['uses' => 'UsersController@getUserGroups']);
     $router->get('user/detail', ['uses' => 'UsersController@getUserDetail']);
+    $router->get('user/setting', ['uses' => 'UsersController@getUserSetting']);
     $router->post('user/edit-user-detail', ['uses' => 'UsersController@editUserDetail']);
 
     $router->post('user/edit-avatar', ['uses' => 'UsersController@editAvatar']);
