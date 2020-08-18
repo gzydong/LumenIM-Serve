@@ -42,7 +42,7 @@ class DownloadController extends CController
                     return $this->ajaxError('非法请求...');
                 }
             } else {
-                if (!UsersGroup::checkGroupMember($recordsInfo->receive_id, $uid)) {
+                if (!UsersGroup::isMember($recordsInfo->receive_id, $uid)) {
                     return $this->ajaxError('非法请求...');
                 }
             }

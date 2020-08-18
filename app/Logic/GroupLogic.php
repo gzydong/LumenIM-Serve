@@ -2,8 +2,8 @@
 
 namespace App\Logic;
 
+use App\Helpers\Cache\CacheHelper;
 use App\Models\{
-    User,
     UsersChatList,
     UsersChatRecords,
     UsersChatRecordsGroupNotify,
@@ -23,12 +23,12 @@ class GroupLogic extends Logic
      * @param string $group_name 群聊名称
      * @param string $group_avatar 群聊头像
      * @param string $group_profile 群聊用户ID(不包括群成员)
-     * @param array $uids
+     * @param array $friends
      * @return array
      */
-    public function launchGroupChat(int $user_id, string $group_name, string $group_avatar, string $group_profile, $uids = [])
+    public function createGroupChat(int $user_id, string $group_name, string $group_avatar, string $group_profile, $friends = [])
     {
-        $uids[] = $user_id;
+        $friends[] = $user_id;
         $groupMember = [];
         $chatList = [];
 
@@ -39,14 +39,14 @@ class GroupLogic extends Logic
                 'group_name' => $group_name,
                 'avatar' => $group_avatar,
                 'group_profile' => $group_profile,
-                'people_num' => count($uids),
+                'people_num' => count($friends),
                 'status' => 0,
                 'created_at' => date('Y-m-d H:i:s')
             ]);
 
             if (!$insRes) throw new \Exception('创建群失败');
 
-            foreach ($uids as $k => $uid) {
+            foreach ($friends as $k => $uid) {
                 $groupMember[] = [
                     'group_id' => $insRes->id,
                     'user_id' => $uid,
@@ -88,16 +88,19 @@ class GroupLogic extends Logic
                 'record_id' => $result->id,
                 'type' => 1,
                 'operate_user_id' => $user_id,
-                'user_ids' => implode(',', $uids)
+                'user_ids' => implode(',', $friends)
             ]);
 
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return [false, []];
+            return [false, 0];
         }
 
-        return [true, ['group_info' => $insRes->toArray(), 'uids' => $uids]];
+        // 设置群聊消息缓存
+        CacheHelper::setLastChatCache(['send_time' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $insRes->id, 0);
+
+        return [true, ['record_id' => $result->id, 'group_id' => $insRes->id]];
     }
 
     /**
@@ -106,7 +109,7 @@ class GroupLogic extends Logic
      * @param int $user_id 用户ID
      * @param int $group_id 聊天群ID
      * @param array $uids 被邀请的用户ID
-     * @return bool
+     * @return array
      */
     public function inviteFriendsGroupChat(int $user_id, int $group_id, $uids = [])
     {
@@ -183,6 +186,7 @@ class GroupLogic extends Logic
             return [false, 0];
         }
 
+        CacheHelper::setLastChatCache(['send_time' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $group_id, 0);
         return [true, $result->id];
     }
 
@@ -196,7 +200,7 @@ class GroupLogic extends Logic
      */
     public function removeGroupChat(int $group_id, int $user_id, array $member_ids)
     {
-        if (!UsersGroup::where('id', $group_id)->where('user_id', $user_id)->exists()) {
+        if (!UsersGroup::isManager($user_id, $group_id)) {
             return [false, 0];
         }
 
@@ -252,7 +256,7 @@ class GroupLogic extends Logic
         }
 
         //判断执行者是否属于群主
-        if (!UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 1)->exists()) {
+        if (!UsersGroup::isManager($user_id, $group_id)) {
             return false;
         }
 

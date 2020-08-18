@@ -55,7 +55,13 @@ class UsersFriends extends Model
             ) tmp_table on tmp_table.uid = users.id  order by tmp_table.rid desc
 SQL;
 
-        return DB::select($sql);
+        $rows = DB::select($sql);
+
+        array_walk($rows, function (&$item) {
+            $item = (array)$item;
+        });
+
+        return $rows;
     }
 
     /**
@@ -65,9 +71,14 @@ SQL;
      * @param int $user_id2 用户2
      * @return bool
      */
-    public static function checkFriends(int $user_id1, int $user_id2)
+    public static function isFriend(int $user_id1, int $user_id2)
     {
-        return self::where('user1', $user_id1 < $user_id2 ? $user_id1 : $user_id2)->where('user2', $user_id1 < $user_id2 ? $user_id2 : $user_id1)->where('status', 1)->exists();
+        // 比较大小交换位置
+        if($user_id1 > $user_id2){
+            [$user_id1,$user_id2] = [$user_id2,$user_id1];
+        }
+
+        return self::where('user1', $user_id1)->where('user2', $user_id2)->where('status', 1)->exists();
     }
 
     /**

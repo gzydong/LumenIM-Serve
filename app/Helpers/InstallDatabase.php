@@ -15,7 +15,7 @@ class InstallDatabase
     public $installNum = 0;
 
     // 数据表总数
-    public $tableNum = 21;
+    public $tableNum = 22;
 
     public function __construct(Command $command)
     {
@@ -207,7 +207,7 @@ class InstallDatabase
             Schema::create('user_login_log', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('登录日志ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
-                $table->string('ip',20)->comment('登录地址IP');
+                $table->string('ip', 20)->comment('登录地址IP');
                 $table->dateTime('created_at')->comment('登录时间');
 
                 $table->charset = 'utf8';
@@ -411,7 +411,6 @@ class InstallDatabase
                 $table->engine = 'InnoDB';
 
                 $table->index(['user1', 'user2'], 'idx_user1_user2');
-                $table->index(['user2', 'user1'], 'idx_user2_user1');
             });
 
             DB::statement("ALTER TABLE `{$prefix}users_friends` comment '用户好友关系表'");
@@ -479,6 +478,30 @@ class InstallDatabase
 
             DB::statement("ALTER TABLE `{$prefix}users_group_member` comment '群聊成员'");
             $this->command->info("{$prefix}users_group_member 数据表安装成功...");
+            $this->installNum++;
+        }
+
+        if (!Schema::hasTable('users_group_notice')) {
+            Schema::create('users_group_notice', function (Blueprint $table) {
+                $table->unsignedInteger('id', true)->comment('公告ID');
+                $table->unsignedInteger('group_id')->default(0)->comment('群ID');
+                $table->unsignedInteger('user_id')->default(0)->comment('创建者用户ID');
+                $table->string('title', 30)->default('')->charset('utf8mb4')->comment('公告标题');
+                $table->text('title')->charset('utf8mb4')->comment('公告内容');
+                $table->tinyInteger('is_delete')->default(0)->comment('是否删除  0: 否  1:已删除');
+                $table->dateTime('created_at')->nullable()->comment('创建时间');
+                $table->dateTime('updated_at')->nullable()->comment('更新时间');
+                $table->dateTime('updated_at')->nullable()->comment('删除时间');
+
+                $table->charset = 'utf8';
+                $table->collation = 'utf8_general_ci';
+                $table->engine = 'InnoDB';
+
+                $table->index(['group_id'], 'idx_group_id');
+            });
+
+            DB::statement("ALTER TABLE `{$prefix}users_group_notice` comment '群组公告表'");
+            $this->command->info("{$prefix}users_group_notice 数据表安装成功...");
             $this->installNum++;
         }
 

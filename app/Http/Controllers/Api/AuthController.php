@@ -41,7 +41,7 @@ class AuthController extends CController
 
         $sms = new SmsCode();
         if (!$sms->check(SmsCode::CHANGE_REGISTER, $params['mobile'], $params['sms_code'])) {
-//            return $this->ajaxParamError('验证码填写错误...');
+            //return $this->ajaxParamError('验证码填写错误...');
         }
 
         $isTrue = $usersLogic->register([

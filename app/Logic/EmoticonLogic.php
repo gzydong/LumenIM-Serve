@@ -93,7 +93,7 @@ class EmoticonLogic extends Logic
                 return [false, []];
             }
         } else {
-            if (!UsersGroup::checkGroupMember($result->receive_id, $user_id)) {
+            if (!UsersGroup::isMember($result->receive_id, $user_id)) {
                 return [false, []];
             }
         }

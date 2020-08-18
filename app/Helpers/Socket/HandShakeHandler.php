@@ -12,8 +12,6 @@ use App\Helpers\JwtAuth;
 class HandShakeHandler
 {
     /**
-     * https://learnku.com/articles/10885/full-use-of-jwt
-     * @see https://www.swoole.co.uk/docs/modules/swoole-websocket-server
      *
      * @param \Swoole\Http\Request $request
      * @param \Swoole\Http\Response $response
@@ -22,9 +20,13 @@ class HandShakeHandler
      */
     public function handle($request, $response)
     {
-        $auth = new JwtAuth();
-        $auth->setToken($request->get['token']);
-        if($auth->validate() == false ||  $auth->verify() == false){
+        try{
+            $auth = new JwtAuth();
+            $auth->setToken($request->get['token']);
+            if($auth->validate() == false ||  $auth->verify() == false){
+                throw new \Exception('授权失败...');
+            }
+        }catch (\Exception $e){
             $response->status(401);
             $response->end();
             return false;

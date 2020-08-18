@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\RequestProxy;
 use App\Logic\GroupLogic;
-use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
 use App\Helpers\Cache\CacheHelper;
 
-use App\Models\{User, UsersChatList, UsersGroup, UsersGroupMember, UsersGroupNotice};
+use App\Models\{UsersChatList, UsersFriends, UsersGroup, UsersGroupMember, UsersGroupNotice};
 
 /**
  * 聊天群组控制器
@@ -64,7 +63,7 @@ class GroupController extends CController
             'created_at' => $groupInfo->created_at,
             'is_manager' => $groupInfo->user_id == $user_id,
             'manager_nickname' => $groupInfo->nickname,
-            'visit_card' => UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->value('visit_card'),
+            'visit_card' => UsersGroupMember::visitCard($user_id, $group_id),
             'not_disturb' => UsersChatList::where('uid', $user_id)->where('group_id', $group_id)->where('type', 2)->value('not_disturb') ?? 0,
             'notice' => $notice ? $notice->toArray() : []
         ]);
@@ -85,18 +84,13 @@ class GroupController extends CController
         $uids = array_filter(explode(',', $params['uids']));
         if (!checkIds($uids)) return $this->ajaxParamError();
 
-        [$isTrue, $data] = $this->groupLogic->launchGroupChat($this->uid(), $params['group_name'], '', $params['group_profile'], array_unique($uids));
-
+        [$isTrue, $data] = $this->groupLogic->createGroupChat($this->uid(), $params['group_name'], '', $params['group_profile'], array_unique($uids));
         if ($isTrue) {//群聊创建成功后需要创建聊天室并发送消息通知
-            $this->requestProxy->send('proxy/event/launch-group-chat', [
-                'uuid' => $uids,
-                'group_id' => $data['group_info']['id'],
-                'message' => [
-                    'group_name' => $params['group_name']
-                ]
+            $this->requestProxy->send('proxy/event/group-notify', [
+                'record_id' => $data['record_id']
             ]);
 
-            return $this->ajaxSuccess('创建群聊成功...', $data);
+            return $this->ajaxSuccess('创建群聊成功...', ['group_id' => $data['group_id']]);
         }
 
         return $this->ajaxError('创建群聊失败，请稍后再试...');
@@ -117,7 +111,7 @@ class GroupController extends CController
         $result = UsersGroup::where('id', $params['group_id'])->where('user_id', $this->uid())->update([
             'group_name' => $params['group_name'],
             'group_profile' => $params['group_profile'],
-            'avatar' => $params['avatar'],
+            'avatar' => $params['avatar']
         ]);
 
         return $result ? $this->ajaxSuccess('信息修改成功...') : $this->ajaxError('信息修改失败...');
@@ -243,25 +237,16 @@ class GroupController extends CController
     /**
      * 获取用户可邀请加入群组的好友列表
      *
-     * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getInviteFriends(UsersLogic $usersLogic)
+    public function getInviteFriends()
     {
         $group_id = $this->request->get('group_id', 0);
-        $friends = $usersLogic->getUserFriends($this->uid());
-
-        array_walk($friends, function (&$item) {
-            $item = (array)$item;
-        });
-
-        if ($group_id > 0) {
-            $ids = UsersGroupMember::getGroupMenberIds($group_id);
-            if ($friends && $ids) {
+        $friends = UsersFriends::getUserFriends($this->uid());
+        if ($group_id > 0 && $friends) {
+            if ($ids = UsersGroupMember::getGroupMenberIds($group_id)) {
                 foreach ($friends as $k => $item) {
-                    if (in_array($item['id'], $ids)) {
-                        unset($friends[$k]);
-                    }
+                    if (in_array($item['id'], $ids)) unset($friends[$k]);
                 }
             }
 
@@ -282,7 +267,7 @@ class GroupController extends CController
         $group_id = $this->request->get('group_id', 0);
 
         // 判断用户是否是群成员
-        if (!UsersGroup::checkGroupMember($group_id, $user_id)) {
+        if (!UsersGroup::isMember($group_id, $user_id)) {
             return $this->ajaxReturn(403, '非法操作');
         }
 
@@ -311,7 +296,7 @@ class GroupController extends CController
         $group_id = $this->request->get('group_id', 0);
 
         // 判断用户是否是群成员
-        if (!UsersGroup::checkGroupMember($group_id, $user_id)) {
+        if (!UsersGroup::isMember($group_id, $user_id)) {
             return $this->ajaxReturn(403, '非法操作');
         }
 
@@ -344,8 +329,8 @@ class GroupController extends CController
         $user_id = $this->uid();
 
         // 判断用户是否是管理员
-        if (!UsersGroup::where('id', $data['group_id'])->where('user_id', $user_id)->where('status', 0)->exists()) {
-            return $this->ajaxReturn(305, 'fail');
+        if (!UsersGroup::isManager($user_id, $data['group_id'])) {
+            return $this->ajaxReturn(305, '非管理员禁止操作...');
         }
 
         // 判断是否是新增数据
@@ -388,7 +373,7 @@ class GroupController extends CController
         $user_id = $this->uid();
 
         // 判断用户是否是管理员
-        if (!UsersGroup::where('id', $group_id)->where('user_id', $user_id)->where('status', 0)->exists()) {
+        if (!UsersGroup::isManager($user_id, $group_id)) {
             return $this->ajaxReturn(305, 'fail');
         }
 

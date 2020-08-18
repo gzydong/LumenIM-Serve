@@ -101,11 +101,9 @@ class SocketFdManage
         if (empty($ids)) return true;
 
         //将用户添加到所在的所有房间里
-        $rooms = array_map(function ($group_id) {
+        Room::add($fd, array_map(function ($group_id) {
             return self::ROOM_GROUP_PREFIX . $group_id;
-        }, $ids);
-
-        Room::add($fd, $rooms);
+        }, $ids));
     }
 
     /**
@@ -178,16 +176,16 @@ class SocketFdManage
         // 定义初始游标
         $cursor = 0;
         $prefix = self::BIND_USER_TO_FDS . "*";
-        do{
+        do {
             // 使用游标扫描匹配查询
-            $result = $this->getRedis()->scan($cursor,'MATCH',$prefix,'count',1000);
+            $result = $this->getRedis()->scan($cursor, 'MATCH', $prefix, 'count', 1000);
 
             // 游标赋值
             $cursor = intval($result[0]);
-            if($result[1]){
+            if ($result[1]) {
                 $this->getRedis()->del(...$result[1]);
             }
-        }while($cursor > 0);
+        } while ($cursor > 0);
 
         $this->getRedis()->del(self::BIND_FD_TO_USER);
     }

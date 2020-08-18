@@ -25,7 +25,7 @@ class UsersFriendsApply extends Model
      *
      * @var array
      */
-    protected $fillable = ['user_id', 'friend_id', 'status', 'remarks', 'reason', 'created_at', 'updated_at'];
+    protected $fillable = ['user_id', 'friend_id', 'status', 'remarks', 'created_at', 'updated_at'];
 
     /**
      * 表明模型是否应该被打上时间戳

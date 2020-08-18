@@ -28,7 +28,7 @@ class SocketResourceHandle extends SocketFdManage
      * @param array $data 数据包
      * @return bool
      */
-    public function responseResource(string $event, $receive, $data)
+    public function response(string $event, $receive, $data)
     {
         // 判断事件类型是否存在
         if (!in_array($event, self::events)) {

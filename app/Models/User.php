@@ -44,14 +44,4 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var bool
      */
     public $timestamps = false;
-
-    /**
-     * 判断用户是否存在
-     *
-     * @param int $user_id 用户ID
-     * @return bool
-     */
-    public static function checkUserExist(int $user_id){
-        return self::where('id',$user_id)->exists() ? true :false;
-    }
 }

@@ -70,16 +70,6 @@ class UsersLogic extends Logic
     }
 
     /**
-     * 获取用户好友列表
-     *
-     * @param int $user_id 用户ID
-     * @return mixed
-     */
-    public function getUserFriends(int $user_id){
-        return UsersFriends::getUserFriends($user_id);
-    }
-
-    /**
      * 获取用户所在的群聊
      *
      * @param int $user_id 用户ID

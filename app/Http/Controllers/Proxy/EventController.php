@@ -8,7 +8,6 @@ use App\Models\UsersChatRecords;
 use App\Models\UsersChatRecordsGroupNotify;
 use App\Models\UsersGroup;
 use Illuminate\Http\Request;
-use App\Logic\UsersLogic;
 use App\Helpers\Socket\ChatService;
 use App\Facades\SocketResourceHandle;
 
@@ -19,38 +18,6 @@ class EventController extends Controller
     public function __construct(Request $request)
     {
         $this->request = $request;
-    }
-
-    /**
-     * 通知发送创建群聊消息
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function launchGroupChat()
-    {
-        $uuid = $this->request->post('uuid', []);
-        $group_id = $this->request->post('group_id', 0);
-        $message = $this->request->post('message', []);
-        if (!$uuid) {
-            return $this->ajaxReturn(301, '用户ID不能为空');
-        }
-
-        if (!isInt($group_id)) {
-            return $this->ajaxReturn(301, '群聊ID不能为空');
-        }
-
-        foreach ($uuid as $uid) {
-            SocketResourceHandle::bindUserGroupChat($group_id, $uid);
-        }
-
-        if ($message) {
-            SocketResourceHandle::responseResource('join_group',
-                SocketResourceHandle::getRoomGroupName($group_id),
-                $message
-            );
-        }
-
-        return $this->ajaxReturn(200, '已发送消息...');
     }
 
     /**
@@ -83,9 +50,14 @@ class EventController extends Controller
 
         $membersIds = explode(',', $notifyInfo->user_ids);
 
+        // 获取客户端列表
+        $clientFds = SocketResourceHandle::getRoomGroupName($recordInfo->receive_id);
+        $joinClientFds = [];
+
         if ($notifyInfo->type == 1) {//好友入群
             foreach ($membersIds as $member_id) {
                 SocketResourceHandle::bindUserGroupChat($recordInfo->receive_id, $member_id);
+                $joinClientFds = array_merge($joinClientFds, SocketResourceHandle::getUserFds($member_id));
             }
         } else if ($notifyInfo->type == 2 || $notifyInfo->type == 3) {//好友退群或被踢出群
             foreach ($membersIds as $member_id) {
@@ -93,11 +65,8 @@ class EventController extends Controller
             }
         }
 
-        // 获取客户端列表
-        $clientFds = SocketResourceHandle::getRoomGroupName($recordInfo->receive_id);
-
         //推送群聊消息
-        SocketResourceHandle::responseResource('chat_message', $clientFds,
+        SocketResourceHandle::response('chat_message', $clientFds,
             ChatService::getChatMessage(0, $recordInfo->receive_id, 2, 1, [
                 'id' => $record_id,
                 'msg_type' => 3,
@@ -108,6 +77,16 @@ class EventController extends Controller
                 ]
             ])
         );
+
+        // 推送入群通知
+        if ($notifyInfo->type == 1) {
+            SocketResourceHandle::response('join_group',
+                $joinClientFds,
+                [
+                    'group_name' => UsersGroup::where('id', $recordInfo->receive_id)->value('group_name')
+                ]
+            );
+        }
     }
 
     /**
@@ -136,7 +115,7 @@ class EventController extends Controller
             $client = SocketResourceHandle::getRoomGroupName($records->receive_id);
         }
 
-        SocketResourceHandle::responseResource('revoke_records',
+        SocketResourceHandle::response('revoke_records',
             $client,
             [
                 'record_id' => $records->id,
@@ -186,7 +165,7 @@ class EventController extends Controller
                 $client = SocketResourceHandle::getRoomGroupName($records->receive_id);
             }
 
-            SocketResourceHandle::responseResource('chat_message', $client,
+            SocketResourceHandle::response('chat_message', $client,
                 ChatService::getChatMessage(
                     $records->user_id,
                     $records->receive_id,

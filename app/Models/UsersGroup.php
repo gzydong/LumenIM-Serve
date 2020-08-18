@@ -44,14 +44,14 @@ class UsersGroup extends Model
     }
 
     /**
-     * 判断群是否存在并且没有被解散
+     * 判断用户是否是管理员
      *
+     * @param int $user_id 用户ID
      * @param int $group_id 群ID
-     * @return bool
+     * @return mixed
      */
-    public static function checkGroupExist(int $group_id)
-    {
-        return self::where('id', $group_id)->where('status', 0)->exists() ? true : false;
+    public static function isManager(int $user_id,int $group_id){
+        return UsersGroup::where('id', $group_id)->where('user_id', $user_id)->exists();
     }
 
     /**
@@ -61,7 +61,7 @@ class UsersGroup extends Model
      * @param int $user_id 用户ID
      * @return bool
      */
-    public static function checkGroupMember(int $group_id, int $user_id)
+    public static function isMember(int $group_id, int $user_id)
     {
         return UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('status', 0)->exists() ? true : false;
     }

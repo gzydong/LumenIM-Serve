@@ -58,11 +58,11 @@ class TalkController extends CController
         }
 
         if ($type == 1) {
-            if (!UsersFriends::checkFriends($uid, $receive_id)) {
+            if (!UsersFriends::isFriend($uid, $receive_id)) {
                 return $this->ajaxReturn(305, '暂不属于好友关系，无法进行聊天...');
             }
         } else {
-            if (!UsersGroup::checkGroupMember($receive_id, $uid)) {
+            if (!UsersGroup::isMember($receive_id, $uid)) {
                 return $this->ajaxReturn(305, '暂不属于群成员，无法进行群聊 ...');
             }
         }
@@ -177,7 +177,7 @@ class TalkController extends CController
         }
 
         //判断是否属于群成员
-        if ($source == 2 && UsersGroup::checkGroupMember($receive_id, $user_id) == false) {
+        if ($source == 2 && UsersGroup::isMember($receive_id, $user_id) == false) {
             return $this->ajaxSuccess('非群聊成员不能查看群聊信息', [
                 'rows' => [],
                 'record_id' => 0,

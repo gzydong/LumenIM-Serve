@@ -33,8 +33,11 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->post('user/edit-avatar', ['uses' => 'UsersController@editAvatar']);
     $router->post('user/search-user', ['uses' => 'UsersController@searchUserInfo']);
     $router->post('user/edit-friend-remark', ['uses' => 'UsersController@editFriendRemark']);
+
+
     $router->post('user/send-friend-apply', ['uses' => 'UsersController@sendFriendApply']);
     $router->post('user/handle-friend-apply', ['uses' => 'UsersController@handleFriendApply']);
+    $router->post('user/delete-friend-apply', ['uses' => 'UsersController@deleteFriendApply']);
     $router->get('user/friend-apply-records', ['uses' => 'UsersController@getFriendApplyRecords']);
     $router->get('user/friend-apply-num', ['uses' => 'UsersController@getApplyUnreadNum']);
 

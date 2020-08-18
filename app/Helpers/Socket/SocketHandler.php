@@ -43,7 +43,7 @@ class SocketHandler extends WebsocketHandler
                 }
 
                 if($ffds){
-                    SocketResourceHandle::responseResource('login_notify',$ffds,['user_id'=>$user_id,'status'=>1,'notify'=>'好友上线通知...']);
+                    SocketResourceHandle::response('login_notify',$ffds,['user_id'=>$user_id,'status'=>1,'notify'=>'好友上线通知...']);
                 }
             }
         }
@@ -77,7 +77,7 @@ class SocketHandler extends WebsocketHandler
                 }
 
                 if($fds){
-                    SocketResourceHandle::responseResource('login_notify',array_unique($fds),['user_id'=>$user_id,'status'=>0,'notify'=>'好友离线通知通知...']);
+                    SocketResourceHandle::response('login_notify',array_unique($fds),['user_id'=>$user_id,'status'=>0,'notify'=>'好友离线通知通知...']);
                 }
             }
         }

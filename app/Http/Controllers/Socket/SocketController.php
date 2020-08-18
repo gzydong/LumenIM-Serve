@@ -32,7 +32,7 @@ class SocketController extends Controller
 
         //检测发送者与客户端是否是同一个用户
         if ($uid != $msgData['send_user']) {
-            SocketResourceHandle::responseResource('notify', $fd, ['notify' => '非法操作!!!']);
+            SocketResourceHandle::response('notify', $fd, ['notify' => '非法操作!!!']);
             return true;
         }
 
@@ -45,13 +45,13 @@ class SocketController extends Controller
         if ($msgData['source_type'] == 1) {//私信
             //判断发送者和接受者是否是好友关系
             if (!ChatService::checkFriends($msgData['send_user'], $msgData['receive_user'])) {
-                SocketResourceHandle::responseResource('notify', $fd, ['notify' => '温馨提示:您当前与对方尚未成功好友！']);
+                SocketResourceHandle::response('notify', $fd, ['notify' => '温馨提示:您当前与对方尚未成功好友！']);
                 return true;
             }
         } else if ($msgData['source_type'] == 2) {//群聊
             //判断是否属于群成员
             if (!ChatService::checkGroupMember($msgData['receive_user'], $msgData['send_user'])) {
-                SocketResourceHandle::responseResource('notify', $fd, ['notify' => '温馨提示:您还没有加入该聊天群！']);
+                SocketResourceHandle::response('notify', $fd, ['notify' => '温馨提示:您还没有加入该聊天群！']);
                 return true;
             }
         }
@@ -153,7 +153,7 @@ class SocketController extends Controller
             $clientFds = SocketResourceHandle::getRoomGroupName($msgData['receive_user']);
         }
 
-        SocketResourceHandle::responseResource('chat_message', $clientFds, ChatService::getChatMessage(
+        SocketResourceHandle::response('chat_message', $clientFds, ChatService::getChatMessage(
             $msgData['send_user'],
             $msgData['receive_user'],
             $msgData['source_type'],
@@ -172,7 +172,7 @@ class SocketController extends Controller
     {
         $clientFds = SocketResourceHandle::getUserFds($msgData['receive_user']);
         if ($clientFds) {
-            SocketResourceHandle::responseResource('input_tip', $clientFds, $msgData);
+            SocketResourceHandle::response('input_tip', $clientFds, $msgData);
         }
     }
 }

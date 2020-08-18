@@ -7,7 +7,7 @@ use App\Helpers\Socket\SocketResourceHandle as Handle;
 
 /**
  *
- * @method static $this responseResource(string $event, $receive, $data) 推送 Socket 信息
+ * @method static $this response(string $event, $receive, $data) 推送 Socket 信息
  * @method static $this bindHandle(int $fd, int $user_id) Socket fd 与用户ID绑定关系
  * @method static $this bindUserGroupChat(int $group_id, int $user_id) 绑定指定的用户到指定的聊天室
  * @method static $this clearBindFd(int $fd) 清除fd绑定的相关信息

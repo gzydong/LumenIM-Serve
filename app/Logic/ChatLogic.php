@@ -151,7 +151,7 @@ class ChatLogic extends Logic
             return false;
         }
 
-        if ($source == 2 && !UsersGroup::checkGroupMember($receive_id, $user_id)) {
+        if ($source == 2 && !UsersGroup::isMember($receive_id, $user_id)) {
             return false;
         }
 
@@ -188,7 +188,7 @@ class ChatLogic extends Logic
                 return [false, '非法操作', []];
             }
         } else if ($result->source == 2) {
-            if (!UsersGroup::checkGroupMember($result->receive_id, $user_id)) {
+            if (!UsersGroup::isMember($result->receive_id, $user_id)) {
                 return [false, '非法操作', []];
             }
         }
@@ -272,12 +272,12 @@ class ChatLogic extends Logic
         //验证是否有权限转发
         if ($source == 2) {//群聊消息
             //判断是否是群聊成员
-            if (!UsersGroup::checkGroupMember($receive_id, $user_id)) return false;
+            if (!UsersGroup::isMember($receive_id, $user_id)) return false;
 
             $sqlObj = UsersChatRecords::whereIn('id', $records_ids)->where('receive_id', $receive_id)->whereIn('msg_type', [1, 2])->where('source', 2)->where('is_revoke', 0);
         } else {//私聊消息
             //判断是否存在好友关系
-            if (!UsersFriends::checkFriends($user_id, $receive_id)) return false;
+            if (!UsersFriends::isFriend($user_id, $receive_id)) return false;
 
             $sqlObj = UsersChatRecords::whereIn('id', $records_ids)
                 ->where(function ($query) use ($user_id, $receive_id) {
@@ -366,12 +366,12 @@ class ChatLogic extends Logic
         //验证是否有权限转发
         if ($source == 2) {//群聊消息
             //判断是否是群聊成员
-            if (!UsersGroup::checkGroupMember($receive_id, $user_id)) return false;
+            if (!UsersGroup::isMember($receive_id, $user_id)) return false;
 
             $checkNum = UsersChatRecords::whereIn('id', $records_ids)->where('receive_id', $receive_id)->whereIn('msg_type', [1, 2])->where('source', 2)->where('is_revoke', 0)->count();
         } else {//私聊消息
             //判断是否存在好友关系
-            if (!UsersFriends::checkFriends($user_id, $receive_id)) return false;
+            if (!UsersFriends::isFriend($user_id, $receive_id)) return false;
 
             $checkNum = UsersChatRecords::whereIn('id', $records_ids)
                 ->where(function ($query) use ($user_id, $receive_id) {
@@ -481,7 +481,7 @@ class ChatLogic extends Logic
         //判断是否有权限查看
         if ($recordsInfo->source == 1 && ($recordsInfo->user_id != $user_id && $recordsInfo->receive_id != $user_id)) {
             return [];
-        } else if ($recordsInfo->source == 2 && !UsersGroup::checkGroupMember($recordsInfo->receive_id, $user_id)) {
+        } else if ($recordsInfo->source == 2 && !UsersGroup::isMember($recordsInfo->receive_id, $user_id)) {
             return [];
         }
 

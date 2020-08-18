@@ -24,7 +24,7 @@ class ChatService
     {
         $isTrue = CacheHelper::getFriendRelationCache($send_user_id, $receive_user_id);
         if ($isTrue === null) {
-            $isTrue = UsersFriends::checkFriends($send_user_id, $receive_user_id);
+            $isTrue = UsersFriends::isFriend($send_user_id, $receive_user_id);
             CacheHelper::setFriendRelationCache($send_user_id, $receive_user_id, $isTrue ? 1 : 0);
             return $isTrue;
         } else {
@@ -43,7 +43,7 @@ class ChatService
     {
         $isTrue = CacheHelper::getGroupRelationCache($send_user_id, $group_id);
         if ($isTrue === null) {
-            $isTrue = UsersGroup::checkGroupMember($send_user_id, $group_id);
+            $isTrue = UsersGroup::isMember($send_user_id, $group_id);
             CacheHelper::setGroupRelationCache($send_user_id, $group_id, $isTrue ? 1 : 0);
             return $isTrue;
         } else {

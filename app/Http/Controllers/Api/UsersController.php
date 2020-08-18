@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\MobileInfo;
 use Illuminate\Http\Request;
-use App\Models\{User};
+use App\Models\{User, UsersFriends};
 use App\Logic\{UsersLogic, FriendsLogic, ChatLogic};
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\SendEmailCode;
@@ -12,6 +12,14 @@ use App\Facades\SocketResourceHandle;
 
 class UsersController extends CController
 {
+    public $request;
+    public $friendsLogic;
+
+    public function __construct(Request $request, FriendsLogic $friendsLogic)
+    {
+        $this->request = $request;
+        $this->friendsLogic = $friendsLogic;
+    }
 
     /**
      * 获取我的信息
@@ -42,7 +50,7 @@ class UsersController extends CController
 
         return $this->ajaxSuccess('success', [
             'user_info' => [
-                'uid'=>$userInfo->id,
+                'uid' => $userInfo->id,
                 'nickname' => $userInfo->nickname,
                 'avatar' => $userInfo->avatar,
                 'motto' => $userInfo->motto,
@@ -61,15 +69,14 @@ class UsersController extends CController
     /**
      * 获取我的好友列表
      *
-     * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getUserFriends(UsersLogic $usersLogic)
+    public function getUserFriends()
     {
-        $rows = $usersLogic->getUserFriends($this->uid());
+        $rows = UsersFriends::getUserFriends($this->uid());
 
         array_walk($rows, function ($item) {
-            $item->online = SocketResourceHandle::getUserFds($item->id) ? 1 : 0;
+            $item['online'] = SocketResourceHandle::getUserFds($item['id']) ? 1 : 0;
         });
 
         return $this->ajaxSuccess('success', $rows);
@@ -78,50 +85,47 @@ class UsersController extends CController
     /**
      * 编辑我的信息
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editUserDetail(Request $request)
+    public function editUserDetail()
     {
         $params = ['nickname', 'avatar', 'motto', 'gender'];
-        if (!$request->has($params) || !isInt($request->post('gender'), true)) {
+        if (!$this->request->has($params) || !isInt($this->request->post('gender'), true)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = User::where('id', $this->uid())->update($request->only($params));
+        $isTrue = User::where('id', $this->uid())->update($this->request->only($params));
         return $isTrue ? $this->ajaxSuccess('个人信息修改成功') : $this->ajaxError('个人信息修改失败');
     }
 
     /**
      * 修改我的密码
      *
-     * @param Request $request
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editUserPassword(Request $request, UsersLogic $usersLogic)
+    public function editUserPassword(UsersLogic $usersLogic)
     {
-        if (!$request->filled(['old_password', 'new_password'])) {
+        if (!$this->request->filled(['old_password', 'new_password'])) {
             return $this->ajaxParamError();
         }
 
-        if (!isPassword($request->post('new_password'))) {
+        if (!isPassword($this->request->post('new_password'))) {
             return $this->ajaxParamError('新密码格式错误(8~16位字母加数字)');
         }
 
-        [$isTrue, $message] = $usersLogic->userChagePassword($this->uid(), $request->post('old_password'), $request->post('new_password'));
+        [$isTrue, $message] = $usersLogic->userChagePassword($this->uid(), $this->request->post('old_password'), $this->request->post('new_password'));
         return $this->ajaxReturn($isTrue ? 200 : 305, $message);
     }
 
     /**
      * 修改用户头像
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editAvatar(Request $request)
+    public function editAvatar()
     {
-        $avatar = $request->post('avatar', '');
+        $avatar = $this->request->post('avatar', '');
         if (empty($avatar)) {
             return $this->ajaxParamError();
         }
@@ -134,17 +138,15 @@ class UsersController extends CController
     /**
      * 获取我的好友申请记录
      *
-     * @param Request $request
-     * @param FriendsLogic $friendsLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getFriendApplyRecords(Request $request, FriendsLogic $friendsLogic)
+    public function getFriendApplyRecords()
     {
-        $type = $request->get('type', 1);
-        $page = $request->get('page', 1);
-        $page_size = $request->get('page_size', 10);
+        $type = $this->request->get('type', 1);
+        $page = $this->request->get('page', 1);
+        $page_size = $this->request->get('page_size', 10);
 
-        $data = $friendsLogic->friendApplyRecords($this->uid(), $type, $page, $page_size);
+        $data = $this->friendsLogic->friendApplyRecords($this->uid(), $type, $page, $page_size);
         CacheHelper::setFriendApplyUnreadNum($this->uid(), 1);
         return $this->ajaxSuccess('success', $data);
     }
@@ -152,18 +154,17 @@ class UsersController extends CController
     /**
      * 发送添加好友申请
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function sendFriendApply(Request $request)
+    public function sendFriendApply()
     {
-        $friend_id = $request->post('friend_id', 0);
-        $remarks = $request->post('remarks', '');
+        $friend_id = $this->request->post('friend_id', 0);
+        $remarks = $this->request->post('remarks', '');
         if (!isInt($friend_id)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = FriendsLogic::addFriendApply($this->uid(), $friend_id, $remarks);
+        $isTrue = $this->friendsLogic->addFriendApply($this->uid(), $friend_id, $remarks);
 
         //确认是否操作成功
         if (!$isTrue) {
@@ -182,29 +183,40 @@ class UsersController extends CController
     /**
      * 处理好友的申请
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function handleFriendApply(Request $request)
+    public function handleFriendApply()
     {
-        $apply_id = $request->post('apply_id', 0);
-        $type = $request->post('type', 0);
-        $remarks = $request->post('remarks', '');
-        if (!isInt($apply_id) || !in_array($type, [1, 2])) {
+        $apply_id = $this->request->post('apply_id', 0);
+        $remarks = $this->request->post('remarks', '');
+        if (!isInt($apply_id)) {
             return $this->ajaxParamError();
         }
 
-        if ($type == 2 && empty($remarks)) {
-            return $this->ajaxParamError('请填写拒绝的原因...');
-        }
-
-        $isTrue = FriendsLogic::handleFriendApply($this->uid(), $apply_id, $type, $remarks);
+        $isTrue = $this->friendsLogic->handleFriendApply($this->uid(), $apply_id, $remarks);
         //判断是否是同意添加好友
-        if ($isTrue && $type == 1) {
+        if ($isTrue) {
             //... 推送处理消息
         }
 
         return $isTrue ? $this->ajaxSuccess('处理完成...') : $this->ajaxError('处理失败，请稍后再试...');
+    }
+
+    /**
+     * 删除好友申请记录
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteFriendApply()
+    {
+        $apply_id = $this->request->post('apply_id', 0);
+        if (!isInt($apply_id)) {
+            return $this->ajaxParamError();
+        }
+
+        $isTrue = $this->friendsLogic->delFriendApply($this->uid(), $apply_id);
+
+        return $isTrue ? $this->ajaxSuccess('删除成功...') : $this->ajaxError('删除失败...');
     }
 
     /**
@@ -221,19 +233,18 @@ class UsersController extends CController
     /**
      * 编辑好友备注信息
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editFriendRemark(Request $request)
+    public function editFriendRemark()
     {
-        $friend_id = $request->post('friend_id', 0);
-        $remarks = $request->post('remarks', '');
+        $friend_id = $this->request->post('friend_id', 0);
+        $remarks = $this->request->post('remarks', '');
 
         if (!isInt($friend_id) || empty($remarks)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = FriendsLogic::editFriendRemark($this->uid(), $friend_id, $remarks);
+        $isTrue = $this->friendsLogic->editFriendRemark($this->uid(), $friend_id, $remarks);
 
         if ($isTrue) {
             CacheHelper::setFriendRemarkCache($this->uid(), $friend_id, $remarks);
@@ -245,14 +256,13 @@ class UsersController extends CController
     /**
      * 获取指定用户信息
      *
-     * @param Request $request
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function searchUserInfo(Request $request, UsersLogic $usersLogic)
+    public function searchUserInfo(UsersLogic $usersLogic)
     {
-        $user_id = $request->post('user_id', 0);
-        $mobile = $request->post('mobile', '');
+        $user_id = $this->request->post('user_id', 0);
+        $mobile = $this->request->post('mobile', '');
         $where = [];
 
         if (isInt($user_id)) {
@@ -285,15 +295,14 @@ class UsersController extends CController
     /**
      * 更换用户手机号
      *
-     * @param Request $request
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editUserMobile(Request $request, UsersLogic $usersLogic)
+    public function editUserMobile(UsersLogic $usersLogic)
     {
-        $sms_code = $request->post('sms_code', '');
-        $mobile = $request->post('mobile', '');
-        $password = $request->post('password', '');
+        $sms_code = $this->request->post('sms_code', '');
+        $mobile = $this->request->post('mobile', '');
+        $password = $this->request->post('password', '');
 
         if (!isMobile($mobile)) {
             return $this->ajaxParamError('手机号格式不正确');
@@ -330,12 +339,11 @@ class UsersController extends CController
     /**
      * 修改手机号发送验证码
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function sendMobileCode(Request $request)
+    public function sendMobileCode()
     {
-        $mobile = $request->post('mobile', '');
+        $mobile = $this->request->post('mobile', '');
 
         if (!isMobile($mobile)) {
             return $this->ajaxParamError('手机号格式不正确');
@@ -355,22 +363,20 @@ class UsersController extends CController
     }
 
     /**
-     * 删除好友关系
+     * 解除好友关系
      *
-     * @param Request $request
-     * @param FriendsLogic $friendsLogic
      * @param ChatLogic $chatLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function removeFriend(Request $request, FriendsLogic $friendsLogic, ChatLogic $chatLogic)
+    public function removeFriend(ChatLogic $chatLogic)
     {
-        $friend_id = $request->post('friend_id', 0);
+        $friend_id = $this->request->post('friend_id', 0);
         $user_id = $this->uid();
         if (!isInt($friend_id)) {
             return $this->ajaxParamError();
         }
 
-        if (!$friendsLogic->removeFriend($user_id, $friend_id)) {
+        if (!$this->friendsLogic->removeFriend($user_id, $friend_id)) {
             return $this->ajaxError('解除好友失败...');
         }
 
@@ -384,13 +390,12 @@ class UsersController extends CController
     /**
      * 发送绑定邮箱的验证码
      *
-     * @param Request $request
      * @param SendEmailCode $sendEmailCode
      * @return \Illuminate\Http\JsonResponse
      */
-    public function sendChangeEmailCode(Request $request, SendEmailCode $sendEmailCode)
+    public function sendChangeEmailCode(SendEmailCode $sendEmailCode)
     {
-        $email = $request->post('email', '');
+        $email = $this->request->post('email', '');
         if (empty($email)) {
             return $this->ajaxParamError();
         }
@@ -406,15 +411,14 @@ class UsersController extends CController
     /**
      * 修改用户邮箱接口
      *
-     * @param Request $request
      * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editUserEmail(Request $request, UsersLogic $usersLogic)
+    public function editUserEmail(UsersLogic $usersLogic)
     {
-        $email = $request->post('email', '');
-        $email_code = $request->post('email_code', '');
-        $password = $request->post('password', '');
+        $email = $this->request->post('email', '');
+        $email_code = $this->request->post('email_code', '');
+        $password = $this->request->post('password', '');
 
         if (empty($email) || empty($email_code) || empty($password)) {
             return $this->ajaxParamError();
