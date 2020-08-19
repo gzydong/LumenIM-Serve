@@ -9,6 +9,7 @@ use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\KeyGenerateCommand;
 use App\Console\Commands\ClearTmpFileCommand;
 use App\Console\Commands\LumenImInstallCommand;
+use App\Console\Commands\TestCommand;
 
 class Kernel extends ConsoleKernel
 {
@@ -21,7 +22,8 @@ class Kernel extends ConsoleKernel
         KeyGenerateCommand::class,
         ClearTmpFileCommand::class,
         LumenImInstallCommand::class,
-        ForeverArticleCommand::class
+        ForeverArticleCommand::class,
+        TestCommand::class
     ];
 
     /**

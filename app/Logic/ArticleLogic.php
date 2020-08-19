@@ -19,53 +19,34 @@ class ArticleLogic extends Logic
 {
 
     /**
-     * 检测并创建用户的默认分类
-     *
-     * @param int $uid
-     */
-    public function checkDefaultClass(int $uid)
-    {
-        if (!ArticleClass::where('user_id', $uid)->where('is_default', 1)->exists()) {
-            ArticleClass::create([
-                'user_id' => $uid,
-                'class_name' => '我的笔记',
-                'is_default' => 1,
-                'sort' => 1,
-                'created_at' => time()
-            ]);
-        }
-    }
-
-    /**
      * 获取用户文章分类列表
      *
-     * @param int $uid 用户ID
+     * @param int $user_id 用户ID
      * @return array
      */
-    public function getUserArticleClass(int $uid)
+    public function getUserArticleClass(int $user_id)
     {
-        $items = ArticleClass::where('user_id', $uid)->orderBy('sort', 'asc')->get(['id', 'class_name', 'is_default'])->toArray();
-        foreach ($items as &$item) {
-            $item['count'] = Article::where('user_id', $uid)->where('class_id', $item['id'])->where('status', 1)->count();
-        }
+        $subJoin = Article::select('class_id', DB::raw('count(class_id) as count'))->where('user_id', $user_id)->groupBy('class_id');
 
-        return $items;
+        return ArticleClass::leftJoinSub($subJoin, 'sub_join', function ($join) {
+            $join->on('article_class.id', '=', DB::raw('sub_join.class_id'));
+        })->where('article_class.user_id', $user_id)->orderBy('article_class.sort', 'asc')
+            ->get(['article_class.id', 'article_class.class_name', 'article_class.is_default', DB::raw('sub_join.count')])
+            ->toArray();
     }
 
     /**
      * 获取用户文章标签列表
      *
-     * @param int $uid 用户ID
+     * @param int $user_id 用户ID
      * @return mixed
      */
-    public function getUserArticleTags(int $uid)
+    public function getUserArticleTags(int $user_id)
     {
-        $items = ArticleTags::where('user_id', $uid)->orderBy('id', 'desc')->get(['id', 'tag_name'])->toArray();
-        if ($items) {
-            foreach ($items as &$item) {
-                $item['count'] = Article::where('user_id', $uid)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
-            }
-        }
+        $items = ArticleTags::where('user_id', $user_id)->orderBy('id', 'desc')->get(['id', 'tag_name'])->toArray();
+        array_walk($items, function ($item) use ($user_id) {
+            $item['count'] = Article::where('user_id', $user_id)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
+        });
 
         return $items;
     }

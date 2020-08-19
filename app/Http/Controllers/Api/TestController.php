@@ -2,25 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Facades\SocketResourceHandle;
-use App\Helpers\MobileInfo;
-use App\Helpers\RedisLock;
-use App\Helpers\SendEmailCode;
-use App\Logic\ArticleLogic;
-use App\Logic\FriendsLogic;
-use App\Logic\GroupLogic;
-use App\Models\User;
-use App\Models\UsersFriends;
-
-use App\Models\UsersGroup;
+use App\Models\Article;
+use App\Models\ArticleClass;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Mail;
-
-set_time_limit(0);
 
 /**
  * 测试控制器
@@ -30,28 +16,18 @@ set_time_limit(0);
  */
 class TestController extends CController
 {
-    public function test(FriendsLogic $friendsLogic)
+    public function test()
     {
-        $user_id = 3046;
-        $friend_id = 3045;
+
+        $subJoin = Article::select('class_id',DB::raw('count(class_id) as count'))->where('user_id',2054)->groupBy('class_id');
+        $aa = ArticleClass::joinSub($subJoin, 'latest_posts', function($join) {
+            $join->on('article_class.id', '=', DB::raw('latest_posts.class_id'));
+        })->where('article_class.user_id', 2054)->orderBy('article_class.sort', 'asc')
+            ->get(['article_class.id', 'article_class.class_name', 'article_class.is_default',DB::raw('latest_posts.count')])->toArray();
 
 
-        if($user_id > $friend_id){
-            [$user_id,$friend_id] = [$friend_id,$user_id];
-        }
 
 
-
-        $result = $friendsLogic->delFriendApply(2054,119);
-        dd($result);
-
-        UsersFriends::where(function ($query) use($user_id,$friend_id) {
-            $query->where('user1', $user_id)->where('user2', $friend_id);
-        })->where(function ($query) use($user_id,$friend_id) {
-            $query->where('user1', $user_id)->where('user2', $friend_id);
-        });
-        exit;
-        $aa = $friendsLogic->friendApplyRecords(2054,1, 2, 10);
         dd($aa);
     }
 

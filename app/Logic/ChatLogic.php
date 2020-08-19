@@ -4,19 +4,14 @@ namespace App\Logic;
 
 use App\Facades\SocketResourceHandle;
 use App\Models\{
-    User,
     UsersChatList,
     UsersChatRecords,
     UsersChatRecordsForward,
-    UsersChatRecordsGroupNotify,
     UsersFriends,
-    UsersGroup,
-    UsersGroupMember
+    UsersGroup
 };
 
 use Illuminate\Support\Facades\DB;
-use App\Helpers\ImageCompose;
-
 use App\Helpers\Cache\CacheHelper;
 
 class ChatLogic extends Logic
@@ -210,14 +205,14 @@ class ChatLogic extends Logic
     public function delChatList(int $user_id, int $id, $type = 1)
     {
         if ($type == 1) {
-            return (bool)UsersChatList::where('id', $id)->where('uid', $user_id)->update(['status' => 0]);
+            return (bool)UsersChatList::where('id', $id)->where('uid', $user_id)->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
         }
 
         if ($type == 2) {
-            return (bool)UsersChatList::where('uid', $user_id)->where('friend_id', $id)->update(['status' => 0]);
+            return (bool)UsersChatList::where('uid', $user_id)->where('friend_id', $id)->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
         }
 
-        return (bool)UsersChatList::where('uid', $user_id)->where('group_id', $id)->update(['status' => 0]);
+        return (bool)UsersChatList::where('uid', $user_id)->where('group_id', $id)->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
     }
 
     /**

@@ -39,7 +39,6 @@ class GroupLogic extends Logic
                 'group_name' => $group_name,
                 'avatar' => $group_avatar,
                 'group_profile' => $group_profile,
-                'people_num' => count($friends),
                 'status' => 0,
                 'created_at' => date('Y-m-d H:i:s')
             ]);
@@ -178,8 +177,6 @@ class GroupLogic extends Logic
 
             if (!$result2) throw new \Exception('添加群通知记录失败2');
 
-            UsersGroup::where('id', $group_id)->increment('people_num', count($uids));
-
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -229,8 +226,6 @@ class GroupLogic extends Logic
             ]);
 
             if (!$result2) throw new \Exception('添加群通知记录失败2');
-
-            UsersGroup::where('id', $group_id)->update(['people_num' => UsersGroupMember::where('group_id', $group_id)->where('group_owner', 0)->count()]);
 
             DB::commit();
         } catch (\Exception $e) {
@@ -308,8 +303,6 @@ class GroupLogic extends Logic
                 ]);
 
                 if (!$result2) throw new \Exception('添加群通知记录失败2  : quitGroupChat');
-
-                UsersGroup::where('id', $group_id)->update(['people_num' => UsersGroupMember::where('group_id', $group_id)->where('group_owner', 0)->count()]);
 
                 $record_id = $result->id;
             }

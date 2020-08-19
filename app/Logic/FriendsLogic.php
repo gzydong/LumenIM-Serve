@@ -51,7 +51,6 @@ class FriendsLogic extends Logic
             return true;
         }
 
-
         return false;
     }
 
@@ -157,12 +156,11 @@ class FriendsLogic extends Logic
      * 获取用户好友申请记录
      *
      * @param int $user_id 用户ID
-     * @param int $type 获取数据类型  1:好友申请记录 2:我的申请记录
      * @param int $page 分页数
      * @param int $page_size 分页大小
      * @return array
      */
-    public function friendApplyRecords(int $user_id, $type = 1, $page = 1, $page_size = 30)
+    public function friendApplyRecords(int $user_id, $page = 1, $page_size = 30)
     {
         $rowsSqlObj = UsersFriendsApply::select([
             'users_friends_apply.id',
@@ -176,13 +174,8 @@ class FriendsLogic extends Logic
             'users_friends_apply.created_at'
         ]);
 
-        if ($type == 1) {
-            $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_friends_apply.user_id');
-            $rowsSqlObj->where('users_friends_apply.friend_id', $user_id);
-        } else {
-            $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_friends_apply.friend_id');
-            $rowsSqlObj->where('users_friends_apply.user_id', $user_id);
-        }
+        $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_friends_apply.user_id');
+        $rowsSqlObj->where('users_friends_apply.friend_id', $user_id);
 
         $count = $rowsSqlObj->count();
         $rows = [];

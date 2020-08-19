@@ -92,7 +92,7 @@ class ChatService
                     UsersChatList::where('id', $info->id)->update(['status' => 1]);
                 }
             } else {
-                UsersChatList::create(['type' => 1, 'uid' => $message['receive_id'], 'friend_id' => $message['user_id'], 'status' => 1, 'created_at' => date('Y-m-d H:i:s')]);
+                UsersChatList::create(['type' => 1, 'uid' => $message['receive_id'], 'friend_id' => $message['user_id'], 'status' => 1, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]);
             }
 
             //设置未读消息

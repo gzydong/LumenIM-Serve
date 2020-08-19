@@ -142,11 +142,10 @@ class UsersController extends CController
      */
     public function getFriendApplyRecords()
     {
-        $type = $this->request->get('type', 1);
         $page = $this->request->get('page', 1);
         $page_size = $this->request->get('page_size', 10);
 
-        $data = $this->friendsLogic->friendApplyRecords($this->uid(), $type, $page, $page_size);
+        $data = $this->friendsLogic->friendApplyRecords($this->uid(), $page, $page_size);
         CacheHelper::setFriendApplyUnreadNum($this->uid(), 1);
         return $this->ajaxSuccess('success', $data);
     }

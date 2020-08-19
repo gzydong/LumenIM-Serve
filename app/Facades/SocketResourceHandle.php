@@ -18,7 +18,7 @@ use App\Helpers\Socket\SocketResourceHandle as Handle;
  * @method static $this getRoomGroupName() 获取群ID的房间名称
  *
  * Class SocketResourceHandle
- * @package App\Facades
+ * @package App\Helpers\Socket\SocketResourceHandle
  */
 class SocketResourceHandle extends Facade
 {

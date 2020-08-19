@@ -44,7 +44,7 @@ class GroupController extends CController
         $groupInfo = UsersGroup::leftJoin('users', 'users.id', '=', 'users_group.user_id')
             ->where('users_group.id', $group_id)->where('users_group.status', 0)->first([
                 'users_group.id', 'users_group.user_id',
-                'users_group.group_name', 'users_group.people_num',
+                'users_group.group_name',
                 'users_group.group_profile', 'users_group.avatar',
                 'users_group.created_at',
                 'users.nickname'

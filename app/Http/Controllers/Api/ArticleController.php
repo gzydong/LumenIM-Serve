@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\RedisLock;
 use Illuminate\Http\Request;
 use App\Logic\ArticleLogic;
 use Illuminate\Support\Facades\Storage;
@@ -25,10 +26,8 @@ class ArticleController extends CController
      */
     public function getArticleClass()
     {
-        $user_id = $this->uid();
-        $this->articleLogic->checkDefaultClass($user_id);
         return $this->ajaxSuccess('success', [
-            'rows' => $this->articleLogic->getUserArticleClass($user_id),
+            'rows' => $this->articleLogic->getUserArticleClass($this->uid()),
         ]);
     }
 
@@ -203,16 +202,25 @@ class ArticleController extends CController
      * 笔记分类列表排序接口
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function articleClassSort()
     {
         $class_id = $this->request->post('class_id', 0);
         $sort_type = $this->request->post('sort_type', 0);
+        $user_id = $this->uid();
         if (!isInt($class_id) || !in_array($sort_type, [1, 2])) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->articleClassSort($this->uid(), $class_id, $sort_type);
+        $isTrue = false;
+        $lockKey = "article_class_sort:{$user_id}_{$class_id}";
+        if (RedisLock::lock($lockKey, 0, 5)) {
+            $isTrue = $this->articleLogic->articleClassSort($user_id, $class_id, $sort_type);
+
+            RedisLock::release($lockKey, 0);
+        }
+
         return $isTrue ? $this->ajaxSuccess('排序完成...') : $this->ajaxError('排序失败...');
     }
 

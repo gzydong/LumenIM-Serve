@@ -423,9 +423,8 @@ class InstallDatabase
                 $table->unsignedInteger('id', true)->comment('申请ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('申请人ID');
                 $table->unsignedInteger('friend_id')->default(0)->comment('被申请人');
-                $table->unsignedTinyInteger('status')->default(0)->comment('申请状态(0:等待处理  1:已同意  2:已拒绝)');
+                $table->unsignedTinyInteger('status')->default(0)->comment('申请状态(0:等待处理  1:已同意');
                 $table->string('remarks', 50)->default('')->comment('申请人备注信息');
-                $table->string('reason', 30)->default('')->comment('拒绝理由');
                 $table->dateTime('created_at')->nullable()->comment('申请时间');
                 $table->dateTime('updated_at')->nullable()->comment('处理时间');
 
@@ -444,11 +443,10 @@ class InstallDatabase
 
         if (!Schema::hasTable('users_group')) {
             Schema::create('users_group', function (Blueprint $table) {
-                $table->unsignedInteger('id', true)->comment('用户组ID');
+                $table->unsignedInteger('id', true)->comment('群ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
                 $table->string('group_name', 30)->default('')->charset('utf8mb4')->comment('群名称');
                 $table->string('group_profile', 100)->default('')->comment('群介绍');
-                $table->unsignedSmallInteger('people_num')->default(1)->comment('群人数');
                 $table->tinyInteger('status')->default(0)->comment('群状态 0:正常 1:已解散');
                 $table->string('avatar', 255)->default('')->comment('群头像');
                 $table->dateTime('created_at')->nullable()->comment('创建时间');
@@ -462,7 +460,7 @@ class InstallDatabase
         if (!Schema::hasTable('users_group_member')) {
             Schema::create('users_group_member', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('自增ID');
-                $table->unsignedInteger('group_id')->default(0)->comment('聊天群ID');
+                $table->unsignedInteger('group_id')->default(0)->comment('群ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
                 $table->tinyInteger('group_owner')->nullable()->comment('是否为群主 0:否  1:是');
                 $table->tinyInteger('status')->default(0)->comment('退群状态  0: 正常状态  1:已退群');

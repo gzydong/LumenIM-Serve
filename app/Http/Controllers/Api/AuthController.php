@@ -168,7 +168,7 @@ class AuthController extends CController
         }
 
         if (!isPassword($password)) {
-//            return $this->ajaxParamError('密码格式不正确...');
+            //return $this->ajaxParamError('密码格式不正确...');
         }
 
         $sms = new SmsCode();
