@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Redis;
 class SmsCode
 {
 
-    const FORGET_PASSWORD = 'forget_password';
-    const CHANGE_MOBILE = 'change_mobile';
-    const CHANGE_REGISTER = 'user_register';
+    //  验证码用途渠道
+    const CACHE_TAGS = [
+        'forget_password',
+        'change_mobile',
+        'user_register'
+    ];
 
     private function getKey(string $type, string $mobile)
     {
@@ -28,7 +31,7 @@ class SmsCode
     public function check(string $type, string $mobile, string $code)
     {
         $sms_code = Redis::get($this->getKey($type, $mobile));
-        if(!$sms_code){
+        if (!$sms_code) {
             return false;
         }
 
@@ -36,22 +39,15 @@ class SmsCode
     }
 
     /**
-     * 发送验证码(可切换为短信方式)
+     * 发送验证码
      *
      * @param string $type 类型
      * @param string $mobile 手机号
      */
     public function send(string $type, string $mobile)
     {
-        $email = '';
-        $mobileInfo = MobileInfo::info($mobile);
-
-        if ($mobileInfo['company'] == '电信') {
-            $email = $mobile . '@189.com';
-        } else if ($mobileInfo['company'] == '移动') {
-            $email = $mobile . '@139.com';
-        } else if ($mobileInfo['company'] == '联通') {
-            $email = $mobile . '@wo.cn';
+        if (!in_array($type, self::CACHE_TAGS)) {
+            return false;
         }
 
         $key = $this->getKey($type, $mobile);
@@ -59,18 +55,11 @@ class SmsCode
             $sms_code = random(6, 'number');
         }
 
-        $title = '';
-        if($type === SmsCode::FORGET_PASSWORD){
-            $title = '重置密码';
-        }else if($type === SmsCode::CHANGE_MOBILE){
-            $title = '换绑手机';
-        }
+        $this->setCode($key, $sms_code);
 
-        $this->setCode($key,$sms_code);
+        // 后期采用异步发送
 
-        Mail::send('emails.verify-code', ['service_name' => $title, 'sms_code' => $sms_code, 'domain' => 'http://47.105.180.123:83'], function ($message) use ($email,$title) {
-            $message->to($email)->subject("On-line IM {$title}(验证码)");
-        });
+        return [true, ['type' => $type, 'code' => $sms_code]];
     }
 
     /**
@@ -89,7 +78,7 @@ class SmsCode
      *
      * @param string $key 缓存key
      * @param string $sms_code 验证码
-     * @param float|int $exp 过期时间
+     * @param float|int $exp 过期时间（默认15分钟）
      * @return mixed
      */
     public function setCode(string $key, string $sms_code, $exp = 60 * 15)

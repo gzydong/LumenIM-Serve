@@ -2,11 +2,13 @@
 
 namespace App\Logic;
 
+use App\Models\ArticleClass;
 use App\Models\User;
 use App\Models\UsersChatList;
 use App\Models\UsersFriends;
 use App\Models\UsersFriendsApply;
 use App\Models\UsersGroupMember;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Mail;
@@ -65,6 +67,7 @@ class UsersLogic extends Logic
             ]);
         } catch (\Exception $e) {
             $result = false;
+            DB::rollBack();
         }
 
         return $result ? true : false;

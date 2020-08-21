@@ -40,8 +40,8 @@ class AuthController extends CController
         }
 
         $sms = new SmsCode();
-        if (!$sms->check(SmsCode::CHANGE_REGISTER, $params['mobile'], $params['sms_code'])) {
-            //return $this->ajaxParamError('验证码填写错误...');
+        if (!$sms->check('user_register', $params['mobile'], $params['sms_code'])) {
+            return $this->ajaxParamError('验证码填写错误...');
         }
 
         $isTrue = $usersLogic->register([
@@ -49,6 +49,10 @@ class AuthController extends CController
             'password' => $params['password'],
             'nickname' => strip_tags($params['nickname']),
         ]);
+
+        if ($isTrue) {
+            $sms->delCode('user_register', $params['mobile']);
+        }
 
         return $isTrue ? $this->ajaxSuccess('账号注册成功...') : $this->ajaxError('账号注册失败,手机号已被其他(她)人使用...');
     }
@@ -89,7 +93,7 @@ class AuthController extends CController
 
         return $this->ajaxReturn(200, '授权登录成功', [
             // 授权信息
-            'authorize'=>[
+            'authorize' => [
                 'access_token' => $token,
                 'expires_in' => $auth->getToken(false)->getClaim('exp') - time(),
             ],
@@ -123,31 +127,36 @@ class AuthController extends CController
      */
     public function sendVerifyCode(Request $request)
     {
-        $mobile = $request->post('mobile', '18798276809');
+        $mobile = $request->post('mobile', '');
+        $type = $request->post('type', '');
+
+        if (!in_array($type, SmsCode::CACHE_TAGS)) {
+            return $this->ajaxParamError('验证码发送失败...');
+        }
+
         if (!isMobile($mobile)) {
             return $this->ajaxParamError('手机号格式错误...');
         }
 
-        if (!$userInfo = User::where('mobile', $mobile)->first()) {
-            return $this->ajaxParamError('手机号未被注册使用...');
+        if ($type == 'forget_password') {
+            if (!User::where('mobile', $mobile)->value('id')) {
+                return $this->ajaxParamError('手机号未被注册使用...');
+            }
+        } else if ($type == 'change_mobile' || $type == 'user_register') {
+            if (User::where('mobile', $mobile)->value('id')) {
+                return $this->ajaxParamError('手机号已被他(她)人注册...');
+            }
         }
 
         $sms = new SmsCode();
-        $sms->send(SmsCode::FORGET_PASSWORD, $mobile);
-        $tips = ['tips' => '', 'url' => ''];
-        $mobileInfo = MobileInfo::info($mobile);
-        if ($mobileInfo['company'] == '电信') {
-            $tips['tips'] = '验证码已发至您的电信189邮箱，请注意查收 ...';
-            $tips['url'] = 'https://webmail30.189.cn/w2';
-        } else if ($mobileInfo['company'] == '移动') {
-            $tips['tips'] = '验证码已发至您的139邮箱，请注意查收 ...';
-            $tips['url'] = 'https://mail.10086.cn/';
-        } else if ($mobileInfo['company'] == '联通') {
-            $tips['tips'] = '验证码已发至您的联通沃邮箱，请注意查收 ...';
-            $tips['url'] = 'https://mail.wo.cn';
+        [$isTrue, $result] = $sms->send($type, $mobile);
+
+        $data = ['is_debug' => true];
+        if ($data['is_debug']) {
+            $data['sms_code'] = $result['code'];
         }
 
-        return $this->ajaxSuccess('发送成功', $tips);
+        return $this->ajaxSuccess('发送成功', $data);
     }
 
     /**
@@ -172,13 +181,13 @@ class AuthController extends CController
         }
 
         $sms = new SmsCode();
-        if (!$sms->check(SmsCode::FORGET_PASSWORD, $mobile, $code)) {
+        if (!$sms->check('forget_password', $mobile, $code)) {
             return $this->ajaxParamError('验证码填写错误...');
         }
 
         $isTrue = $usersLogic->resetPassword($mobile, $password);
         if ($isTrue) {
-            $sms->delCode(SmsCode::FORGET_PASSWORD, $mobile);
+            $sms->delCode('forget_password', $mobile);
         }
 
         return $isTrue ? $this->ajaxSuccess('重置密码成功...') : $this->ajaxError('重置密码失败...');
