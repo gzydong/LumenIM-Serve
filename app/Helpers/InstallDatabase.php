@@ -489,7 +489,7 @@ class InstallDatabase
                 $table->tinyInteger('is_delete')->default(0)->comment('是否删除  0: 否  1:已删除');
                 $table->dateTime('created_at')->nullable()->comment('创建时间');
                 $table->dateTime('updated_at')->nullable()->comment('更新时间');
-                $table->dateTime('updated_at')->nullable()->comment('删除时间');
+                $table->dateTime('deleted_at')->nullable()->comment('删除时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
