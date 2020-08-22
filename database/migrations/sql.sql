@@ -39,19 +39,19 @@ CREATE TABLE `lar_users_chat_records_forward` (
 ) ENGINE=InnoDB AUTO_INCREMENT=83 DEFAULT CHARSET=utf8 COMMENT='用户聊天记录（会话记录转发消息）';
 
 CREATE TABLE `lar_users_chat_records_code` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '合并转发ID',
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '代码块ID',
   `record_id` bigint(20) unsigned DEFAULT '0' COMMENT '消息记录ID',
-  `user_id` int(11) unsigned DEFAULT '0' COMMENT '转发用户ID',
-  `code_lang` varchar(20) DEFAULT '' COMMENT '代码片段语言类型',
+  `user_id` int(11) unsigned DEFAULT '0' COMMENT '用户ID',
+  `code_lang` varchar(20) DEFAULT '' COMMENT '代码片段类型(如：php,java,python)',
   `code` text CHARACTER SET utf8mb4 COMMENT '代码片段内容',
   `created_at` datetime DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='用户聊天记录（代码块消息）';
 
-CREATE TABLE `lar_users_chat_records_notify` (
+CREATE TABLE `lar_users_chat_records_invite` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '入群或退群通知ID',
   `record_id` bigint(20) unsigned DEFAULT '0' COMMENT '消息记录ID',
-  `type` tinyint(3) unsigned DEFAULT '1' COMMENT '通知类型 （1:邀请入群通知  2:踢出群聊通知  3:自动退出群聊）',
+  `type` tinyint(3) unsigned DEFAULT '1' COMMENT '通知类型 （1:入群通知 2:自动退群 2:管理员踢群）',
   `operate_user_id` int(11) unsigned DEFAULT '0' COMMENT '操作人的用户ID（邀请人OR管理员ID）',
   `user_ids` varchar(255) DEFAULT NULL COMMENT '用户ID，多个用 , 分割',
   PRIMARY KEY (`id`),

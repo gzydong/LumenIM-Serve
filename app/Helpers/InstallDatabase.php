@@ -485,7 +485,7 @@ class InstallDatabase
                 $table->unsignedInteger('group_id')->default(0)->comment('群ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('创建者用户ID');
                 $table->string('title', 30)->default('')->charset('utf8mb4')->comment('公告标题');
-                $table->text('title')->charset('utf8mb4')->comment('公告内容');
+                $table->text('content')->charset('utf8mb4')->comment('公告内容');
                 $table->tinyInteger('is_delete')->default(0)->comment('是否删除  0: 否  1:已删除');
                 $table->dateTime('created_at')->nullable()->comment('创建时间');
                 $table->dateTime('updated_at')->nullable()->comment('更新时间');
