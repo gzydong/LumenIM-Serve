@@ -129,7 +129,7 @@ class TalkLogic extends Logic
      *
      * @param int $user_id 用户ID
      * @param int $receive_id 接收者ID（好友ID或群ID）
-     * @param int $source 接收者类型（1：好友  2：群）
+     * @param int $source 消息来源  1:好友消息 2:群聊消息
      * @param int $record_id 上一次查询的聊天记录ID
      * @param int $limit 查询数据长度
      * @return mixed
@@ -191,7 +191,7 @@ class TalkLogic extends Logic
      * 获取转发会话记录信息
      *
      * @param int $user_id 用户ID
-     * @param int $record_id
+     * @param int $record_id 聊天记录ID
      * @return array
      */
     public function getForwardRecords(int $user_id, int $record_id)
@@ -230,5 +230,63 @@ class TalkLogic extends Logic
 
         $rows = $rowsSqlObj->get()->toArray();
         return $this->handleChatRecords($rows);
+    }
+
+    /**
+     * 批量删除聊天消息
+     *
+     * @param int $user_id 用户ID
+     * @param int $source 消息来源  1:好友消息 2:群聊消息
+     * @param int $receive_id 好友ID或者群聊ID
+     * @param array $record_ids 聊天记录ID
+     * @return bool
+     */
+    public function removeRecords(int $user_id, int $source, int $receive_id, array $record_ids)
+    {
+
+    }
+
+    /**
+     * 撤回单条聊天消息
+     *
+     * @param int $user_id 用户ID
+     * @param int $record_id 聊天记录ID
+     * @return array
+     */
+    public function revokeRecord(int $user_id, int $record_id)
+    {
+
+    }
+
+    /**
+     * 消息合并转发逻辑
+     *
+     * @param int $user_id 当前用户ID
+     * @param int $source 消息来源  1:好友消息 2:群聊消息
+     * @param int $receive_id 当前转发消息的所属者(好友ID或者群聊ID)
+     * @param array $records_ids 转发消息的记录ID
+     * @param array $user_ids 转发消息的接收用户
+     * @param array $group_ids 转发消息的群组
+     * @return boolean
+     */
+    public function mergeForwardRecords(int $user_id, int $source, int $receive_id, array $records_ids, $user_ids = [], $group_ids = [])
+    {
+
+    }
+
+    /**
+     * 消息逐条转发逻辑
+     *
+     * @param int $user_id 当前用户ID
+     * @param int $source 消息来源  1:好友消息 2:群聊消息
+     * @param int $receive_id 当前转发消息的所属者(好友ID或者群聊ID)
+     * @param array $records_ids 转发消息的记录ID
+     * @param array $user_ids 转发消息的接收用户
+     * @param array $group_ids 转发消息的群组
+     * @return boolean
+     */
+    public function forwardRecords(int $user_id, int $source, int $receive_id, array $records_ids, $user_ids = [], $group_ids = [])
+    {
+
     }
 }
