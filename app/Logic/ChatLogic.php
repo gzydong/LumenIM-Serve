@@ -387,6 +387,8 @@ class ChatLogic extends Logic
             ->whereIn('users_chat_records.id', array_slice($records_ids, 0, 3))
             ->get(['users_chat_records.msg_type', 'users_chat_records.content', 'users_chat_records.is_code', 'users.nickname']);
         $arr = [];
+
+
         foreach ($rows as $row) {
             $text = substr(str_replace(PHP_EOL, "", $row->content), 0, 30);
             $arr[] = [

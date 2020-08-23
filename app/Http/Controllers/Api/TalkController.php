@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-use App\Logic\{ChatLogic};
+use App\Logic\{ChatLogic, TalkLogic};
 
 use App\Models\{
     User,
@@ -31,15 +31,17 @@ class TalkController extends CController
 
     public $request;
     public $chatLogic;
+    public $talkLogic;
     public $requestProxy;
 
-    public function __construct(Request $request, ChatLogic $chatLogic, RequestProxy $requestProxy)
+    public function __construct(Request $request, ChatLogic $chatLogic, RequestProxy $requestProxy, TalkLogic $talkLogic)
     {
         $this->request = $request;
 
         $this->chatLogic = $chatLogic;
 
         $this->requestProxy = $requestProxy;
+        $this->talkLogic = $talkLogic;
     }
 
     /**
@@ -133,7 +135,7 @@ class TalkController extends CController
      */
     public function list()
     {
-        $rows = $this->chatLogic->getUserChatList($this->uid());
+        $rows = $this->talkLogic->talkLists($this->uid());
         if ($rows) {
             $rows = arraysSort($rows, 'updated_at');
         }
@@ -185,59 +187,64 @@ class TalkController extends CController
             ]);
         }
 
-        if ($result = $this->chatLogic->getChatsRecords($user_id, $receive_id, $source, $record_id, $limit)) {
-            //消息处理
-            $result = array_map(function ($item) use ($user_id) {
-                $item['float'] = $item['user_id'] == 0 ? 'center' : ($item['user_id'] == $user_id ? 'right' : 'left');
-                $item['file_url'] = '';
-                $item['friend_remarks'] = '';
-                $item['forward_info'] = [];
+//        if ($result = $this->chatLogic->getChatsRecords($user_id, $receive_id, $source, $record_id, $limit)) {
+//            //消息处理
+//            $result = array_map(function ($item) use ($user_id) {
+//                $item['float'] = $item['user_id'] == 0 ? 'center' : ($item['user_id'] == $user_id ? 'right' : 'left');
+//                $item['file_url'] = '';
+//                $item['friend_remarks'] = '';
+//                $item['forward_info'] = [];
+//
+//                //消息类型处理
+//                switch ($item['msg_type']) {
+//                    case 1://文字消息
+//                        if ($item['is_code'] == 0) {
+//                            $item['content'] = replaceUrlToLink($item['content']);
+//                            $item['content'] = emojiReplace($item['content']);
+//                        } else {
+//                            $item['content'] = htmlspecialchars_decode($item['content']);
+//                        }
+//
+//                        break;
+//                    case 2://文件消息
+//                        $item['file_url'] = ($item['msg_type'] == 2) ? getFileUrl($item['save_dir']) : '';
+//                        break;
+//                    case 3://系统入群/退群消息
+//                        $item['group_notify'] = [];
+//                        if ($info = UsersChatRecordsGroupNotify::where('record_id', $item['id'])->first(['type', 'operate_user_id', 'user_ids'])) {
+//                            $operateUser = User::select('id', 'nickname')->where('id', $info->operate_user_id)->first();
+//                            $item['group_notify'] = [
+//                                'type' => $info->type,
+//                                'operate_user' => ['id' => $operateUser->id, 'nickname' => $operateUser->nickname],
+//                                'users' => []
+//                            ];
+//
+//                            if ($info->type == 1 || $info->type == 2) {
+//                                $item['group_notify']['users'] = User::select('id', 'nickname')->whereIn('id', explode(',', $info->user_ids))->get()->toArray();
+//                            } else if ($info->type == 3) {
+//                                $item['group_notify']['users'] = [$item['group_notify']['operate_user']];
+//                            }
+//                        }
+//
+//                        break;
+//                    case 4://会话记录转发消息
+//                        $forwardInfo = UsersChatRecordsForward::where('id', $item['forward_id'])->first(['records_id', 'text']);
+//                        $item['forward_info'] = [
+//                            'num' => substr_count($forwardInfo->records_id, ',') + 1,
+//                            'list' => json_decode($forwardInfo->text, true)
+//                        ];
+//                        unset($forwardInfo);
+//                        break;
+//                }
+//
+//                return $item;
+//            }, $result);
+//        }
 
-                //消息类型处理
-                switch ($item['msg_type']) {
-                    case 1://文字消息
-                        if ($item['is_code'] == 0) {
-                            $item['content'] = replaceUrlToLink($item['content']);
-                            $item['content'] = emojiReplace($item['content']);
-                        } else {
-                            $item['content'] = htmlspecialchars_decode($item['content']);
-                        }
 
-                        break;
-                    case 2://文件消息
-                        $item['file_url'] = ($item['msg_type'] == 2) ? getFileUrl($item['save_dir']) : '';
-                        break;
-                    case 3://系统入群/退群消息
-                        $item['group_notify'] = [];
-                        if ($info = UsersChatRecordsGroupNotify::where('record_id', $item['id'])->first(['type', 'operate_user_id', 'user_ids'])) {
-                            $operateUser = User::select('id', 'nickname')->where('id', $info->operate_user_id)->first();
-                            $item['group_notify'] = [
-                                'type' => $info->type,
-                                'operate_user' => ['id' => $operateUser->id, 'nickname' => $operateUser->nickname],
-                                'users' => []
-                            ];
+        $result = $this->talkLogic->getChatRecords($user_id, $receive_id, $source, $record_id, $limit);
 
-                            if ($info->type == 1 || $info->type == 2) {
-                                $item['group_notify']['users'] = User::select('id', 'nickname')->whereIn('id', explode(',', $info->user_ids))->get()->toArray();
-                            } else if ($info->type == 3) {
-                                $item['group_notify']['users'] = [$item['group_notify']['operate_user']];
-                            }
-                        }
 
-                        break;
-                    case 4://会话记录转发消息
-                        $forwardInfo = UsersChatRecordsForward::where('id', $item['forward_id'])->first(['records_id', 'text']);
-                        $item['forward_info'] = [
-                            'num' => substr_count($forwardInfo->records_id, ',') + 1,
-                            'list' => json_decode($forwardInfo->text, true)
-                        ];
-                        unset($forwardInfo);
-                        break;
-                }
-
-                return $item;
-            }, $result);
-        }
 
         return $this->ajaxSuccess('success', [
             'rows' => $result,

@@ -43,6 +43,7 @@ class SmsCode
      *
      * @param string $type 类型
      * @param string $mobile 手机号
+     * @return array|bool
      */
     public function send(string $type, string $mobile)
     {

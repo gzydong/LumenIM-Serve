@@ -383,7 +383,7 @@ function diffDate($day1, $day2)
     $second2 = strtotime($day2);
 
     if ($second1 < $second2) {
-        [$second1,$second2] = [$second2,$second1];
+        [$second1, $second2] = [$second2, $second1];
     }
 
     return ceil(($second1 - $second2) / 86400);
