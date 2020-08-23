@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -31,15 +32,15 @@ class CController extends Controller
     protected function getUser($isArray = false)
     {
         $uid = $this->uid();
-        if($uid == 0){
+        if ($uid == 0) {
             return [];
         }
 
-        if(!$isArray){
-            return User::where('id',$uid)->first();
+        if (!$isArray) {
+            return User::where('id', $uid)->first();
         }
 
-        return User::where('id',$uid)->first()->toArray();
+        return User::where('id', $uid)->first()->toArray();
     }
 
     /**

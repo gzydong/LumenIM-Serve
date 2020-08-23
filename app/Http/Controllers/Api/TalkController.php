@@ -7,18 +7,15 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Logic\{ChatLogic, TalkLogic};
 
-use App\Models\{
-    User,
+use App\Models\{ChatRecordsFile,
+    UsersChatList,
     UsersChatRecordsForward,
     UsersFriends,
-    UsersChatFiles,
-    UsersGroup,
-    UsersChatRecordsGroupNotify
+    UsersGroup
 };
 
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\RequestProxy;
-use App\Helpers\Socket\ChatService;
 
 /**
  * 聊天对话处理
@@ -69,7 +66,7 @@ class TalkController extends CController
             }
         }
 
-        $id = $this->chatLogic->createChatList($uid, $receive_id, $type);
+        $id = UsersChatList::addItem($uid, $receive_id, $type);
         return $id ? $this->ajaxSuccess('创建成功...', ['list_id' => $id]) : $this->ajaxError('创建失败...');
     }
 
@@ -84,8 +81,7 @@ class TalkController extends CController
 
         if (!isInt($list_id)) return $this->ajaxParamError();
 
-        $isTrue = $this->chatLogic->delChatList($this->uid(), $list_id);
-
+        $isTrue = UsersChatList::delItem($this->uid(), $list_id);
         return $isTrue ? $this->ajaxSuccess('操作完成...') : $this->ajaxError('操作失败...');
     }
 
@@ -103,8 +99,7 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->chatLogic->chatListTop($this->uid(), $list_id, $type == 1);
-
+        $isTrue = UsersChatList::topItem($this->uid(), $list_id, $type == 1);
         return $isTrue ? $this->ajaxSuccess('操作完成...') : $this->ajaxError('操作失败...');
     }
 
@@ -123,7 +118,7 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->chatLogic->setNotDisturb($this->uid(), $receive_id, $type, $not_disturb);
+        $isTrue = UsersChatList::notDisturbItem($this->uid(), $receive_id, $type, $not_disturb);
 
         return $isTrue ? $this->ajaxSuccess('设置成功...') : $this->ajaxError('设置失败...');
     }
@@ -187,64 +182,7 @@ class TalkController extends CController
             ]);
         }
 
-//        if ($result = $this->chatLogic->getChatsRecords($user_id, $receive_id, $source, $record_id, $limit)) {
-//            //消息处理
-//            $result = array_map(function ($item) use ($user_id) {
-//                $item['float'] = $item['user_id'] == 0 ? 'center' : ($item['user_id'] == $user_id ? 'right' : 'left');
-//                $item['file_url'] = '';
-//                $item['friend_remarks'] = '';
-//                $item['forward_info'] = [];
-//
-//                //消息类型处理
-//                switch ($item['msg_type']) {
-//                    case 1://文字消息
-//                        if ($item['is_code'] == 0) {
-//                            $item['content'] = replaceUrlToLink($item['content']);
-//                            $item['content'] = emojiReplace($item['content']);
-//                        } else {
-//                            $item['content'] = htmlspecialchars_decode($item['content']);
-//                        }
-//
-//                        break;
-//                    case 2://文件消息
-//                        $item['file_url'] = ($item['msg_type'] == 2) ? getFileUrl($item['save_dir']) : '';
-//                        break;
-//                    case 3://系统入群/退群消息
-//                        $item['group_notify'] = [];
-//                        if ($info = UsersChatRecordsGroupNotify::where('record_id', $item['id'])->first(['type', 'operate_user_id', 'user_ids'])) {
-//                            $operateUser = User::select('id', 'nickname')->where('id', $info->operate_user_id)->first();
-//                            $item['group_notify'] = [
-//                                'type' => $info->type,
-//                                'operate_user' => ['id' => $operateUser->id, 'nickname' => $operateUser->nickname],
-//                                'users' => []
-//                            ];
-//
-//                            if ($info->type == 1 || $info->type == 2) {
-//                                $item['group_notify']['users'] = User::select('id', 'nickname')->whereIn('id', explode(',', $info->user_ids))->get()->toArray();
-//                            } else if ($info->type == 3) {
-//                                $item['group_notify']['users'] = [$item['group_notify']['operate_user']];
-//                            }
-//                        }
-//
-//                        break;
-//                    case 4://会话记录转发消息
-//                        $forwardInfo = UsersChatRecordsForward::where('id', $item['forward_id'])->first(['records_id', 'text']);
-//                        $item['forward_info'] = [
-//                            'num' => substr_count($forwardInfo->records_id, ',') + 1,
-//                            'list' => json_decode($forwardInfo->text, true)
-//                        ];
-//                        unset($forwardInfo);
-//                        break;
-//                }
-//
-//                return $item;
-//            }, $result);
-//        }
-
-
         $result = $this->talkLogic->getChatRecords($user_id, $receive_id, $source, $record_id, $limit);
-
-
 
         return $this->ajaxSuccess('success', [
             'rows' => $result,
@@ -266,7 +204,7 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue, $message, $data] = $this->chatLogic->revokeRecords($user_id, $record_id);
+        [$isTrue, $message, $data] = $this->talkLogic->revokeRecords($user_id, $record_id);
         if ($isTrue) {
             //这里需要调用WebSocket推送接口
             $this->requestProxy->send('proxy/event/revoke-records', [
@@ -288,22 +226,25 @@ class TalkController extends CController
     public function removeChatRecords()
     {
         $user_id = $this->uid();
+
         //消息来源（1：好友消息 2：群聊消息）
         $source = $this->request->post('source', 0);
+
         //接收者ID（好友ID或者群聊ID）
         $receive_id = $this->request->post('receive_id', 0);
+
         //消息ID
         $record_ids = explode(',', $this->request->get('record_id', ''));
         if (!in_array($source, [1, 2]) || !isInt($receive_id) || !checkIds($record_ids)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->chatLogic->removeRecords($user_id, $source, $receive_id, $record_ids);
+        $isTrue = $this->talkLogic->removeRecords($user_id, $source, $receive_id, $record_ids);
         return $isTrue ? $this->ajaxSuccess('删除成功...') : $this->ajaxError('删除失败...');
     }
 
     /**
-     * 转发聊天记录
+     * 转发聊天记录(待优化)
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -357,12 +298,12 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        $rows = $this->chatLogic->getForwardRecords($this->uid(), $records_id);
+        $rows = $this->talkLogic->getForwardRecords($this->uid(), $records_id);
         return $this->ajaxSuccess('success', ['rows' => $rows]);
     }
 
     /**
-     * 上传聊天对话图片
+     * 上传聊天对话图片（待优化）
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -382,11 +323,11 @@ class TalkController extends CController
         $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
 
         //保存图片
-        if (!$save_path = Storage::disk('uploads')->putFileAs('images/talks/' . date('Ymd'), $file, $filename)) {
+        if (!$save_path = Storage::disk('uploads')->putFileAs('media/images/talks/' . date('Ymd'), $file, $filename)) {
             return $this->ajaxError('图片上传失败');
         }
 
-        $result = UsersChatFiles::create([
+        $result = ChatRecordsFile::create([
             'user_id' => $this->uid(),
             'file_type' => 1,
             'file_suffix' => $file->getClientOriginalExtension(),
@@ -419,42 +360,15 @@ class TalkController extends CController
         }
 
         //判断是否属于群成员
-        if ($source == 2 && !ChatService::checkGroupMember($receive_id, $user_id)) {
-            $this->ajaxReturn(301, '非群聊成员不能查看群聊信息');
+        if ($source == 2 && UsersGroup::isMember($receive_id, $user_id) == false) {
+            return $this->ajaxSuccess('非群聊成员不能查看群聊信息', [
+                'rows' => [],
+                'record_id' => 0,
+                'limit' => $limit
+            ]);
         }
 
-        if ($result = $this->chatLogic->getChatsRecords($user_id, $receive_id, $source, $record_id, $limit, [1, 2, 4])) {
-            //消息处理
-            $result = array_map(function ($item) use ($user_id) {
-                $item['float'] = $item['user_id'] == 0 ? 'center' : ($item['user_id'] == $user_id ? 'right' : 'left');
-                $item['file_url'] = '';
-                $item['friend_remarks'] = '';
-
-                $item['forward_info'] = [];
-
-                //消息类型处理
-                switch ($item['msg_type']) {
-                    case 1://文字消息
-                        if ($item['is_code'] == 0) {
-                            $item['content'] = replaceUrlToLink($item['content']);
-                            $item['content'] = emojiReplace($item['content']);
-                        } else {
-                            $item['content'] = htmlspecialchars_decode($item['content']);
-                        }
-
-                        break;
-                    case 2://文字消息
-                        $item['file_url'] = ($item['msg_type'] == 2) ? getFileUrl($item['save_dir']) : '';
-                        break;
-                    case 4://会话记录转发消息
-                        $item['forward_info'] = json_decode(UsersChatRecordsForward::where('id', $item['forward_id'])->value('text'), true);
-                        break;
-                }
-
-                return $item;
-            }, $result);
-        }
-
+        $result = $this->talkLogic->getChatRecords($user_id, $receive_id, $source, $record_id, $limit, [1, 2, 5]);
         return $this->ajaxSuccess('success', [
             'rows' => $result,
             'record_id' => $result ? $result[count($result) - 1]['id'] : 0,
@@ -463,7 +377,7 @@ class TalkController extends CController
     }
 
     /**
-     * 搜索聊天记录
+     * 搜索聊天记录（待优化）
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -493,7 +407,7 @@ class TalkController extends CController
         $result = $this->chatLogic->searchChatRecords($user_id, $receive_id, $source, $page, $page_size, $params);
         if ($result['rows']) {
             $result['rows'] = array_map(function ($items) use ($keywords) {
-                $items['content'] = str_replace($keywords, "<mark>{$keywords}</mark>", $items['content']);
+                $items['content'] = str_ireplace($keywords, "<mark>{$keywords}</mark>", $items['content']);
                 return $items;
             }, $result['rows']);
         }
@@ -502,7 +416,7 @@ class TalkController extends CController
     }
 
     /**
-     * 获取聊天记录上下文数据
+     * 获取聊天记录上下文数据（待优化）
      */
     public function getRecordsContext()
     {

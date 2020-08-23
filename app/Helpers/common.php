@@ -113,7 +113,7 @@ function replaceUrlToLink(string $str)
 {
     $re = '@((https|http)?://([-\w\.]+)+(:\d+)?(/([\w/_\-.#%]*(\?\S+)?)?)?)@';
     return preg_replace_callback($re, function ($matches) {
-        return sprintf('<a href="%s" style="color: #daf3ff;" target="_blank">%s</a>', trim($matches[0], '&quot;'), $matches[0]);
+        return sprintf('<a href="%s" target="_blank">%s</a>', trim($matches[0], '&quot;'), $matches[0]);
     }, $str);
 }
 

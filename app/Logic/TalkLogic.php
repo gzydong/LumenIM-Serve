@@ -205,9 +205,10 @@ class TalkLogic extends Logic
      * @param int $source 消息来源  1:好友消息 2:群聊消息
      * @param int $record_id 上一次查询的聊天记录ID
      * @param int $limit 查询数据长度
+     * @param array $msg_type 消息类型
      * @return mixed
      */
-    public function getChatRecords(int $user_id, int $receive_id, int $source, int $record_id, $limit = 30)
+    public function getChatRecords(int $user_id, int $receive_id, int $source, int $record_id, $limit = 30, $msg_type = [])
     {
         $fields = [
             'chat_records.id',
@@ -243,6 +244,10 @@ class TalkLogic extends Logic
         } else {
             $rowsSqlObj->where('chat_records.receive_id', $receive_id);
             $rowsSqlObj->where('chat_records.source', $source);
+        }
+
+        if ($msg_type) {
+            $rowsSqlObj->whereIn('chat_records.msg_type', $msg_type);
         }
 
         //过滤用户删除记录
@@ -580,5 +585,12 @@ class TalkLogic extends Logic
         }
 
         return $insRecordIds;
+    }
+
+    /**
+     * 关键词搜索聊天记录
+     */
+    public function searchRecords(){
+
     }
 }
