@@ -388,7 +388,7 @@ class TalkController extends CController
             ]);
         }
 
-        $result = $this->talkLogic->getChatRecords($user_id, $receive_id, $source, $record_id, $limit, [1, 2, 5]);
+        $result = $this->talkLogic->getChatRecords($user_id, $receive_id, $source, $record_id, $limit, [1, 2, 4, 5]);
         return $this->ajaxSuccess('success', [
             'rows' => $result,
             'record_id' => $result ? $result[count($result) - 1]['id'] : 0,
@@ -491,5 +491,37 @@ class TalkController extends CController
             'record_id' => $rows ? $rows[count($rows) - 1]['id'] : 0,
             'limit' => $rows
         ]);
+    }
+
+    /**
+     * 发送代码块消息
+     */
+    public function sendCodeBlock()
+    {
+
+    }
+
+    /**
+     * 发送图片消息
+     */
+    public function sendImage()
+    {
+
+    }
+
+    /**
+     * 发送文件消息
+     */
+    public function sendFile()
+    {
+
+    }
+
+    /**
+     * 发送表情包
+     */
+    public function sendEmoticon()
+    {
+
     }
 }
