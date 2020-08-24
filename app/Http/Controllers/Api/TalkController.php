@@ -9,7 +9,6 @@ use App\Logic\{ChatLogic, TalkLogic};
 
 use App\Models\{ChatRecordsFile,
     UsersChatList,
-    UsersChatRecordsForward,
     UsersFriends,
     UsersGroup
 };
@@ -139,6 +138,14 @@ class TalkController extends CController
     }
 
     /**
+     * 获取指定的对话栏目
+     */
+    public function listItem()
+    {
+
+    }
+
+    /**
      * 更新对话列表未读数
      *
      * @return \Illuminate\Http\JsonResponse
@@ -204,14 +211,11 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue, $message, $data] = $this->talkLogic->revokeRecords($user_id, $record_id);
+        [$isTrue, $message, $data] = $this->talkLogic->revokeRecord($user_id, $record_id);
         if ($isTrue) {
             //这里需要调用WebSocket推送接口
             $this->requestProxy->send('proxy/event/revoke-records', [
-                'record_id' => $data['id'],
-                'source' => $data['source'],
-                'user_id' => $data['user_id'],
-                'receive_id' => $data['receive_id'],
+                'record_id' => $data['id']
             ]);
         }
 
@@ -247,6 +251,7 @@ class TalkController extends CController
      * 转发聊天记录(待优化)
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function forwardChatRecords()
     {
@@ -268,14 +273,29 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        if ($forward_mode == 1) {//逐条转发
-            $ids = $this->chatLogic->forwardRecords($user_id, $source, $receive_id, $records_ids, $receive_user_ids, $receive_group_ids);
+        $items = array_merge(
+            array_map(function ($friend_id) {
+                return ['source' => 1, 'id' => $friend_id];
+            }, $receive_user_ids),
+            array_map(function ($group_id) {
+                return ['source' => 2, 'id' => $group_id];
+            }, $receive_group_ids)
+        );
+
+        if ($forward_mode == 1) {//单条转发
+            $ids = $this->talkLogic->forwardRecords($user_id, $receive_id, $records_ids, $items);
         } else {//合并转发
-            $ids = $this->chatLogic->mergeForwardRecords($user_id, $source, $receive_id, $records_ids, $receive_user_ids, $receive_group_ids);
+            $ids = $this->talkLogic->mergeForwardRecords($user_id, $receive_id, $source, $records_ids, $items);
         }
 
-        if ($ids === false) {
+        if (!$ids) {
             return $this->ajaxError('转发失败...');
+        }
+
+        if ($receive_user_ids) {
+            foreach ($receive_user_ids as $v) {
+                CacheHelper::setChatUnreadNum($v, $user_id);
+            }
         }
 
         //这里需要调用WebSocket推送接口

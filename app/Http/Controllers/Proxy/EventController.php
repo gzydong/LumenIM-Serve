@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Proxy;
 
+use App\Helpers\Socket\NotifyInterface;
 use App\Http\Controllers\Controller;
+use App\Models\ChatRecords;
+use App\Models\ChatRecordsForward;
+use App\Models\ChatRecordsInvite;
 use App\Models\User;
-use App\Models\UsersChatRecords;
-use App\Models\UsersChatRecordsGroupNotify;
 use App\Models\UsersGroup;
 use Illuminate\Http\Request;
-use App\Helpers\Socket\ChatService;
 use App\Facades\SocketResourceHandle;
 
 class EventController extends Controller
@@ -30,15 +31,15 @@ class EventController extends Controller
             return $this->ajaxReturn(301, '请求参数错误');
         }
 
-        $recordInfo = UsersChatRecords::where('id', $record_id)->where('source', 2)->first([
-            'id', 'msg_type', 'user_id', 'receive_id', 'send_time'
+        $recordInfo = ChatRecords::where('id', $record_id)->where('source', 2)->first([
+            'id', 'msg_type', 'user_id', 'receive_id', 'created_at'
         ]);
 
         if (!$recordInfo) {
             return $this->ajaxReturn(305, 'fail');
         }
 
-        $notifyInfo = UsersChatRecordsGroupNotify::where('record_id', $record_id)->first([
+        $notifyInfo = ChatRecordsInvite::where('record_id', $record_id)->first([
             'record_id', 'type', 'operate_user_id', 'user_ids'
         ]);
 
@@ -66,17 +67,24 @@ class EventController extends Controller
         }
 
         //推送群聊消息
-        SocketResourceHandle::response('chat_message', $clientFds,
-            ChatService::getChatMessage(0, $recordInfo->receive_id, 2, 1, [
-                'id' => $record_id,
-                'msg_type' => 3,
-                'group_notify' => [
+        SocketResourceHandle::response('chat_message', $clientFds, [
+            'send_user' => 0,
+            'receive_user' => $recordInfo->receive_id,
+            'source_type' => 2,
+            'data' => NotifyInterface::formatTalkMsg([
+                "id" => $recordInfo->id,
+                "source" => 2,
+                "msg_type" => 3,
+                "user_id" => 0,
+                "receive_id" => $recordInfo->receive_id,
+                "invite" => [
                     'type' => $notifyInfo->type,
                     'operate_user' => ['id' => $userInfo->id, 'nickname' => $userInfo->nickname],
                     'users' => User::select('id', 'nickname')->whereIn('id', $membersIds)->get()->toArray()
-                ]
+                ],
+                "created_at" => $recordInfo->created_at,
             ])
-        );
+        ]);
 
         // 推送入群通知
         if ($notifyInfo->type == 1) {
@@ -101,7 +109,7 @@ class EventController extends Controller
             return $this->ajaxReturn(301, '请求参数错误');
         }
 
-        $records = UsersChatRecords::where('id', $record_id)->first(['id', 'source', 'user_id', 'receive_id']);
+        $records = ChatRecords::where('id', $record_id)->first(['id', 'source', 'user_id', 'receive_id']);
         if (!$records) {
             return $this->ajaxReturn(305, '数据不存在...');
         }
@@ -138,21 +146,24 @@ class EventController extends Controller
             return $this->ajaxReturn(301, '请求参数错误...');
         }
 
-        $rows = UsersChatRecords::leftJoin('users_chat_records_forward as forward', 'forward.id', '=', 'users_chat_records.forward_id')
-            ->leftJoin('users', 'users.id', '=', 'users_chat_records.user_id')
-            ->whereIn('users_chat_records.id', $records_id)
+        $rows = ChatRecordsForward::leftJoin('users', 'users.id', '=', 'chat_records_forward.user_id')
+            ->leftJoin('chat_records', 'chat_records.id', '=', 'chat_records_forward.record_id')
+            ->whereIn('chat_records_forward.record_id', $records_id)
             ->get([
-                'users.avatar',
+                'chat_records.id',
+                'chat_records.source',
+                'chat_records.msg_type',
+                'chat_records.user_id',
+                'chat_records.receive_id',
+                'chat_records.content',
+                'chat_records.is_revoke',
+                'chat_records.created_at',
+
                 'users.nickname',
-                'users_chat_records.id',
-                'users_chat_records.source',
-                'users_chat_records.msg_type',
-                'users_chat_records.user_id',
-                'users_chat_records.receive_id',
-                'users_chat_records.forward_id',
-                'users_chat_records.send_time',
-                'forward.text as forward_info',
-                'forward.records_id as records_id',
+                'users.avatar as avatar',
+
+                'chat_records_forward.records_id',
+                'chat_records_forward.text',
             ]);
 
         foreach ($rows as $records) {
@@ -165,32 +176,25 @@ class EventController extends Controller
                 $client = SocketResourceHandle::getRoomGroupName($records->receive_id);
             }
 
-            SocketResourceHandle::response('chat_message', $client,
-                ChatService::getChatMessage(
-                    $records->user_id,
-                    $records->receive_id,
-                    $records->source,
-                    $records->msg_type,
-                    [
-                        'id' => $records->id,
-                        'msg_type' => $records->msg_type,
-                        'source' => $records->source,
-                        'avatar' => $records->avatar,
-                        'nickname' => $records->nickname,
-                        'friend_remarks' => $records->source == 2 ? '临时名片' : '',//群名片
-
-                        'forward_id' => $records->forward_id,
-                        'forward_info' => [
-                            'num' => substr_count($records->records_id, ',') + 1,
-                            'list' => json_decode($records->forward_info, true)
-                        ],
-
-                        'send_time' => $records->send_time,
+            SocketResourceHandle::response('chat_message', $client, [
+                'send_user' => $records->user_id,
+                'receive_user' => $records->receive_id,
+                'source_type' => $records->source,
+                'data' => NotifyInterface::formatTalkMsg([
+                    'id' => $records->id,
+                    'msg_type' => $records->msg_type,
+                    'source' => $records->source,
+                    'avatar' => $records->avatar,
+                    'nickname' => $records->nickname,
+                    "user_id" => $records->user_id,
+                    "receive_id" => $records->receive_id,
+                    "created_at" => $records->created_at,
+                    "forward" => [
+                        'num' => substr_count($records->records_id, ',') + 1,
+                        'list' => json_decode($records->text, true) ?? []
                     ]
-                )
-            );
-
-            unset($forwardInfo);
+                ])
+            ]);
         }
 
         return $this->ajaxReturn(200, 'success');

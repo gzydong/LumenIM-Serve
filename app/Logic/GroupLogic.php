@@ -4,9 +4,10 @@ namespace App\Logic;
 
 use App\Helpers\Cache\CacheHelper;
 use App\Models\{
+    ChatRecords,
+    ChatRecordsInvite,
     UsersChatList,
     UsersChatRecords,
-    UsersChatRecordsGroupNotify,
     UsersGroup,
     UsersGroupMember
 };
@@ -73,7 +74,7 @@ class GroupLogic extends Logic
                 throw new \Exception('创建群成员的聊天列表失败');
             }
 
-            $result = UsersChatRecords::create([
+            $result = ChatRecords::create([
                 'msg_type' => 3,
                 'source' => 2,
                 'user_id' => 0,
@@ -83,7 +84,8 @@ class GroupLogic extends Logic
 
             if (!$result) throw new \Exception('创建群成员的聊天列表失败');
 
-            UsersChatRecordsGroupNotify::create([
+
+            ChatRecordsInvite::create([
                 'record_id' => $result->id,
                 'type' => 1,
                 'operate_user_id' => $user_id,
@@ -97,7 +99,7 @@ class GroupLogic extends Logic
         }
 
         // 设置群聊消息缓存
-        CacheHelper::setLastChatCache(['send_time' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $insRes->id, 0);
+        CacheHelper::setLastChatCache(['created_at' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $insRes->id, 0);
 
         return [true, ['record_id' => $result->id, 'group_id' => $insRes->id]];
     }
@@ -115,17 +117,18 @@ class GroupLogic extends Logic
         $info = UsersGroupMember::select(['id', 'status'])->where('group_id', $group_id)->where('user_id', $user_id)->first();
 
         //判断主动邀请方是否属于聊天群成员
-        if (!$info && $info->status == 1) return [false, 0];
+        if (!$info && $info->status == 1) {
+            return [false, 0];
+        }
 
-        if (empty($uids)) return [false, 0];
+        if (empty($uids)) {
+            return [false, 0];
+        }
 
         $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
 
-        $members = UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $uids)->get(['id', 'user_id', 'status'])->toArray();
-        $members = replaceArrayKey('user_id', $members);
-
-        $cahtArr = UsersChatList::where('group_id', $group_id)->whereIn('uid', $uids)->get(['id', 'uid', 'status'])->toArray();
-        $cahtArr = $cahtArr ? replaceArrayKey('uid', $cahtArr) : [];
+        $members = UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $uids)->get(['id', 'user_id', 'status'])->keyBy('user_id')->toArray();
+        $cahtArr = UsersChatList::where('group_id', $group_id)->whereIn('uid', $uids)->get(['id', 'uid', 'status'])->keyBy('uid')->toArray();
 
         foreach ($uids as $uid) {
             if (!isset($members[$uid])) {//存在聊天群成员记录
@@ -158,17 +161,17 @@ class GroupLogic extends Logic
                 DB::table('users_chat_list')->insert($insertArr1);
             }
 
-            $result = UsersChatRecords::create([
+            $result = ChatRecords::create([
                 'msg_type' => 3,
                 'source' => 2,
                 'user_id' => 0,
                 'receive_id' => $group_id,
-                'send_time' => date('Y-m-d H:i;s')
+                'created_at' => date('Y-m-d H:i;s')
             ]);
 
             if (!$result) throw new \Exception('添加群通知记录失败1');
 
-            $result2 = UsersChatRecordsGroupNotify::create([
+            $result2 = ChatRecordsInvite::create([
                 'record_id' => $result->id,
                 'type' => 1,
                 'operate_user_id' => $user_id,
@@ -183,7 +186,7 @@ class GroupLogic extends Logic
             return [false, 0];
         }
 
-        CacheHelper::setLastChatCache(['send_time' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $group_id, 0);
+        CacheHelper::setLastChatCache(['created_at' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $group_id, 0);
         return [true, $result->id];
     }
 
@@ -208,19 +211,19 @@ class GroupLogic extends Logic
                 throw new \Exception('修改群成员状态失败');
             }
 
-            $result = UsersChatRecords::create([
+            $result = ChatRecords::create([
                 'msg_type' => 3,
                 'source' => 2,
                 'user_id' => 0,
                 'receive_id' => $group_id,
-                'send_time' => date('Y-m-d H:i;s')
+                'created_at' => date('Y-m-d H:i;s')
             ]);
 
             if (!$result) throw new \Exception('添加群通知记录失败1');
 
-            $result2 = UsersChatRecordsGroupNotify::create([
+            $result2 = ChatRecordsInvite::create([
                 'record_id' => $result->id,
-                'type' => 2,
+                'type' => 3,
                 'operate_user_id' => $user_id,
                 'user_ids' => implode(',', $member_ids)
             ]);
@@ -232,7 +235,6 @@ class GroupLogic extends Logic
             DB::rollBack();
             return [false, 0];
         }
-
 
         return [true, $result->id];
     }
@@ -284,20 +286,20 @@ class GroupLogic extends Logic
             if ($res) {
                 UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->update(['status' => 0]);
 
-                $result = UsersChatRecords::create([
+                $result = ChatRecords::create([
                     'msg_type' => 3,
                     'source' => 2,
                     'user_id' => 0,
                     'receive_id' => $group_id,
                     'content' => $user_id,
-                    'send_time' => date('Y-m-d H:i;s')
+                    'created_at' => date('Y-m-d H:i;s')
                 ]);
 
                 if (!$result) throw new \Exception('添加群通知记录失败 : quitGroupChat');
 
-                $result2 = UsersChatRecordsGroupNotify::create([
+                $result2 = ChatRecordsInvite::create([
                     'record_id' => $result->id,
-                    'type' => 3,
+                    'type' => 2,
                     'operate_user_id' => $user_id,
                     'user_ids' => $user_id
                 ]);

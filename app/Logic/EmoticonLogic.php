@@ -2,9 +2,9 @@
 
 namespace App\Logic;
 
+use App\Models\ChatRecords;
+use App\Models\ChatRecordsFile;
 use App\Models\EmoticonDetails;
-use App\Models\UsersChatFiles;
-use App\Models\UsersChatRecords;
 use App\Models\UsersEmoticon;
 use App\Models\UsersGroup;
 
@@ -80,7 +80,8 @@ class EmoticonLogic extends Logic
      */
     public function collectEmoticon(int $user_id, int $cid)
     {
-        $result = UsersChatRecords::where([
+
+        $result = ChatRecords::where([
             ['id', '=', $cid],
             ['msg_type', '=', 2],
             ['is_revoke', '=', 0],
@@ -98,7 +99,7 @@ class EmoticonLogic extends Logic
             }
         }
 
-        $fileInfo = UsersChatFiles::where('id', $result->file_id)->where('file_type', 1)->first([
+        $fileInfo = ChatRecordsFile::where('id', $result->file_id)->where('file_type', 1)->first([
             'file_suffix',
             'file_size',
             'save_dir'

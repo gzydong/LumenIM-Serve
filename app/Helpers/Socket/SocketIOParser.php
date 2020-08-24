@@ -51,7 +51,6 @@ class SocketIOParser extends Parser
         return sprintf($format, $event, $data);
     }
 
-
     /**
      * Decode message from websocket client.
      * Define and return payload here.

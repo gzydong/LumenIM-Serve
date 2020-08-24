@@ -85,7 +85,7 @@ class TalkLogic extends Logic
 
             if ($records) {
                 $data['msg_text'] = $records['text'];
-                $data['updated_at'] = $records['send_time'];
+                $data['updated_at'] = $records['created_at'];
             }
 
             return $data;
@@ -482,7 +482,7 @@ class TalkLogic extends Logic
      * @param int $source 消息来源  1:好友消息 2:群聊消息
      * @param array $records_ids 转发消息的记录ID
      * @param array $receive_ids 接受者数组  例如:[['source' => 1,'id' => 3045],['source' => 1,'id' => 3046],['source' => 1,'id' => 1658]] 二维数组
-     * @return boolean
+     * @return array
      */
     public function mergeForwardRecords(int $user_id, int $receive_id, int $source, $records_ids, array $receive_ids)
     {
@@ -495,14 +495,14 @@ class TalkLogic extends Logic
         if ($source == 2) {//群聊消息
             //判断是否是群聊成员
             if (!UsersGroup::isMember($receive_id, $user_id)) {
-                return false;
+                return [];
             }
 
             $sqlObj = $sqlObj->where('receive_id', $receive_id)->whereIn('msg_type', $msg_type)->where('source', 2)->where('is_revoke', 0);
         } else {//私聊消息
             //判断是否存在好友关系
             if (!UsersFriends::isFriend($user_id, $receive_id)) {
-                return false;
+                return [];
             }
 
             $sqlObj = $sqlObj->where(function ($query) use ($user_id, $receive_id) {
@@ -520,7 +520,7 @@ class TalkLogic extends Logic
 
         //判断消息记录是否存在
         if (count($result) != count($records_ids)) {
-            return false;
+            return [];
         }
 
         $rows = ChatRecords::leftJoin('users', 'users.id', '=', 'chat_records.user_id')
@@ -589,8 +589,61 @@ class TalkLogic extends Logic
 
     /**
      * 关键词搜索聊天记录
+     *
+     * @param int $user_id 用户ID
+     * @param int $receive_id 接收者ID(用户ID或群聊接收ID)
+     * @param int $source 聊天来源（1:私信 2:群聊）
+     * @param int $page 当前查询分页
+     * @param int $page_size 分页大小
+     * @param array $params 查询参数
+     * @return mixed
      */
-    public function searchRecords(){
+    public function searchRecords(int $user_id, int $receive_id, int $source, int $page, int $page_size, array $params)
+    {
+        $fields = [
+            'chat_records.id',
+            'chat_records.source',
+            'chat_records.msg_type',
+            'chat_records.user_id',
+            'chat_records.receive_id',
+            'chat_records.content',
+            'chat_records.is_revoke',
+            'chat_records.created_at',
 
+            'users.nickname',
+            'users.avatar as avatar',
+        ];
+
+        $rowsSqlObj = ChatRecords::select($fields)->leftJoin('users', 'users.id', '=', 'chat_records.user_id');
+        if ($source == 1) {
+            $rowsSqlObj->where(function ($query) use ($user_id, $receive_id) {
+                $query->where([
+                    ['chat_records.user_id', '=', $user_id],
+                    ['chat_records.receive_id', '=', $receive_id]
+                ])->orWhere([
+                    ['chat_records.user_id', '=', $receive_id],
+                    ['chat_records.receive_id', '=', $user_id]
+                ]);
+            });
+        } else {
+            $rowsSqlObj->where('chat_records.receive_id', $receive_id);
+            $rowsSqlObj->where('chat_records.source', $source);
+        }
+
+        if (isset($params['keywords'])) {
+            $rowsSqlObj->where('chat_records.content', 'like', "%{$params['keywords']}%");
+        }
+
+        if (isset($params['date'])) {
+            $rowsSqlObj->whereDate('chat_records.created_at', $params['date']);
+        }
+
+        $count = $rowsSqlObj->count();
+        if ($count == 0) {
+            return $this->packData([], 0, $page, $page_size);
+        }
+
+        $rows = $rowsSqlObj->orderBy('chat_records.id', 'desc')->forPage($page, $page_size)->get()->toArray();
+        return $this->packData($this->handleChatRecords($rows), $count, $page, $page_size);
     }
 }

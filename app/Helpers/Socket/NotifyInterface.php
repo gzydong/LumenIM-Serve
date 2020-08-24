@@ -2,6 +2,8 @@
 
 namespace App\Helpers\Socket;
 
+use App\Models\User;
+
 class NotifyInterface
 {
     /**
@@ -12,6 +14,17 @@ class NotifyInterface
      */
     public static function formatTalkMsg(array $data)
     {
+        // 缓存优化
+        if(!isset($data['nickname']) || !isset($data['avatar']) || empty($data['nickname']) || empty($data['avatar'])){
+            if(isset($data['user_id']) && !empty($data['user_id'])){
+                $info = User::where('id',$data['user_id'])->first(['nickname','avatar']);
+                if($info){
+                    $data['nickname'] = $info->nickname;
+                    $data['avatar'] = $info->avatar;
+                }
+            }
+        }
+
         $arr = [
             "id" => 0,
             "source" => 1,
@@ -35,21 +48,5 @@ class NotifyInterface
         ];
 
         return array_merge($arr, array_intersect_key($data, $arr));
-    }
-
-    /**
-     * 消息加密方法
-     */
-    public static function encode()
-    {
-
-    }
-
-    /**
-     * 消息解密方法
-     */
-    public static function decode()
-    {
-
     }
 }
