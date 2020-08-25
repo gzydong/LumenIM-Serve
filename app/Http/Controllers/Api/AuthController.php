@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Events\UserLoginLogEvent;
 use App\Models\User;
 use App\Logic\UsersLogic;
-use App\Helpers\{JwtAuth, SmsCode, MobileInfo};
+use App\Helpers\{JwtAuth, SmsCode};
 
 /**
  * 接口授权登录控制器

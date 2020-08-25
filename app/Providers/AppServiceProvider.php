@@ -1,10 +1,13 @@
 <?php
+
 namespace App\Providers;
 
 use App\Helpers\Socket\SocketResourceHandle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+
+use App\Services\UnreadTalkService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SocketResourceHandle::class, function ($app) {
             return new SocketResourceHandle();
         });
+
+        $this->app->singleton(UnreadTalkService::class, function ($app) {
+            return new UnreadTalkService();
+        });
+
+        $this->app->alias(UnreadTalkService::class, 'unread.talk');
     }
 
     /**
@@ -30,8 +39,8 @@ class AppServiceProvider extends ServiceProvider
     {
         DB::listen(function ($query) {
             // 查询时间超过一分钟记录日志
-            if($query->time > 1000){
-                Log::alert($query->sql." >>> 查询时间 time {$query->time}ms");
+            if ($query->time > 1000) {
+                Log::alert($query->sql . " >>> 查询时间 time {$query->time}ms");
             }
         });
     }

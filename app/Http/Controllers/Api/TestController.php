@@ -8,6 +8,7 @@ use App\Models\Article;
 use App\Models\ArticleClass;
 use App\Models\ChatRecordsForward;
 use App\Models\UsersFriends;
+use App\Services\UnreadTalkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,10 +23,13 @@ class TestController extends CController
 {
     public function test(TalkLogic $talkLogic)
     {
-        $data = NotifyInterface::formatTalkMsg([]);
+//        $model = new UnreadTalkService();
+//
+//        $num = $model->setInc(2055,2059);
+//        app('unread.talk')->setInc(2055,2078);
 
-        $str = $this->StrToBin(json_encode($data));
-        dd($this->BinToStr($str));
+        $data = app('unread.talk')->get(2055,2078);
+        dd($data);
     }
 
 
