@@ -10,4 +10,5 @@ $router->group(['middleware' => []], function () use ($router) {
 
     $router->post('event/revoke-records', ['uses' => 'EventController@revokeRecords']);
     $router->post('event/forward-chat-records', ['uses' => 'EventController@forwardChatRecords']);
+    $router->post('event/push-talk-message', ['uses' => 'EventController@pushTalkMessage']);
 });

@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Proxy;
 use App\Helpers\Socket\NotifyInterface;
 use App\Http\Controllers\Controller;
 use App\Models\ChatRecords;
+use App\Models\ChatRecordsCode;
+use App\Models\ChatRecordsFile;
 use App\Models\ChatRecordsForward;
 use App\Models\ChatRecordsInvite;
 use App\Models\User;
 use App\Models\UsersGroup;
 use Illuminate\Http\Request;
 use App\Facades\SocketResourceHandle;
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
@@ -198,5 +201,73 @@ class EventController extends Controller
         }
 
         return $this->ajaxReturn(200, 'success');
+    }
+
+    /**
+     * 根据消息ID推送客户端
+     */
+    public function pushTalkMessage()
+    {
+        $record_id = $this->request->post('record_id', 0);
+        $info = ChatRecords::leftJoin('users', 'users.id', '=', 'chat_records.user_id')->where('chat_records.id', $record_id)->first([
+            'chat_records.id',
+            'chat_records.source',
+            'chat_records.msg_type',
+            'chat_records.user_id',
+            'chat_records.receive_id',
+            'chat_records.content',
+            'chat_records.is_revoke',
+            'chat_records.created_at',
+
+            'users.nickname',
+            'users.avatar as avatar',
+        ]);
+
+
+        Log::info("请求数据 ： {$record_id}");
+        if (!$info) {
+            return $this->ajaxReturn(305, 'fail');
+        }
+
+        if ($info->source == 1) {
+            $client = array_merge(
+                SocketResourceHandle::getUserFds($info->user_id),
+                SocketResourceHandle::getUserFds($info->receive_id)
+            );
+        } else {
+            $client = SocketResourceHandle::getRoomGroupName($info->receive_id);
+        }
+
+        $file = [];
+        $code_block = [];
+
+        if($info->msg_type == 2){
+            $file = ChatRecordsFile::where('record_id',$info->id)->first(['id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir']);
+            $file = $file ? $file->toArray() : [];
+            if($file){
+                $file['file_url'] = getFileUrl($file['save_dir']);
+            }
+        }else if($info->msg_type == 5){
+            $code_block = ChatRecordsCode::where('record_id',$info->id)->first(['record_id', 'code_lang', 'code']);
+            $code_block = $code_block ? $code_block->toArray() : [];
+        }
+
+        SocketResourceHandle::response('chat_message', $client, [
+            'send_user' => $info->user_id,
+            'receive_user' => $info->receive_id,
+            'source_type' => $info->source,
+            'data' => NotifyInterface::formatTalkMsg([
+                'id' => $info->id,
+                'msg_type' => $info->msg_type,
+                'source' => $info->source,
+                'avatar' => $info->avatar,
+                'nickname' => $info->nickname,
+                "user_id" => $info->user_id,
+                "receive_id" => $info->receive_id,
+                "created_at" => $info->created_at,
+                "file" => $file,
+                "code_block" => $code_block
+            ])
+        ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Helpers\Socket;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class NotifyInterface
 {

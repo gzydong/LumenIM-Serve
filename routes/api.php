@@ -34,7 +34,6 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->post('user/search-user', ['uses' => 'UsersController@searchUserInfo']);
     $router->post('user/edit-friend-remark', ['uses' => 'UsersController@editFriendRemark']);
 
-
     $router->post('user/send-friend-apply', ['uses' => 'UsersController@sendFriendApply']);
     $router->post('user/handle-friend-apply', ['uses' => 'UsersController@handleFriendApply']);
     $router->post('user/delete-friend-apply', ['uses' => 'UsersController@deleteFriendApply']);
@@ -53,24 +52,30 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
  * TalkController 控制器分组
  */
 $router->group(['middleware' => ['jwt']], function () use ($router) {
+    $router->get('talk/list', ['uses' => 'TalkController@list']);
     $router->post('talk/create', ['uses' => 'TalkController@create']);
     $router->post('talk/delete', ['uses' => 'TalkController@delete']);
     $router->post('talk/topping', ['uses' => 'TalkController@topping']);
     $router->post('talk/set-not-disturb', ['uses' => 'TalkController@setNotDisturb']);
-    $router->get('talk/list', ['uses' => 'TalkController@list']);
     $router->post('talk/update-unread-num', ['uses' => 'TalkController@updateUnreadNum']);
 
-    $router->get('talk/records', ['uses' => 'TalkController@getChatRecords']);
+    // 操作处理聊天记录相关接口
     $router->post('talk/revoke-records', ['uses' => 'TalkController@revokeChatRecords']);
     $router->post('talk/remove-records', ['uses' => 'TalkController@removeChatRecords']);
     $router->post('talk/forward-records', ['uses' => 'TalkController@forwardChatRecords']);
+
+    // 查询聊天记录相关接口
+    $router->get('talk/records', ['uses' => 'TalkController@getChatRecords']);
     $router->get('talk/get-forward-records', ['uses' => 'TalkController@getForwardRecords']);
-
-    $router->post('talk/upload-talk-img', ['uses' => 'TalkController@uploadTaklImg']);
-
     $router->get('talk/find-chat-records', ['uses' => 'TalkController@findChatRecords']);
     $router->get('talk/search-chat-records', ['uses' => 'TalkController@searchChatRecords']);
     $router->get('talk/get-records-context', ['uses' => 'TalkController@getRecordsContext']);
+
+    // 发送消息相关接口
+    $router->post('talk/send-image', ['uses' => 'TalkController@sendImage']);
+    $router->post('talk/send-code-block', ['uses' => 'TalkController@sendCodeBlock']);
+    $router->post('talk/send-file', ['uses' => 'TalkController@sendFile']);
+    $router->post('talk/send-emoticon', ['uses' => 'TalkController@sendEmoticon']);
 });
 
 /**
@@ -159,7 +164,6 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
     $router->get('article/recover-annex-list', ['uses' => 'ArticleController@recoverAnnexList']);
     $router->post('article/forever-delete-annex', ['uses' => 'ArticleController@foreverDelAnnex']);
 });
-
 
 /**
  * 测试控制器

@@ -156,6 +156,9 @@ class TalkLogic extends Logic
                     break;
                 case 2://2:文件消息
                     $rows[$k]['file'] = $files[$row['id']] ?? [];
+                    if($rows[$k]['file']){
+                        $rows[$k]['file']['file_url'] = getFileUrl($rows[$k]['file']['save_dir']);
+                    }
                     break;
                 case 3://3:入群消息/退群消息
                     if (isset($invites[$row['id']])) {

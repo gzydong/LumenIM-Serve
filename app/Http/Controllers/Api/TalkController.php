@@ -1,20 +1,24 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 use App\Logic\{ChatLogic, TalkLogic};
 
-use App\Models\{ChatRecordsFile,
+use App\Models\{ChatRecords,
+    ChatRecordsCode,
+    ChatRecordsFile,
+    EmoticonDetails,
+    FileSplitUpload,
     UsersChatList,
     UsersFriends,
-    UsersGroup
-};
+    UsersGroup};
 
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\RequestProxy;
+use Illuminate\Support\Str;
 
 /**
  * 聊天对话处理
@@ -323,46 +327,6 @@ class TalkController extends CController
     }
 
     /**
-     * 上传聊天对话图片（待优化）
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function uploadTaklImg()
-    {
-        $file = $this->request->file('img');
-        if (!$file->isValid()) {
-            return $this->ajaxParamError('请求参数错误');
-        }
-
-        $ext = $file->getClientOriginalExtension();
-        if (!in_array($ext, ['jpg', 'png', 'jpeg', 'gif', 'webp'])) {
-            return $this->ajaxParamError('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
-        }
-
-        $imgInfo = getimagesize($file->getRealPath());
-        $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
-
-        //保存图片
-        if (!$save_path = Storage::disk('uploads')->putFileAs('media/images/talks/' . date('Ymd'), $file, $filename)) {
-            return $this->ajaxError('图片上传失败');
-        }
-
-        $result = ChatRecordsFile::create([
-            'user_id' => $this->uid(),
-            'file_type' => 1,
-            'file_suffix' => $file->getClientOriginalExtension(),
-            'file_size' => $file->getSize(),
-            'save_dir' => $save_path,
-            'original_name' => $file->getClientOriginalName(),
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-
-        return $result ? $this->ajaxSuccess('图片上传成功...', ['file_info' => $result->id]) : $this->ajaxError('图片上传失败');
-    }
-
-    /**---------------------------*/
-
-    /**
      * 查询聊天记录
      *
      * @return \Illuminate\Http\JsonResponse
@@ -494,34 +458,260 @@ class TalkController extends CController
     }
 
     /**
-     * 发送代码块消息
-     */
-    public function sendCodeBlock()
-    {
-
-    }
-
-    /**
-     * 发送图片消息
+     * 上传聊天对话图片（待优化）
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function sendImage()
     {
+        $file = $this->request->file('img');
+        $receive_id = $this->request->post('receive_id', 0);
+        $source = $this->request->post('source', 0);
+        $user_id = $this->uid();
 
+        if (!$file->isValid()) {
+            return $this->ajaxParamError('请求参数错误');
+        }
+
+        $ext = $file->getClientOriginalExtension();
+        if (!in_array($ext, ['jpg', 'png', 'jpeg', 'gif', 'webp'])) {
+            return $this->ajaxParamError('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
+        }
+
+        $imgInfo = getimagesize($file->getRealPath());
+        $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
+
+        //保存图片
+        if (!$save_path = Storage::disk('uploads')->putFileAs('media/images/talks/' . date('Ymd'), $file, $filename)) {
+            return $this->ajaxError('图片上传失败');
+        }
+
+        DB::beginTransaction();
+        try {
+            $insert = ChatRecords::create([
+                'source' => $source,
+                'msg_type' => 2,
+                'user_id' => $user_id,
+                'receive_id' => $receive_id,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            if (!$insert) {
+                throw new \Exception('插入聊天记录失败...');
+            }
+
+            $result = ChatRecordsFile::create([
+                'record_id' => $insert->id,
+                'user_id' => $this->uid(),
+                'file_type' => 1,
+                'file_suffix' => $file->getClientOriginalExtension(),
+                'file_size' => $file->getSize(),
+                'save_dir' => $save_path,
+                'original_name' => $file->getClientOriginalName(),
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+            if (!$result) {
+                throw new \Exception('插入聊天记录(文件消息)失败...');
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->ajaxError('图片上传失败');
+        }
+
+        //这里需要调用WebSocket推送接口
+        $this->requestProxy->send('proxy/event/push-talk-message', [
+            'record_id' => $insert->id
+        ]);
+
+        return $this->ajaxSuccess('图片上传成功...');
+    }
+
+    /**
+     * 发送代码块消息
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function sendCodeBlock()
+    {
+        $code = $this->request->post('code', '');
+        $lang = $this->request->post('lang', '');
+        $receive_id = $this->request->post('receive_id', 0);
+        $source = $this->request->post('source', 0);
+        $user_id = $this->uid();
+
+        DB::beginTransaction();
+        try {
+            $insert = ChatRecords::create([
+                'source' => $source,
+                'msg_type' => 5,
+                'user_id' => $user_id,
+                'receive_id' => $receive_id,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            if (!$insert) {
+                throw new \Exception('插入聊天记录失败...');
+            }
+
+            $result = ChatRecordsCode::create([
+                'record_id' => $insert->id,
+                'user_id' => $user_id,
+                'code_lang' => $lang,
+                'code' => $code,
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+
+            if (!$result) {
+                throw new \Exception('插入聊天记录(代码消息)失败...');
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->ajaxError('消息发送失败...');
+        }
+
+        //这里需要调用WebSocket推送接口
+        $this->requestProxy->send('proxy/event/push-talk-message', [
+            'record_id' => $insert->id
+        ]);
+
+        return $this->ajaxSuccess('消息发送成功...');
     }
 
     /**
      * 发送文件消息
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function sendFile()
     {
+        $hash_name = $this->request->post('hash_name', '');
+        $receive_id = $this->request->post('receive_id', 0);
+        $source = $this->request->post('source', 0);
+        $user_id = $this->uid();
 
+        $file = FileSplitUpload::where('user_id', $user_id)->where('hash_name', $hash_name)->where('file_type', 1)->first();
+        if (!$file || empty($file->save_dir)) {
+            return $this->ajaxReturn(302, '文件不存在...');
+        }
+
+        $file_hash_name = uniqid() . Str::random() . '.' . $file->file_ext;
+        $save_dir = "files/talks/" . date('Ymd') . '/' . $file_hash_name;
+
+        if (!Storage::disk('uploads')->copy($file->save_dir, $save_dir)) {
+            return $this->ajaxReturn(303, '文件上传失败...');
+        }
+
+        DB::beginTransaction();
+        try {
+            $insert = ChatRecords::create([
+                'source' => $source,
+                'msg_type' => 2,
+                'user_id' => $user_id,
+                'receive_id' => $receive_id,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            if (!$insert) {
+                throw new \Exception('插入聊天记录失败...');
+            }
+
+            $result = ChatRecordsFile::create([
+                'record_id' => $insert->id,
+                'user_id' => $user_id,
+                'file_source' => 1,
+                'file_type' => 4,
+                'original_name' => $file->original_name,
+                'file_suffix' => $file->file_ext,
+                'file_size' => $file->file_size,
+                'save_dir' => $save_dir,
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+
+            if (!$result) {
+                throw new \Exception('插入聊天记录(代码消息)失败...');
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Storage::disk('uploads')->delete($save_dir);
+            return $this->ajaxError('消息发送失败...');
+        }
+
+        //这里需要调用WebSocket推送接口
+        $this->requestProxy->send('proxy/event/push-talk-message', [
+            'record_id' => $insert->id
+        ]);
+
+        return $this->ajaxSuccess('消息发送成功...');
     }
 
     /**
      * 发送表情包
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function sendEmoticon()
     {
+        $emoticon_id = $this->request->post('emoticon_id', 0);
+        $receive_id = $this->request->post('receive_id', 0);
+        $source = $this->request->post('source', 0);
 
+        $user_id = $this->uid();
+        $emoticon = EmoticonDetails::where('id', $emoticon_id)->where('user_id', $user_id)->first([
+            'url',
+            'file_suffix',
+            'file_size'
+        ]);
+
+        if (!$emoticon) {
+            return $this->ajaxError('发送失败...');
+        }
+
+        DB::beginTransaction();
+        try {
+            $insert = ChatRecords::create([
+                'source' => $source,
+                'msg_type' => 2,
+                'user_id' => $user_id,
+                'receive_id' => $receive_id,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            if (!$insert) {
+                throw new \Exception('插入聊天记录失败...');
+            }
+
+            $result = ChatRecordsFile::create([
+                'record_id' => $insert->id,
+                'user_id' => $this->uid(),
+                'file_type' => 1,
+                'file_suffix' => $emoticon->file_suffix,
+                'file_size' => $emoticon->file_size,
+                'save_dir' => $emoticon->url,
+                'original_name' => '表情',
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+
+            if (!$result) {
+                throw new \Exception('插入聊天记录(文件消息)失败...');
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->ajaxError('表情发送失败');
+        }
+
+        //这里需要调用WebSocket推送接口
+        $this->requestProxy->send('proxy/event/push-talk-message', [
+            'record_id' => $insert->id
+        ]);
+
+        return $this->ajaxSuccess('表情发送成功...');
     }
 }

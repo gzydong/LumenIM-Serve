@@ -85,7 +85,7 @@ class EmoticonLogic extends Logic
             ['id', '=', $cid],
             ['msg_type', '=', 2],
             ['is_revoke', '=', 0],
-        ])->first(['id', 'source', 'msg_type', 'user_id', 'receive_id', 'file_id', 'is_revoke']);
+        ])->first(['id', 'source', 'msg_type', 'user_id', 'receive_id', 'is_revoke']);
 
         if (!$result) return [false, []];
 
@@ -99,7 +99,7 @@ class EmoticonLogic extends Logic
             }
         }
 
-        $fileInfo = ChatRecordsFile::where('id', $result->file_id)->where('file_type', 1)->first([
+        $fileInfo = ChatRecordsFile::where('record_id', $result->id)->where('file_type', 1)->first([
             'file_suffix',
             'file_size',
             'save_dir'

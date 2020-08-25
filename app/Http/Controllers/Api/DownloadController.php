@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use App\Models\{UsersChatFiles, UsersChatRecords, UsersGroup, ArticleAnnex};
+use App\Models\{ChatRecords, ChatRecordsFile, UsersChatFiles, UsersChatRecords, UsersGroup, ArticleAnnex};
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -30,7 +30,7 @@ class DownloadController extends CController
             return $this->ajaxError('文件下载失败...');
         }
 
-        $recordsInfo = UsersChatRecords::select(['msg_type', 'source', 'user_id', 'receive_id', 'file_id'])->where('id', $crId)->first();
+        $recordsInfo = ChatRecords::select(['msg_type', 'source', 'user_id', 'receive_id'])->where('id', $crId)->first();
         if (!$recordsInfo) {
             return $this->ajaxError('文件不存在...');
         }
@@ -48,7 +48,7 @@ class DownloadController extends CController
             }
         }
 
-        $fileInfo = UsersChatFiles::select(['save_dir', 'original_name'])->where('id', $recordsInfo->file_id)->first();
+        $fileInfo = ChatRecordsFile::select(['save_dir', 'original_name'])->where('record_id', $crId)->first();
         if (!$fileInfo) {
             return $this->ajaxError('文件不存在或没有下载权限...');
         }
