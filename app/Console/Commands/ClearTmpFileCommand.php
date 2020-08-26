@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use Illuminate\Console\Command;
 use App\Models\FileSplitUpload;
 use Illuminate\Support\Facades\Storage;
@@ -44,7 +45,8 @@ class ClearTmpFileCommand extends Command
                 }
 
                 FileSplitUpload::whereIn('hash_name', $hash_name)->update(['is_delete' => 1]);
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         });
     }
 }

@@ -68,6 +68,11 @@ return [
         'uploads' => [
             'driver' => 'local',
             'root' => base_path('../data/lumenim')
-        ]
+        ],
+
+        'img' => [
+            'driver' => 'local',
+            'root' => base_path('public/static/image/sys-head'),
+        ],
     ]
 ];

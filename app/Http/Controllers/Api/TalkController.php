@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
@@ -133,7 +134,21 @@ class TalkController extends CController
      */
     public function list()
     {
-        $rows = $this->talkLogic->talkLists($this->uid());
+        $user_id = $this->uid();
+
+        // 读取用户的未读消息列表
+        $result = app('unread.talk')->getAll($user_id);
+        if ($result) {
+            foreach ($result as $friend_id => $num) {
+                UsersChatList::updateOrCreate(['uid' => $user_id, 'friend_id' => intval($friend_id), 'type' => 1], [
+                    'status' => 1,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+        }
+
+        $rows = $this->talkLogic->talkLists($user_id);
         if ($rows) {
             $rows = arraysSort($rows, 'updated_at');
         }
@@ -146,7 +161,11 @@ class TalkController extends CController
      */
     public function listItem()
     {
+        $user_id = $this->uid();
+        $receive_id = $this->request->get('receive_id', 0);
+        $source = $this->request->get('source', 0);
 
+        
     }
 
     /**
@@ -158,10 +177,11 @@ class TalkController extends CController
     {
         $type = $this->request->get('type', 0);
         $receive = $this->request->get('receive', 0);
-        if ($type == 1 && isInt($receive)) {
-            CacheHelper::delChatUnreadNum($this->uid(), $receive);
-        } else if ($type == 2 && isInt($receive)) {
-            CacheHelper::delChatUnreadNum($this->uid(), $receive);
+        $user_id = $this->uid();
+
+        // 设置好友消息未读数
+        if ($type == 1) {
+            app('unread.talk')->del($user_id, $receive);
         }
 
         return $this->ajaxSuccess('success');
@@ -298,7 +318,7 @@ class TalkController extends CController
 
         if ($receive_user_ids) {
             foreach ($receive_user_ids as $v) {
-                CacheHelper::setChatUnreadNum($v, $user_id);
+                app('unread.talk')->setInc($v, $user_id);
             }
         }
 
@@ -337,6 +357,7 @@ class TalkController extends CController
         $receive_id = $this->request->get('receive_id', 0);
         $source = $this->request->get('source', 0);
         $record_id = $this->request->get('record_id', 0);
+        $msg_type = $this->request->get('msg_type', 0);
         $limit = 30;
 
         if (!isInt($receive_id) || !isInt($source) || !isInt($record_id, true)) {
@@ -352,7 +373,13 @@ class TalkController extends CController
             ]);
         }
 
-        $result = $this->talkLogic->getChatRecords($user_id, $receive_id, $source, $record_id, $limit, [1, 2, 4, 5]);
+        if (in_array($msg_type, [1, 2, 4, 5])) {
+            $msg_type = [$msg_type];
+        } else {
+            $msg_type = [1, 2, 4, 5];
+        }
+
+        $result = $this->talkLogic->getChatRecords($user_id, $receive_id, $source, $record_id, $limit, $msg_type);
         return $this->ajaxSuccess('success', [
             'rows' => $result,
             'record_id' => $result ? $result[count($result) - 1]['id'] : 0,
@@ -520,6 +547,11 @@ class TalkController extends CController
             return $this->ajaxError('图片上传失败');
         }
 
+        // 设置好友消息未读数
+        if ($insert->source == 1) {
+            app('unread.talk')->setInc($insert->receive_id, $insert->user_id);
+        }
+
         //这里需要调用WebSocket推送接口
         $this->requestProxy->send('proxy/event/push-talk-message', [
             'record_id' => $insert->id
@@ -571,6 +603,11 @@ class TalkController extends CController
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->ajaxError('消息发送失败...');
+        }
+
+        // 设置好友消息未读数
+        if ($insert->source == 1) {
+            app('unread.talk')->setInc($insert->receive_id, $insert->user_id);
         }
 
         //这里需要调用WebSocket推送接口
@@ -642,6 +679,11 @@ class TalkController extends CController
             return $this->ajaxError('消息发送失败...');
         }
 
+        // 设置好友消息未读数
+        if ($insert->source == 1) {
+            app('unread.talk')->setInc($insert->receive_id, $insert->user_id);
+        }
+
         //这里需要调用WebSocket推送接口
         $this->requestProxy->send('proxy/event/push-talk-message', [
             'record_id' => $insert->id
@@ -705,6 +747,11 @@ class TalkController extends CController
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->ajaxError('表情发送失败');
+        }
+
+        // 设置好友消息未读数
+        if ($insert->source == 1) {
+            app('unread.talk')->setInc($insert->receive_id, $insert->user_id);
         }
 
         //这里需要调用WebSocket推送接口

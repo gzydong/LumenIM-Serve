@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Events\UserLoginLogEvent;
 use App\Models\User;
 use App\Logic\UsersLogic;
-use App\Helpers\{JwtAuth, SmsCode};
+use App\Helpers\{JwtAuth};
 
 /**
  * 接口授权登录控制器
@@ -39,8 +39,7 @@ class AuthController extends CController
             return $this->ajaxParamError('注册邀请码不正确...');
         }
 
-        $sms = new SmsCode();
-        if (!$sms->check('user_register', $params['mobile'], $params['sms_code'])) {
+        if (!app('sms.code')->check('user_register', $params['mobile'], $params['sms_code'])) {
             return $this->ajaxParamError('验证码填写错误...');
         }
 
@@ -51,7 +50,7 @@ class AuthController extends CController
         ]);
 
         if ($isTrue) {
-            $sms->delCode('user_register', $params['mobile']);
+            app('sms.code')->delCode('user_register', $params['mobile']);
         }
 
         return $isTrue ? $this->ajaxSuccess('账号注册成功...') : $this->ajaxError('账号注册失败,手机号已被其他(她)人使用...');
@@ -130,7 +129,7 @@ class AuthController extends CController
         $mobile = $request->post('mobile', '');
         $type = $request->post('type', '');
 
-        if (!in_array($type, SmsCode::CACHE_TAGS)) {
+        if (!in_array($type, app('sms.code')->getTags())) {
             return $this->ajaxParamError('验证码发送失败...');
         }
 
@@ -148,12 +147,12 @@ class AuthController extends CController
             }
         }
 
-        $sms = new SmsCode();
-        [$isTrue, $result] = $sms->send($type, $mobile);
-
         $data = ['is_debug' => true];
-        if ($data['is_debug']) {
-            $data['sms_code'] = $result['code'];
+        [$isTrue, $result] = app('sms.code')->send($type, $mobile);
+        if ($isTrue) {
+            $data['sms_code'] = $result['data']['code'];
+        } else {
+            // ... 处理发送失败逻辑，当前默认发送成功
         }
 
         return $this->ajaxSuccess('发送成功', $data);
@@ -180,14 +179,13 @@ class AuthController extends CController
             //return $this->ajaxParamError('密码格式不正确...');
         }
 
-        $sms = new SmsCode();
-        if (!$sms->check('forget_password', $mobile, $code)) {
+        if (!app('sms.code')->check('forget_password', $mobile, $code)) {
             return $this->ajaxParamError('验证码填写错误...');
         }
 
         $isTrue = $usersLogic->resetPassword($mobile, $password);
         if ($isTrue) {
-            $sms->delCode('forget_password', $mobile);
+            app('sms.code')->delCode('forget_password', $mobile);
         }
 
         return $isTrue ? $this->ajaxSuccess('重置密码成功...') : $this->ajaxError('重置密码失败...');

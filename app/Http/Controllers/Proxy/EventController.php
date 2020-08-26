@@ -223,8 +223,6 @@ class EventController extends Controller
             'users.avatar as avatar',
         ]);
 
-
-        Log::info("请求数据 ： {$record_id}");
         if (!$info) {
             return $this->ajaxReturn(305, 'fail');
         }
@@ -241,14 +239,14 @@ class EventController extends Controller
         $file = [];
         $code_block = [];
 
-        if($info->msg_type == 2){
-            $file = ChatRecordsFile::where('record_id',$info->id)->first(['id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir']);
+        if ($info->msg_type == 2) {
+            $file = ChatRecordsFile::where('record_id', $info->id)->first(['id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir']);
             $file = $file ? $file->toArray() : [];
-            if($file){
+            if ($file) {
                 $file['file_url'] = getFileUrl($file['save_dir']);
             }
-        }else if($info->msg_type == 5){
-            $code_block = ChatRecordsCode::where('record_id',$info->id)->first(['record_id', 'code_lang', 'code']);
+        } else if ($info->msg_type == 5) {
+            $code_block = ChatRecordsCode::where('record_id', $info->id)->first(['record_id', 'code_lang', 'code']);
             $code_block = $code_block ? $code_block->toArray() : [];
         }
 

@@ -40,41 +40,6 @@ class CacheHelper extends CacheFlag
     }
 
     /**
-     * 设置消息未读数
-     *
-     * @param int $receive 接收消息的用户ID
-     * @param int $sender 发送消息的用户ID
-     */
-    public static function setChatUnreadNum(int $receive, int $sender)
-    {
-        Redis::hincrby(self::chatUnreadNumCacheKey(), "{$receive}_$sender", 1);
-    }
-
-    /**
-     * 获取消息未读数
-     *
-     * @param int $receive 接收消息的用户ID
-     * @param int $sender 发送消息的用户ID
-     * @return mixed
-     */
-    public static function getChatUnreadNum(int $receive, int $sender)
-    {
-        return Redis::hget(self::chatUnreadNumCacheKey(), "{$receive}_$sender");
-    }
-
-    /**
-     * 清空消息未读数
-     *
-     * @param int $receive 接收消息的用户ID
-     * @param int $sender 发送消息的用户ID
-     * @return mixed
-     */
-    public static function delChatUnreadNum(int $receive, int $sender)
-    {
-        return Redis::hdel(self::chatUnreadNumCacheKey(), "{$receive}_$sender");
-    }
-
-    /**
      * 设置添加好友申请未读消息数量
      *
      * @param int $user_id 用户ID

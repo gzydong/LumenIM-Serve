@@ -53,7 +53,7 @@ class NotifyController extends Controller
             'msg_type' => 1,
             'user_id' => $msgData['send_user'],
             'receive_id' => $msgData['receive_user'],
-            'content' => $msgData['text_message'],
+            'content' => htmlspecialchars($msgData['text_message']),
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
@@ -64,18 +64,23 @@ class NotifyController extends Controller
         //获取消息推送的客户端
         $clientFds = [];
         if ($msgData['source_type'] == 1) {//私聊
-            $msg_text = mb_substr($result->content,0,30);
+            $msg_text = mb_substr($result->content, 0, 30);
             // 缓存最后一条消息
             CacheHelper::setLastChatCache([
-                'text'=>$msg_text,
-                'created_at'=>$result->created_at
-            ],$msgData['receive_user'],$msgData['send_user']);
-
-            CacheHelper::setChatUnreadNum($result->receive_id, $result->user_id);
+                'text' => $msg_text,
+                'created_at' => $result->created_at
+            ], $msgData['receive_user'], $msgData['send_user']);
 
             $clientFds = array_unique(array_merge(SocketResourceHandle::getUserFds($msgData['receive_user']), SocketResourceHandle::getUserFds($msgData['send_user'])));
+
+            // 设置好友消息未读数
+            app('unread.talk')->setInc($result->receive_id, $result->user_id);
         } else if ($msgData['source_type'] == 2) {
             $clientFds = SocketResourceHandle::getRoomGroupName($msgData['receive_user']);
+        }
+
+        if ($result->content) {
+            $result->content = emojiReplace(replaceUrlToLink($result->content));
         }
 
         SocketResourceHandle::response('chat_message', $clientFds, [
@@ -88,7 +93,7 @@ class NotifyController extends Controller
                 "msg_type" => 1,
                 "user_id" => $result->user_id,
                 "receive_id" => $result->receive_id,
-                "content" => htmlspecialchars_decode($result->content),
+                "content" => $result->content,
                 "created_at" => $result->created_at,
             ])
         ]);

@@ -19,15 +19,6 @@ class CacheFlag
     }
 
     /**
-     * 未读消息的hash存储名
-     *
-     * @return string
-     */
-    public static function chatUnreadNumCacheKey(){
-        return  'hash:chat:unread:num';
-    }
-
-    /**
      * 好友申请未读数，hash存储名
      * @return string
      */

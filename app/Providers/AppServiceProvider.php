@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 use App\Services\UnreadTalkService;
+use App\Services\SmsCodeService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,11 +24,17 @@ class AppServiceProvider extends ServiceProvider
             return new SocketResourceHandle();
         });
 
+        // 注册用户未读消息服务类
         $this->app->singleton(UnreadTalkService::class, function ($app) {
             return new UnreadTalkService();
         });
-
         $this->app->alias(UnreadTalkService::class, 'unread.talk');
+
+        // 发送短信验证码服务
+        $this->app->singleton(SmsCodeService::class, function ($app) {
+            return new SmsCodeService();
+        });
+        $this->app->alias(SmsCodeService::class, 'sms.code');
     }
 
     /**

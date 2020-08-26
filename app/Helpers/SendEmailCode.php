@@ -58,6 +58,7 @@ class SendEmailCode
         }catch (\Exception $e){
             return false;
         }
+
         return true;
     }
 

@@ -59,7 +59,7 @@ class ChatLogic extends Logic
             if ($item['type'] == 1) {
                 $data['name'] = $item['nickname'];
                 $data['avatar'] = $item['user_avatar'];
-                $data['unread_num'] = intval(CacheHelper::getChatUnreadNum($user_id, $item['friend_id']));
+                $data['unread_num'] = 0;
                 $data['online'] = SocketResourceHandle::getUserFds($item['friend_id']) ? 1 : 0;
 
                 $remark = CacheHelper::getFriendRemarkCache($user_id, $item['friend_id']);

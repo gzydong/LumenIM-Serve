@@ -10,6 +10,13 @@ namespace App\Services;
  */
 class SmsCodeService
 {
+    //  验证码用途渠道
+    const CACHE_TAGS = [
+        'forget_password',
+        'change_mobile',
+        'user_register'
+    ];
+
     /**
      * 获取Redis连接
      *
@@ -59,10 +66,20 @@ class SmsCodeService
      */
     public function send(string $type, string $mobile)
     {
+        if (!in_array($type, self::CACHE_TAGS)) {
+            return [false, [
+                'msg' => "[{$type}]：此类短信验证码不支持发送",
+                'data' => []
+            ]];
+        }
+
         $key = $this->getKey($type, $mobile);
 
         // 为防止刷短信行为，此处可进行过滤处理
-        // ... 省略处理
+        [$isTrue, $data] = $this->filter($type, $mobile);
+        if (!$isTrue) {
+            return [false, $data];
+        }
 
         if (!$sms_code = $this->getCode($key)) {
             $sms_code = random(6, 'number');
@@ -72,7 +89,10 @@ class SmsCodeService
 
         // 调取短信接口，建议异步任务执行 (暂无短信接口，省略处理)
 
-        return [true, ['type' => $type, 'code' => $sms_code]];
+        return [true, [
+            'msg' => 'success',
+            'data' => ['type' => $type, 'code' => $sms_code]
+        ]];
     }
 
     /**
@@ -109,5 +129,38 @@ class SmsCodeService
     public function delCode(string $type, string $mobile)
     {
         return $this->redis()->del($this->getKey($type, $mobile));
+    }
+
+    /**
+     * 短信发送过滤验证
+     *
+     * @param string $type 验证码用途
+     * @param string $mobile 手机号
+     * @return array
+     */
+    public function filter(string $type, string $mobile)
+    {
+        // ... 省略处理
+        if (false) {
+            return [false, [
+                'msg' => '过滤原因...',
+                'data' => []
+            ]];
+        }
+
+        return [true, [
+            'msg' => 'ok',
+            'data' => []
+        ]];
+    }
+
+    /**
+     * 获取所有验证码用途
+     *
+     * @return array
+     */
+    public function getTags()
+    {
+        return self::CACHE_TAGS;
     }
 }

@@ -61,7 +61,7 @@ class TalkLogic extends Logic
             if ($item['type'] == 1) {
                 $data['name'] = $item['nickname'];
                 $data['avatar'] = $item['user_avatar'];
-                $data['unread_num'] = intval(CacheHelper::getChatUnreadNum($user_id, $item['friend_id']));
+                $data['unread_num'] = app('unread.talk')->get($user_id,$item['friend_id']);
                 $data['online'] = SocketResourceHandle::getUserFds($item['friend_id']) ? 1 : 0;
 
                 $remark = CacheHelper::getFriendRemarkCache($user_id, $item['friend_id']);
@@ -156,7 +156,7 @@ class TalkLogic extends Logic
                     break;
                 case 2://2:文件消息
                     $rows[$k]['file'] = $files[$row['id']] ?? [];
-                    if($rows[$k]['file']){
+                    if ($rows[$k]['file']) {
                         $rows[$k]['file']['file_url'] = getFileUrl($rows[$k]['file']['save_dir']);
                     }
                     break;

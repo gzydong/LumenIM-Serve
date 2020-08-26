@@ -7,10 +7,13 @@ use App\Logic\TalkLogic;
 use App\Models\Article;
 use App\Models\ArticleClass;
 use App\Models\ChatRecordsForward;
+use App\Models\User;
+use App\Models\UsersChatList;
 use App\Models\UsersFriends;
 use App\Services\UnreadTalkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 
 /**
@@ -23,15 +26,19 @@ class TestController extends CController
 {
     public function test(TalkLogic $talkLogic)
     {
-//        $model = new UnreadTalkService();
-//
-//        $num = $model->setInc(2055,2059);
-//        app('unread.talk')->setInc(2055,2078);
 
-        $data = app('unread.talk')->get(2055,2078);
-        dd($data);
+        $result = UsersChatList::updateOrCreate(['uid' => 2054,'friend_id' => 1658,'type'=>1,'status'=>0], [
+            'status'=>1,
+            'created_at'=>date('Y-m-d H:i:s'),
+            'updated_at'=>date('Y-m-d H:i:s')
+        ]);
+
+
+        dd($result);
+
+//        $rows = app('unread.talk')->getAll(2055);
+//        dd($rows);
     }
-
 
     /**
      * 将字符串转换成二进制
