@@ -25,7 +25,7 @@ class UsersChatList extends Model
      *
      * @var array
      */
-    protected $fillable = ['type', 'uid', 'friend_id', 'friend_id', 'group_id', 'status', 'not_disturb', 'created_at', 'updated_at'];
+    protected $fillable = ['type', 'uid', 'friend_id', 'group_id', 'status', 'not_disturb', 'created_at', 'updated_at'];
 
     /**
      * 表明模型是否应该被打上时间戳
@@ -40,7 +40,7 @@ class UsersChatList extends Model
      * @param int $user_id 用户ID
      * @param int $receive_id 接收者ID
      * @param int $type 创建类型 1:私聊  2:群聊
-     * @return int
+     * @return array
      */
     public static function addItem(int $user_id, int $receive_id, int $type)
     {
@@ -50,7 +50,12 @@ class UsersChatList extends Model
             $result->updated_at = date('Y-m-d H:i:s');
             $result->save();
 
-            return $result->id;
+            return [
+                'id'=>$result->id,
+                'type'=>$result->type,
+                'friend_id'=>$result->friend_id,
+                'group_id'=>$result->group_id,
+            ];
         }
 
         if (!$result = self::create([
@@ -62,10 +67,15 @@ class UsersChatList extends Model
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ])) {
-            return 0;
+            return [];
         }
 
-        return $result->id;
+        return [
+            'id'=>$result->id,
+            'type'=>$result->type,
+            'friend_id'=>$result->friend_id,
+            'group_id'=>$result->group_id,
+        ];
     }
 
     /**

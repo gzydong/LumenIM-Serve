@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Facades\SocketResourceHandle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -13,9 +14,11 @@ use App\Models\{ChatRecords,
     ChatRecordsFile,
     EmoticonDetails,
     FileSplitUpload,
+    User,
     UsersChatList,
     UsersFriends,
-    UsersGroup};
+    UsersGroup
+};
 
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\RequestProxy;
@@ -70,8 +73,46 @@ class TalkController extends CController
             }
         }
 
-        $id = UsersChatList::addItem($uid, $receive_id, $type);
-        return $id ? $this->ajaxSuccess('创建成功...', ['list_id' => $id]) : $this->ajaxError('创建失败...');
+        $result = UsersChatList::addItem($uid, $receive_id, $type);
+        if (!$result) {
+            return $this->ajaxError('创建失败...');
+        }
+
+        $data = [
+            'id' => $result['id'],
+            'type' => $result['type'],
+            'group_id' => $result['group_id'],
+            'friend_id' => $result['friend_id'],
+            'is_top' => 0,
+            'msg_text' => '',
+            'not_disturb' => 0,
+            'online' => 1,
+            'name' => '',
+            'remark_name' => '',
+            'avatar' => '',
+            'unread_num' => 0,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($result['type'] == 1) {
+            $data['unread_num'] = app('unread.talk')->get($uid, $result['friend_id']);
+
+            $userInfo = User::where('id', $uid)->first(['nickname', 'avatar']);
+            $data['name'] = $userInfo->nickname;
+            $data['avatar'] = $userInfo->avatar;
+        } else if ($result['type'] == 2) {
+            $groupInfo = UsersGroup::where('id', $result['group_id'])->first(['group_name', 'avatar']);
+            $data['name'] = $groupInfo->group_name;
+            $data['avatar'] = $groupInfo->avatar;
+        }
+
+        $records = CacheHelper::getLastChatCache($result['type'] == 1 ? $result['friend_id'] : $result['group_id'], $result['type'] == 1 ? $uid : 0);
+        if ($records) {
+            $data['msg_text'] = $records['text'];
+            $data['updated_at'] = $records['created_at'];
+        }
+
+        return $this->ajaxSuccess('创建成功...', ['talkItem' => $data]);
     }
 
     /**
@@ -86,6 +127,7 @@ class TalkController extends CController
         if (!isInt($list_id)) return $this->ajaxParamError();
 
         $isTrue = UsersChatList::delItem($this->uid(), $list_id);
+
         return $isTrue ? $this->ajaxSuccess('操作完成...') : $this->ajaxError('操作失败...');
     }
 
@@ -165,7 +207,7 @@ class TalkController extends CController
         $receive_id = $this->request->get('receive_id', 0);
         $source = $this->request->get('source', 0);
 
-        
+
     }
 
     /**
