@@ -16,7 +16,7 @@ class RedisLock
      */
     public static function getRedis()
     {
-        return app('redis.connection');
+        return app('redis');
     }
 
     /**

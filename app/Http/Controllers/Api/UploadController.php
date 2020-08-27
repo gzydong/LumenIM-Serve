@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use App\Models\UsersChatFiles;
 use App\Logic\FileSplitUploadLogic;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 /**

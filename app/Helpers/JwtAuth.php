@@ -32,7 +32,6 @@ class JwtAuth
      */
     public function getToken($isString = true)
     {
-
         return $isString ? (string)$this->token :$this->token;
     }
 

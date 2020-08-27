@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Facades\SocketResourceHandle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-use App\Logic\{ChatLogic, TalkLogic};
+use App\Logic\{TalkLogic};
 
 use App\Models\{ChatRecords,
     ChatRecordsCode,
@@ -34,16 +33,12 @@ class TalkController extends CController
 {
 
     public $request;
-    public $chatLogic;
     public $talkLogic;
     public $requestProxy;
 
-    public function __construct(Request $request, ChatLogic $chatLogic, RequestProxy $requestProxy, TalkLogic $talkLogic)
+    public function __construct(Request $request, RequestProxy $requestProxy, TalkLogic $talkLogic)
     {
         $this->request = $request;
-
-        $this->chatLogic = $chatLogic;
-
         $this->requestProxy = $requestProxy;
         $this->talkLogic = $talkLogic;
     }
@@ -124,10 +119,11 @@ class TalkController extends CController
     {
         $list_id = $this->request->post('list_id', 0);
 
-        if (!isInt($list_id)) return $this->ajaxParamError();
+        if (!isInt($list_id)) {
+            return $this->ajaxParamError();
+        }
 
         $isTrue = UsersChatList::delItem($this->uid(), $list_id);
-
         return $isTrue ? $this->ajaxSuccess('操作完成...') : $this->ajaxError('操作失败...');
     }
 
@@ -181,13 +177,7 @@ class TalkController extends CController
         // 读取用户的未读消息列表
         $result = app('unread.talk')->getAll($user_id);
         if ($result) {
-            foreach ($result as $friend_id => $num) {
-                UsersChatList::updateOrCreate(['uid' => $user_id, 'friend_id' => intval($friend_id), 'type' => 1], [
-                    'status' => 1,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
-                ]);
-            }
+            $this->talkLogic->updateUnreadTalkList($user_id, $result);
         }
 
         $rows = $this->talkLogic->talkLists($user_id);
@@ -196,18 +186,6 @@ class TalkController extends CController
         }
 
         return $this->ajaxSuccess('success', $rows);
-    }
-
-    /**
-     * 获取指定的对话栏目
-     */
-    public function listItem()
-    {
-        $user_id = $this->uid();
-        $receive_id = $this->request->get('receive_id', 0);
-        $source = $this->request->get('source', 0);
-
-
     }
 
     /**
@@ -441,7 +419,6 @@ class TalkController extends CController
         $keywords = $this->request->get('keywords', '');
         $date = $this->request->get('date', '');
         $page = $this->request->get('page', 1);
-        $page_size = $this->request->get('page_size', 30);
 
         if (!isInt($receive_id) || !in_array($source, [1, 2]) || !isInt($page)) {
             return $this->ajaxParamError();
@@ -456,16 +433,7 @@ class TalkController extends CController
             $params['date'] = $date;
         }
 
-        $user_id = $this->uid();
-        $result = $this->chatLogic->searchChatRecords($user_id, $receive_id, $source, $page, $page_size, $params);
-        if ($result['rows']) {
-            $result['rows'] = array_map(function ($items) use ($keywords) {
-                $items['content'] = str_ireplace($keywords, "<mark>{$keywords}</mark>", $items['content']);
-                return $items;
-            }, $result['rows']);
-        }
-
-        return $this->ajaxSuccess('success', $result);
+        return $this->ajaxSuccess('success', []);
     }
 
     /**
@@ -473,57 +441,16 @@ class TalkController extends CController
      */
     public function getRecordsContext()
     {
-        $user_id = $this->uid();
         $receive_id = $this->request->get('receive_id', 0);
         $source = $this->request->get('source', 0);
         $record_id = $this->request->post('record_id', 0);
         $find_mode = $this->request->post('find_mode', 1);
-        $first_load = $this->request->post('first_load', 'true');
 
         if (!isInt($receive_id) || !in_array($source, [1, 2]) || !isInt($record_id, true) || !in_array($find_mode, [1, 2])) {
             return $this->ajaxParamError();
         }
 
-        if ($first_load == 'true') {
-            $rows = $this->chatLogic->getRecordsContexts($user_id, $receive_id, $source, 2, $record_id, 30, [1, 2, 4], true);
-        } else {
-            $rows = $this->chatLogic->getRecordsContexts($user_id, $receive_id, $source, $find_mode, $record_id, 30, [1, 2, 4]);
-        }
-
-        //消息处理
-        $rows = array_map(function ($item) use ($user_id) {
-            $item['file_url'] = '';
-            $item['friend_remarks'] = '';
-
-            $item['forward_info'] = [];
-
-            //消息类型处理
-            switch ($item['msg_type']) {
-                case 1://文字消息
-                    if ($item['is_code'] == 0) {
-                        $item['content'] = replaceUrlToLink($item['content']);
-                        $item['content'] = emojiReplace($item['content']);
-                    } else {
-                        $item['content'] = htmlspecialchars_decode($item['content']);
-                    }
-
-                    break;
-                case 2://文字消息
-                    $item['file_url'] = ($item['msg_type'] == 2) ? getFileUrl($item['save_dir']) : '';
-                    break;
-                case 4:
-                    $item['forward_info'] = json_decode(UsersChatRecordsForward::where('id', $item['forward_id'])->value('text'), true);
-                    break;
-            }
-
-            return $item;
-        }, $rows);
-
-        return $this->ajaxSuccess('success', [
-            'rows' => $rows,
-            'record_id' => $rows ? $rows[count($rows) - 1]['id'] : 0,
-            'limit' => $rows
-        ]);
+        return $this->ajaxSuccess('success', []);
     }
 
     /**
@@ -536,8 +463,12 @@ class TalkController extends CController
         $file = $this->request->file('img');
         $receive_id = $this->request->post('receive_id', 0);
         $source = $this->request->post('source', 0);
-        $user_id = $this->uid();
 
+        if (!isInt($receive_id) || !in_array($source, [1, 2])) {
+            return $this->ajaxParamError();
+        }
+
+        $user_id = $this->uid();
         if (!$file->isValid()) {
             return $this->ajaxParamError('请求参数错误');
         }
@@ -613,8 +544,12 @@ class TalkController extends CController
         $lang = $this->request->post('lang', '');
         $receive_id = $this->request->post('receive_id', 0);
         $source = $this->request->post('source', 0);
-        $user_id = $this->uid();
 
+        if (empty($hash_name) || empty($lang) || !isInt($receive_id) || !in_array($source, [1, 2])) {
+            return $this->ajaxParamError();
+        }
+
+        $user_id = $this->uid();
         DB::beginTransaction();
         try {
             $insert = ChatRecords::create([
@@ -670,8 +605,12 @@ class TalkController extends CController
         $hash_name = $this->request->post('hash_name', '');
         $receive_id = $this->request->post('receive_id', 0);
         $source = $this->request->post('source', 0);
-        $user_id = $this->uid();
 
+        if (empty($hash_name) || !isInt($receive_id) || !in_array($source, [1, 2])) {
+            return $this->ajaxParamError();
+        }
+
+        $user_id = $this->uid();
         $file = FileSplitUpload::where('user_id', $user_id)->where('hash_name', $hash_name)->where('file_type', 1)->first();
         if (!$file || empty($file->save_dir)) {
             return $this->ajaxReturn(302, '文件不存在...');
@@ -744,6 +683,10 @@ class TalkController extends CController
         $emoticon_id = $this->request->post('emoticon_id', 0);
         $receive_id = $this->request->post('receive_id', 0);
         $source = $this->request->post('source', 0);
+
+        if (!isInt($emoticon_id) || !isInt($receive_id) || !in_array($source, [1, 2])) {
+            return $this->ajaxParamError();
+        }
 
         $user_id = $this->uid();
         $emoticon = EmoticonDetails::where('id', $emoticon_id)->where('user_id', $user_id)->first([

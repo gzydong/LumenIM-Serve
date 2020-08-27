@@ -61,7 +61,7 @@ class TalkLogic extends Logic
             if ($item['type'] == 1) {
                 $data['name'] = $item['nickname'];
                 $data['avatar'] = $item['user_avatar'];
-                $data['unread_num'] = app('unread.talk')->get($user_id,$item['friend_id']);
+                $data['unread_num'] = app('unread.talk')->get($user_id, $item['friend_id']);
                 $data['online'] = SocketResourceHandle::getUserFds($item['friend_id']) ? 1 : 0;
 
                 $remark = CacheHelper::getFriendRemarkCache($user_id, $item['friend_id']);
@@ -93,6 +93,25 @@ class TalkLogic extends Logic
 
         return $rows;
     }
+
+
+    /**
+     * 同步未读的消息到数据库中
+     *
+     * @param int $user_id 用户ID
+     * @param $data
+     */
+    public function updateUnreadTalkList(int $user_id, $data)
+    {
+        foreach ($data as $friend_id => $num) {
+            UsersChatList::updateOrCreate(['uid' => $user_id, 'friend_id' => intval($friend_id), 'type' => 1], [
+                'status' => 1,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+        }
+    }
+
 
     /**
      * 处理聊天记录信息

@@ -15,7 +15,7 @@ class InstallDatabase
     public $installNum = 0;
 
     // 数据表总数
-    public $tableNum = 22;
+    public $tableNum = 23;
 
     public function __construct(Command $command)
     {
@@ -244,28 +244,6 @@ class InstallDatabase
             $this->installNum++;
         }
 
-        if (!Schema::hasTable('users_chat_files')) {
-            Schema::create('users_chat_files', function (Blueprint $table) {
-                $table->unsignedInteger('id', true)->comment('文件ID');
-                $table->unsignedInteger('user_id')->default(0)->comment('上传文件的用户ID');
-                $table->tinyInteger('file_source')->default(1)->unsigned()->comment('文件来源(1:用户上传 2:表情包 )');
-                $table->tinyInteger('file_type')->default(1)->unsigned()->comment('消息类型  1:图片   2:视频   3:文件');
-                $table->string('file_suffix', 10)->default('')->comment('文件后缀名');
-                $table->unsignedBigInteger('file_size')->default(0)->comment('文件大小（单位字节）');
-                $table->string('save_dir', 500)->default('')->comment('文件保存地址（相对地址）');
-                $table->string('original_name', 100)->default('')->comment('原文件名');
-                $table->dateTime('created_at')->comment('创建时间');
-
-                $table->charset = 'utf8';
-                $table->collation = 'utf8_general_ci';
-                $table->engine = 'InnoDB';
-            });
-
-            DB::statement("ALTER TABLE `{$prefix}users_chat_files` comment '用户聊天文件记录表'");
-            $this->command->info("{$prefix}users_chat_files 数据表安装成功...");
-            $this->installNum++;
-        }
-
         if (!Schema::hasTable('users_chat_list')) {
             Schema::create('users_chat_list', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('聊天列表ID');
@@ -291,20 +269,16 @@ class InstallDatabase
             $this->installNum++;
         }
 
-        if (!Schema::hasTable('users_chat_records')) {
-            Schema::create('users_chat_records', function (Blueprint $table) {
+        if (!Schema::hasTable('chat_records')) {
+            Schema::create('chat_records', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('聊天记录ID');
                 $table->tinyInteger('source')->unsigned()->default(1)->comment('消息来源  1:好友消息 2:群聊消息');
                 $table->tinyInteger('msg_type')->unsigned()->default(1)->comment('消息类型 (1:文本消息   2:文件消息   3:系统提示好友入群消息 或系统提示好友退群消息  4:会话记录转发) ');
                 $table->unsignedInteger('user_id')->default(0)->comment('发送消息的用户ID（0:代表系统消息）');
                 $table->unsignedInteger('receive_id')->default(0)->comment('接收消息的用户ID或群聊ID');
-                $table->unsignedInteger('file_id')->default(0)->comment('聊天文件ID或表情包ID');
-                $table->unsignedInteger('forward_id')->default(0)->comment('消息转发ID');
                 $table->text('content')->charset('utf8mb4')->comment('文本消息');
-                $table->unsignedInteger('is_code')->default(0)->comment('是否属于代码片段');
-                $table->string('code_lang', 20)->default('')->comment('代码片段语言类型');
                 $table->tinyInteger('is_revoke')->default(0)->comment('是否撤回消息（0:否 1:是）');
-                $table->dateTime('send_time')->comment('发送消息的时间');
+                $table->dateTime('created_at')->comment('发送消息的时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -313,12 +287,39 @@ class InstallDatabase
                 $table->index(['user_id', 'receive_id'], 'idx_userid_receiveid');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}users_chat_records` comment '用户聊天记录表'");
-            $this->command->info("{$prefix}users_chat_records 数据表安装成功...");
+            DB::statement("ALTER TABLE `{$prefix}chat_records` comment '用户聊天记录表'");
+            $this->command->info("{$prefix}chat_records 数据表安装成功...");
             $this->installNum++;
         }
 
-        if (!Schema::hasTable('users_chat_records_del')) {
+        if (!Schema::hasTable('chat_records_file')) {
+            Schema::create('chat_records_file', function (Blueprint $table) {
+                $table->unsignedInteger('id', true)->comment('文件ID');
+                $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
+                $table->unsignedInteger('user_id')->default(0)->comment('上传文件的用户ID');
+                $table->tinyInteger('file_source')->default(1)->unsigned()->comment('文件来源(1:用户上传 2:表情包 )');
+                $table->tinyInteger('file_type')->default(1)->unsigned()->comment('消息类型  1:图片   2:视频   3:文件');
+                $table->tinyInteger('save_type')->default(0)->unsigned()->comment('文件保存方式（0:本地 1:第三方[阿里OOS、七牛云] ）');
+                $table->string('original_name', 100)->default('')->comment('原文件名');
+                $table->string('file_suffix', 10)->default('')->comment('文件后缀名');
+                $table->unsignedBigInteger('file_size')->default(0)->comment('文件大小（单位字节）');
+                $table->string('save_dir', 500)->default('')->comment('文件保存地址（相对地址/第三方网络地址）');
+                $table->tinyInteger('is_delete')->default(0)->unsigned()->comment('文件是否已删除 （0:否 1:已删除）');
+                $table->dateTime('created_at')->comment('创建时间');
+
+                $table->charset = 'utf8';
+                $table->collation = 'utf8_general_ci';
+                $table->engine = 'InnoDB';
+
+                $table->unique(['record_id'], 'idx_record_id');
+            });
+
+            DB::statement("ALTER TABLE `{$prefix}chat_records_file` comment '用户聊天记录（文件消息）'");
+            $this->command->info("{$prefix}chat_records_file 数据表安装成功...");
+            $this->installNum++;
+        }
+
+        if (!Schema::hasTable('chat_records_delete')) {
             Schema::create('users_chat_records_del', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('聊天删除记录ID');
                 $table->unsignedInteger('record_id')->default(0)->comment('聊天记录ID');
@@ -332,14 +333,15 @@ class InstallDatabase
                 $table->index(['record_id', 'user_id'], 'idx_record_user_id');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}users_chat_records_del` comment '聊天记录删除记录表'");
-            $this->command->info("{$prefix}users_chat_records_del 数据表安装成功...");
+            DB::statement("ALTER TABLE `{$prefix}chat_records_delete` comment '聊天记录删除记录表'");
+            $this->command->info("{$prefix}chat_records_delete 数据表安装成功...");
             $this->installNum++;
         }
 
-        if (!Schema::hasTable('users_chat_records_forward')) {
-            Schema::create('users_chat_records_forward', function (Blueprint $table) {
+        if (!Schema::hasTable('chat_records_forward')) {
+            Schema::create('chat_records_forward', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('合并转发ID');
+                $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('转发用户ID');
                 $table->string('records_id', 255)->default('')->comment("转发的聊天记录ID，多个用','分割");
                 $table->json('text')->default(null)->comment('记录快照');
@@ -352,16 +354,16 @@ class InstallDatabase
                 $table->index(['user_id', 'records_id'], 'idx_user_id_records_id');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}users_chat_records_forward` comment '用户聊天记录转发信息表'");
-            $this->command->info("{$prefix}users_chat_records_forward 数据表安装成功...");
+            DB::statement("ALTER TABLE `{$prefix}chat_records_forward` comment '用户聊天记录转发信息表'");
+            $this->command->info("{$prefix}chat_records_forward 数据表安装成功...");
             $this->installNum++;
         }
 
-        if (!Schema::hasTable('users_chat_records_group_notify')) {
-            Schema::create('users_chat_records_group_notify', function (Blueprint $table) {
+        if (!Schema::hasTable('chat_records_invite')) {
+            Schema::create('chat_records_invite', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('入群或退群通知ID');
                 $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
-                $table->tinyInteger('type')->default(1)->comment('通知类型 (1:邀请入群通知  2:踢出群聊通知  3:自动退出群聊)');
+                $table->tinyInteger('type')->default(1)->comment('通知类型 （1:入群通知 2:自动退群 3:管理员踢群）');
                 $table->unsignedInteger('operate_user_id')->default(0)->comment('操作人的用户ID(邀请人)');
                 $table->string('user_ids', 255)->default('')->comment("用户ID，多个用','分割");
 
@@ -372,8 +374,29 @@ class InstallDatabase
                 $table->index(['record_id'], 'idx_recordid');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}users_chat_records_group_notify` comment '聊天记录入群或退群通知'");
-            $this->command->info("{$prefix}users_chat_records_group_notify 数据表安装成功...");
+            DB::statement("ALTER TABLE `{$prefix}chat_records_invite` comment '用户聊天记录（入群/退群消息）'");
+            $this->command->info("{$prefix}chat_records_invite 数据表安装成功...");
+            $this->installNum++;
+        }
+
+        if (!Schema::hasTable('chat_records_code')) {
+            Schema::create('chat_records_code', function (Blueprint $table) {
+                $table->unsignedInteger('id', true)->comment('入群或退群通知ID');
+                $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
+                $table->unsignedInteger('user_id')->default(0)->comment('上传文件的用户ID');
+                $table->string('code_lang', 20)->default('')->comment("代码片段类型(如：php,java,python)");
+                $table->text('code')->charset('utf8mb4')->comment('代码片段内容');
+                $table->dateTime('created_at')->comment('创建时间');
+
+                $table->charset = 'utf8';
+                $table->collation = 'utf8_general_ci';
+                $table->engine = 'InnoDB';
+
+                $table->index(['record_id'], 'idx_recordid');
+            });
+
+            DB::statement("ALTER TABLE `{$prefix}chat_records_code` comment '用户聊天记录（代码块消息）'");
+            $this->command->info("{$prefix}chat_records_code 数据表安装成功...");
             $this->installNum++;
         }
 

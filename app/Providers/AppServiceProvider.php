@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Helpers\Socket\SocketResourceHandle;
+use App\Services\ClientManageService;
+use App\Services\RoomManageService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -35,6 +37,18 @@ class AppServiceProvider extends ServiceProvider
             return new SmsCodeService();
         });
         $this->app->alias(SmsCodeService::class, 'sms.code');
+
+        // WebSocket 客户端fd 管理服务
+        $this->app->singleton(ClientManageService::class, function ($app) {
+            return new ClientManageService();
+        });
+        $this->app->alias(ClientManageService::class, 'client.manage');
+
+        // 聊天室服务管理
+        $this->app->singleton(RoomManageService::class, function ($app) {
+            return new RoomManageService();
+        });
+        $this->app->alias(RoomManageService::class, 'room.manage');
     }
 
     /**

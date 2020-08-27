@@ -24,20 +24,11 @@ use Illuminate\Support\Facades\Storage;
  */
 class TestController extends CController
 {
-    public function test(TalkLogic $talkLogic)
+    public function test(Request $request)
     {
-
-        $result = UsersChatList::updateOrCreate(['uid' => 2054,'friend_id' => 1658,'type'=>1,'status'=>0], [
-            'status'=>1,
-            'created_at'=>date('Y-m-d H:i:s'),
-            'updated_at'=>date('Y-m-d H:i:s')
-        ]);
-
+        $result = app('client.manage')->bindUserIdToFds(41,2054);
 
         dd($result);
-
-//        $rows = app('unread.talk')->getAll(2055);
-//        dd($rows);
     }
 
     /**
