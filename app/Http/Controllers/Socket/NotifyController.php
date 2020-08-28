@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Socket;
 
-use App\Facades\SocketResourceHandle;
+use App\Helpers\Socket\SocketResourceHandle;
 use App\Helpers\Cache\CacheHelper;
-use App\Helpers\Socket\NotifyInterface;
 use App\Models\ChatRecords;
 use App\Models\UsersFriends;
 use App\Models\UsersGroup;
@@ -20,7 +19,7 @@ class NotifyController extends Controller
         $fd = $msgData['fd'];
 
         //获取客户端绑定的用户ID
-        $uid = SocketResourceHandle::getFdUserId($fd);
+        $uid = app('client.manage')->findFdUserId($fd);
 
         //检测发送者与客户端是否是同一个用户
         if ($uid != $msgData['send_user']) {
@@ -71,12 +70,15 @@ class NotifyController extends Controller
                 'created_at' => $result->created_at
             ], $msgData['receive_user'], $msgData['send_user']);
 
-            $clientFds = array_unique(array_merge(SocketResourceHandle::getUserFds($msgData['receive_user']), SocketResourceHandle::getUserFds($msgData['send_user'])));
+            $clientFds = array_unique(array_merge(
+                app('client.manage')->findUserIdFds($msgData['receive_user']),
+                app('client.manage')->findUserIdFds($msgData['send_user'])
+            ));
 
             // 设置好友消息未读数
             app('unread.talk')->setInc($result->receive_id, $result->user_id);
         } else if ($msgData['source_type'] == 2) {
-            $clientFds = SocketResourceHandle::getRoomGroupName($msgData['receive_user']);
+            $clientFds = app('room.manage')->getRoomGroupName($msgData['receive_user']);
         }
 
         if ($result->content) {
@@ -87,7 +89,7 @@ class NotifyController extends Controller
             'send_user' => $msgData['send_user'],
             'receive_user' => $msgData['receive_user'],
             'source_type' => $msgData['source_type'],
-            'data' => NotifyInterface::formatTalkMsg([
+            'data' => SocketResourceHandle::formatTalkMsg([
                 "id" => $result->id,
                 "source" => $result->source,
                 "msg_type" => 1,
@@ -107,7 +109,7 @@ class NotifyController extends Controller
      */
     public function keyboard($websocket, $data)
     {
-        $clientFds = SocketResourceHandle::getUserFds($data['receive_user']);
+        $clientFds = app('client.manage')->findUserIdFds($data['receive_user']);
         if ($clientFds) {
             SocketResourceHandle::response('input_tip', $clientFds, $data);
         }

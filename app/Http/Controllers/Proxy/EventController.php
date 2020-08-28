@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Proxy;
 
-use App\Helpers\Socket\NotifyInterface;
 use App\Http\Controllers\Controller;
 use App\Models\ChatRecords;
 use App\Models\ChatRecordsCode;
@@ -12,8 +11,7 @@ use App\Models\ChatRecordsInvite;
 use App\Models\User;
 use App\Models\UsersGroup;
 use Illuminate\Http\Request;
-use App\Facades\SocketResourceHandle;
-use Illuminate\Support\Facades\Log;
+use App\Helpers\Socket\SocketResourceHandle;
 
 class EventController extends Controller
 {
@@ -55,17 +53,21 @@ class EventController extends Controller
         $membersIds = explode(',', $notifyInfo->user_ids);
 
         // 获取客户端列表
-        $clientFds = SocketResourceHandle::getRoomGroupName($recordInfo->receive_id);
+        $clientFds = app('room.manage')->getRoomGroupName($recordInfo->receive_id);
         $joinClientFds = [];
 
         if ($notifyInfo->type == 1) {//好友入群
             foreach ($membersIds as $member_id) {
-                SocketResourceHandle::bindUserGroupChat($recordInfo->receive_id, $member_id);
-                $joinClientFds = array_merge($joinClientFds, SocketResourceHandle::getUserFds($member_id));
+                app('room.manage')->bindUserToRoom($recordInfo->receive_id, $member_id);
+
+                $joinClientFds = array_merge(
+                    $joinClientFds,
+                    app('client.manage')->findUserIdFds($member_id)
+                );
             }
         } else if ($notifyInfo->type == 2 || $notifyInfo->type == 3) {//好友退群或被踢出群
             foreach ($membersIds as $member_id) {
-                SocketResourceHandle::clearGroupRoom($member_id, $recordInfo->receive_id);
+                app('room.manage')->removeRoomUser($recordInfo->receive_id, $member_id);
             }
         }
 
@@ -74,7 +76,7 @@ class EventController extends Controller
             'send_user' => 0,
             'receive_user' => $recordInfo->receive_id,
             'source_type' => 2,
-            'data' => NotifyInterface::formatTalkMsg([
+            'data' => SocketResourceHandle::formatTalkMsg([
                 "id" => $recordInfo->id,
                 "source" => 2,
                 "msg_type" => 3,
@@ -119,11 +121,11 @@ class EventController extends Controller
 
         if ($records->source == 1) {
             $client = array_merge(
-                SocketResourceHandle::getUserFds($records->user_id),
-                SocketResourceHandle::getUserFds($records->receive_id)
+                app('client.manage')->findUserIdFds($records->user_id),
+                app('client.manage')->findUserIdFds($records->receive_id)
             );
         } else {
-            $client = SocketResourceHandle::getRoomGroupName($records->receive_id);
+            $client = app('room.manage')->getRoomGroupName($records->receive_id);
         }
 
         SocketResourceHandle::response('revoke_records',
@@ -172,18 +174,18 @@ class EventController extends Controller
         foreach ($rows as $records) {
             if ($records->source == 1) {
                 $client = array_merge(
-                    SocketResourceHandle::getUserFds($records->user_id),
-                    SocketResourceHandle::getUserFds($records->receive_id)
+                    app('client.manage')->findUserIdFds($records->user_id),
+                    app('client.manage')->findUserIdFds($records->receive_id)
                 );
             } else {
-                $client = SocketResourceHandle::getRoomGroupName($records->receive_id);
+                $client = app('room.manage')->getRoomGroupName($records->receive_id);
             }
 
             SocketResourceHandle::response('chat_message', $client, [
                 'send_user' => $records->user_id,
                 'receive_user' => $records->receive_id,
                 'source_type' => $records->source,
-                'data' => NotifyInterface::formatTalkMsg([
+                'data' => SocketResourceHandle::formatTalkMsg([
                     'id' => $records->id,
                     'msg_type' => $records->msg_type,
                     'source' => $records->source,
@@ -229,11 +231,11 @@ class EventController extends Controller
 
         if ($info->source == 1) {
             $client = array_merge(
-                SocketResourceHandle::getUserFds($info->user_id),
-                SocketResourceHandle::getUserFds($info->receive_id)
+                app('client.manage')->findUserIdFds($info->user_id),
+                app('client.manage')->findUserIdFds($info->receive_id)
             );
         } else {
-            $client = SocketResourceHandle::getRoomGroupName($info->receive_id);
+            $client = app('room.manage')->getRoomGroupName($info->receive_id);
         }
 
         $file = [];
@@ -254,7 +256,7 @@ class EventController extends Controller
             'send_user' => $info->user_id,
             'receive_user' => $info->receive_id,
             'source_type' => $info->source,
-            'data' => NotifyInterface::formatTalkMsg([
+            'data' => SocketResourceHandle::formatTalkMsg([
                 'id' => $info->id,
                 'msg_type' => $info->msg_type,
                 'source' => $info->source,

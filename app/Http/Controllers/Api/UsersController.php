@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\MobileInfo;
 use Illuminate\Http\Request;
-use App\Models\{User, UsersFriends};
-use App\Logic\{UsersLogic, FriendsLogic, ChatLogic};
+use App\Models\{User, UsersChatList, UsersFriends};
+use App\Logic\{UsersLogic, FriendsLogic};
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\SendEmailCode;
-use App\Facades\SocketResourceHandle;
 
 class UsersController extends CController
 {
@@ -76,7 +75,7 @@ class UsersController extends CController
         $rows = UsersFriends::getUserFriends($this->uid());
 
         array_walk($rows, function ($item) {
-            $item['online'] = SocketResourceHandle::getUserFds($item['id']) ? 1 : 0;
+            $item['online'] = app('client.manage')->isOnline($item['id']);
         });
 
         return $this->ajaxSuccess('success', $rows);
@@ -171,7 +170,7 @@ class UsersController extends CController
         }
 
         //判断对方是否在线。如果在线发送消息通知
-        if ($fd = SocketResourceHandle::getUserFds($friend_id)) {
+        if (app('client.manage')->isOnline($friend_id)) {
 
         }
 
@@ -364,10 +363,9 @@ class UsersController extends CController
     /**
      * 解除好友关系
      *
-     * @param ChatLogic $chatLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function removeFriend(ChatLogic $chatLogic)
+    public function removeFriend()
     {
         $friend_id = $this->request->post('friend_id', 0);
         $user_id = $this->uid();
@@ -380,8 +378,8 @@ class UsersController extends CController
         }
 
         //删除好友会话列表
-        $chatLogic->delChatList($user_id, $friend_id, 2);
-        $chatLogic->delChatList($friend_id, $user_id, 2);
+        UsersChatList::delItem($user_id, $friend_id, 2);
+        UsersChatList::delItem($friend_id, $user_id, 2);
 
         return $this->ajaxSuccess('success');
     }

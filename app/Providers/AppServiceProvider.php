@@ -21,11 +21,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // 注册Socket资源处理类
-        $this->app->singleton(SocketResourceHandle::class, function ($app) {
-            return new SocketResourceHandle();
-        });
-
         // 注册用户未读消息服务类
         $this->app->singleton(UnreadTalkService::class, function ($app) {
             return new UnreadTalkService();

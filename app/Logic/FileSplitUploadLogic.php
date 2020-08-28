@@ -70,7 +70,7 @@ class FileSplitUploadLogic
      * 保存拆分文件
      *
      * @param $file 文件信息
-     * @param $hashName 上传临时问价hash 名
+     * @param $hashName 上传临时问价hash名
      * @param $split_index 当前拆分文件索引
      * @param $fileSize 文件大小
      * @return bool

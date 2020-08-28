@@ -13,7 +13,6 @@ use App\Models\UsersFriends;
 use App\Models\UsersGroup;
 
 use Illuminate\Support\Facades\DB;
-use App\Facades\SocketResourceHandle;
 use App\Helpers\Cache\CacheHelper;
 
 class TalkLogic extends Logic
@@ -62,7 +61,7 @@ class TalkLogic extends Logic
                 $data['name'] = $item['nickname'];
                 $data['avatar'] = $item['user_avatar'];
                 $data['unread_num'] = app('unread.talk')->get($user_id, $item['friend_id']);
-                $data['online'] = SocketResourceHandle::getUserFds($item['friend_id']) ? 1 : 0;
+                $data['online'] = app('client.manage')->isOnline($item['friend_id']);
 
                 $remark = CacheHelper::getFriendRemarkCache($user_id, $item['friend_id']);
                 if (!is_null($remark)) {

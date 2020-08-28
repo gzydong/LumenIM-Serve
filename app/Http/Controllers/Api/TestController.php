@@ -2,18 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\Socket\NotifyInterface;
-use App\Logic\TalkLogic;
-use App\Models\Article;
-use App\Models\ArticleClass;
-use App\Models\ChatRecordsForward;
-use App\Models\User;
-use App\Models\UsersChatList;
-use App\Models\UsersFriends;
-use App\Services\UnreadTalkService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 
 /**

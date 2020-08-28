@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Socket;
 
+use App\Models\User;
 use SwooleTW\Http\Websocket\Facades\Websocket;
 
 /**
@@ -9,7 +10,7 @@ use SwooleTW\Http\Websocket\Facades\Websocket;
  * Class SocketResourceHandle
  * @package App\Helpers
  */
-class SocketResourceHandle extends SocketFdManage
+class SocketResourceHandle
 {
     // 消息事件类型
     const events = [
@@ -28,7 +29,7 @@ class SocketResourceHandle extends SocketFdManage
      * @param array $data 数据包
      * @return bool
      */
-    public function response(string $event, $receive, $data)
+    public static function response(string $event, $receive, $data)
     {
         // 判断事件类型是否存在
         if (!in_array($event, self::events)) {
@@ -42,5 +43,49 @@ class SocketResourceHandle extends SocketFdManage
         } else {
             Websocket::emit($event, $data);
         }
+    }
+
+    /**
+     * 格式化对话的消息体
+     *
+     * @param array $data 对话的消息
+     * @return array
+     */
+    public static function formatTalkMsg(array $data)
+    {
+        // 缓存优化
+        if (!isset($data['nickname']) || !isset($data['avatar']) || empty($data['nickname']) || empty($data['avatar'])) {
+            if (isset($data['user_id']) && !empty($data['user_id'])) {
+                $info = User::where('id', $data['user_id'])->first(['nickname', 'avatar']);
+                if ($info) {
+                    $data['nickname'] = $info->nickname;
+                    $data['avatar'] = $info->avatar;
+                }
+            }
+        }
+
+        $arr = [
+            "id" => 0,
+            "source" => 1,
+            "msg_type" => 1,
+            "user_id" => 0,
+            "receive_id" => 0,
+            "content" => '',
+            "is_revoke" => 0,
+
+            // 发送消息人的信息
+            "nickname" => "",
+            "avatar" => "",
+
+            // 不同的消息类型
+            "file" => [],
+            "code_block" => [],
+            "forward" => [],
+            "invite" => [],
+
+            "created_at" => "",
+        ];
+
+        return array_merge($arr, array_intersect_key($data, $arr));
     }
 }

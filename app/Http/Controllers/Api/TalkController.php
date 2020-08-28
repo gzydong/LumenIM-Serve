@@ -545,7 +545,7 @@ class TalkController extends CController
         $receive_id = $this->request->post('receive_id', 0);
         $source = $this->request->post('source', 0);
 
-        if (empty($hash_name) || empty($lang) || !isInt($receive_id) || !in_array($source, [1, 2])) {
+        if (empty($code) || empty($lang) || !isInt($receive_id) || !in_array($source, [1, 2])) {
             return $this->ajaxParamError();
         }
 

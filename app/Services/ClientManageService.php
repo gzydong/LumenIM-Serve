@@ -103,6 +103,31 @@ class ClientManageService
     }
 
     /**
+     * 清除 Redis 中 Socket fd 相关的缓存信息
+     */
+
+    /**
+     *
+     */
+    public function clearRedisCache()
+    {
+        // 定义初始游标
+        $cursor = 0;
+        do {
+            // 使用游标扫描匹配查询
+            $result = $this->getRedis()->scan($cursor, 'MATCH', self::BIND_USER_TO_FDS . "*", 'count', 1000);
+
+            // 游标赋值
+            $cursor = intval($result[0]);
+            if ($result[1]) {
+                $this->getRedis()->del(...$result[1]);
+            }
+        } while ($cursor > 0);
+
+        $this->getRedis()->del(self::BIND_FD_TO_USER);
+    }
+
+    /**
      * 获取Redis 实例
      *
      * @return mixed
