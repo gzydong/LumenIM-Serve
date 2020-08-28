@@ -26,7 +26,7 @@ class UploadController extends CController
         $fileStream = $request->post('fileStream', '');
 
         $data = base64_decode(str_replace(['data:image/png;base64,', ' '], ['', '+'], $fileStream));
-        $path = 'images/avatar/' . date('Ymd') . '/' . uniqid() . date('His') . '.png';
+        $path = 'media/images/avatar/' . date('Ymd') . '/' . uniqid() . date('His') . '.png';
         if (!Storage::disk('uploads')->put($path, $data)) {
             return $this->ajaxError('文件保存失败');
         }

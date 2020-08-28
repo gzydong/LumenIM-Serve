@@ -298,7 +298,7 @@ class ArticleController extends CController
         $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
 
         //保存图片
-        if (!$save_path = Storage::disk('uploads')->putFileAs('images/notes/' . date('Ymd'), $file, $filename)) {
+        if (!$save_path = Storage::disk('uploads')->putFileAs('media/images/notes/' . date('Ymd'), $file, $filename)) {
             return $this->ajaxError('图片上传失败，请稍后再试...');
         }
 
