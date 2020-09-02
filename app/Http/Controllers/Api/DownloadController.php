@@ -88,6 +88,12 @@ class DownloadController extends CController
      */
     private function download(string $save_dir, string $original_name)
     {
+
+        $isTrue = Storage::disk('uploads')->exists($save_dir);
+        if(!$isTrue){
+            return $this->ajaxError('文件已被清理...');
+        }
+
         return Storage::disk('uploads')->download($save_dir, null, [
             //解决中文下载问题
             'Content-Disposition' => "attachment; filename=\"{$original_name}\""

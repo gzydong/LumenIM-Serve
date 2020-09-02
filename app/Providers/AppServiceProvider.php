@@ -60,4 +60,14 @@ class AppServiceProvider extends ServiceProvider
             }
         });
     }
+
+    public function provides()
+    {
+        return [
+            UnreadTalkService::class,
+            SmsCodeService::class,
+            ClientManageService::class,
+            RoomManageService::class
+        ];
+    }
 }
