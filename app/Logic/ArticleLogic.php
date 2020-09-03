@@ -115,7 +115,7 @@ class ArticleLogic extends Logic
      */
     public function getArticleDetail(int $article_id, $uid = 0)
     {
-        $info = Article::where('id', $article_id)->where('user_id', $uid)->first(['id', 'class_id', 'tags_id', 'title', 'status', 'abstract', 'is_asterisk', 'updated_at']);
+        $info = Article::where('id', $article_id)->where('user_id', $uid)->first(['id', 'class_id', 'tags_id', 'title', 'status', 'abstract', 'is_asterisk','created_at' ,'updated_at']);
         if (!$info) return [];
 
         $detail = $info->detail;
@@ -126,6 +126,7 @@ class ArticleLogic extends Logic
             'title' => $info->title,
             'abstract' => $info->abstract,
             'updated_at' => $info->updated_at,
+            'created_at' => $info->created_at,
             'class_id' => $info->class_id,
             'md_content' => htmlspecialchars_decode($detail->md_content),
             'content' => htmlspecialchars_decode($detail->content),
