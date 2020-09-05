@@ -23,17 +23,16 @@
             </div>
             <div style="width:680px;padding:0 10px;margin:0 auto;">
                 <div style="line-height:1.5;font-size:14px;margin-bottom:25px;color:#4d4d4d;">
-                    <strong style="display:block;margin-bottom:15px;">尊敬的用户：<span style="color:#f60;font-size: 16px;"></span>您好！</strong>
+                    <strong style="display:block;margin-bottom:15px;">尊敬的管理员：<span style="color:#f60;font-size: 16px;"></span>您好！</strong>
                     <strong style="display:block;margin-bottom:15px;">
-                        您正在进行 <span style="color: red">{{$service_name}}</span> 操作，请在验证码输入框中输入：<span style="color:#f60;font-size: 24px">{{$sms_code}}</span>，以完成操作,验证码有效期<span style="color:#f60;font-size: 24px">15</span>分钟。
+                        在过去10分钟内，有5个用户登录网站，详情信息如下：
                     </strong>
                 </div>
                 <div style="margin-bottom:30px;">
                     <small style="display:block;margin-bottom:20px;font-size:12px;">
-                        <p style="color:#747474;">
-                            注意：此操作可能会修改您的密码、修改邮箱或绑定手机。如非本人操作，请及时登录并修改密码以保证帐户安全
-                            <br>（工作人员不会向你索取此验证码，请勿泄漏！)
-                        </p>
+                        @foreach ($rows as $row)
+                            <p style="color:#747474;padding-left: 30px">IP：{{$row->ip}} / 时间：{{$row->created_at}}  / 账号：{{$row->mobile}}</p>
+                        @endforeach
                     </small>
                 </div>
             </div>
@@ -42,7 +41,7 @@
                     <p>此为系统邮件，请勿回复<br>
                         请保管好您的邮箱，避免账号被他人盗用
                     </p>
-                    <p style="margin-top: 15px"><a href="{{$domain}}" style="text-decoration: none;color: #3f99e6;">Lumen IM 在线聊天</a></p>
+                    <p style="margin-top: 15px"><a href="" style="text-decoration: none;color: #3f99e6;">Lumen IM 在线聊天</a></p>
                 </div>
             </div>
         </td>
@@ -50,6 +49,3 @@
     </tbody>
 </table>
 </body>
-<script>
-    new Blob
-</script>

@@ -78,7 +78,6 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => env('DB_PREFIX', ''),
         ],
-
     ],
 
     /*
