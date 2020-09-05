@@ -26,7 +26,7 @@ class ArticleLogic extends Logic
      */
     public function getUserArticleClass(int $user_id)
     {
-        $subJoin = Article::select('class_id', DB::raw('count(class_id) as count'))->where('user_id', $user_id)->groupBy('class_id');
+        $subJoin = Article::select('class_id', DB::raw('count(class_id) as count'))->where('user_id', $user_id)->where('status',1)->groupBy('class_id');
 
         return ArticleClass::leftJoinSub($subJoin, 'sub_join', function ($join) {
             $join->on('article_class.id', '=', DB::raw('sub_join.class_id'));
