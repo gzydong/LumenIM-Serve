@@ -113,7 +113,7 @@ class UsersController extends CController
             return $this->ajaxParamError('新密码格式错误(8~16位字母加数字)');
         }
 
-        [$isTrue, $message] = $usersLogic->userChagePassword($this->uid(), $this->request->post('old_password'), $this->request->post('new_password'));
+        [$isTrue, $message] = $usersLogic->chagePassword($this->uid(), $this->request->post('old_password'), $this->request->post('new_password'));
         return $this->ajaxReturn($isTrue ? 200 : 305, $message);
     }
 
@@ -322,7 +322,7 @@ class UsersController extends CController
 
         $uid = $this->uid();
         $user_password = User::where('id', $uid)->value('password');
-        if (!$usersLogic->checkAccountPassword($password, $user_password)) {
+        if (!$usersLogic->checkPassword($password, $user_password)) {
             return $this->ajaxError('账号密码验证失败');
         }
 
@@ -428,7 +428,7 @@ class UsersController extends CController
 
         $uid = $this->uid();
         $user_password = User::where('id', $uid)->value('password');
-        if (!$usersLogic->checkAccountPassword($password, $user_password)) {
+        if (!$usersLogic->checkPassword($password, $user_password)) {
             return $this->ajaxError('账号密码验证失败');
         }
 

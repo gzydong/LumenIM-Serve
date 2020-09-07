@@ -17,7 +17,7 @@ use App\Helpers\{JwtAuth};
 class AuthController extends CController
 {
     /**
-     * 账号注册接口
+     * 注册接口
      *
      * @param Request $request
      * @param UsersLogic $usersLogic
@@ -25,7 +25,7 @@ class AuthController extends CController
      */
     public function register(Request $request, UsersLogic $usersLogic)
     {
-        $fields = ['nickname', 'mobile', 'password', 'sms_code', 'invite_code'];
+        $fields = ['nickname', 'mobile', 'password', 'sms_code'];
         if (!$request->filled($fields)) {
             return $this->ajaxParamError();
         }
@@ -33,10 +33,6 @@ class AuthController extends CController
         $params = $request->only($fields);
         if (!isMobile($params['mobile'])) {
             return $this->ajaxParamError('手机号格式不正确...');
-        }
-
-        if ($params['invite_code'] !== '000000') {
-            return $this->ajaxParamError('注册邀请码不正确...');
         }
 
         if (!app('sms.code')->check('user_register', $params['mobile'], $params['sms_code'])) {
@@ -57,7 +53,7 @@ class AuthController extends CController
     }
 
     /**
-     * 账号登录接口
+     * 登录接口
      *
      * @param Request $request
      * @param UsersLogic $usersLogic
@@ -75,7 +71,7 @@ class AuthController extends CController
             return $this->ajaxReturn(302, '登录账号不存在...');
         }
 
-        if (!$usersLogic->checkAccountPassword($data['password'], $user->password)) {
+        if (!$usersLogic->checkPassword($data['password'], $user->password)) {
             return $this->ajaxReturn(305, '登录密码错误...');
         }
 
@@ -109,7 +105,7 @@ class AuthController extends CController
     }
 
     /**
-     * 账号退出登录
+     * 退出登录
      *
      * @return \Illuminate\Http\JsonResponse
      */

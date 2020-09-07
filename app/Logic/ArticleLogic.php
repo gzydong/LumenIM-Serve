@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * @package App\Logic
  */
-class ArticleLogic extends Logic
+class ArticleLogic extends BaseLogic
 {
 
     /**
@@ -26,11 +26,12 @@ class ArticleLogic extends Logic
      */
     public function getUserArticleClass(int $user_id)
     {
-        $subJoin = Article::select('class_id', DB::raw('count(class_id) as count'))->where('user_id', $user_id)->groupBy('class_id');
+        $subJoin = Article::select('class_id', DB::raw('count(class_id) as count'))->where('user_id', $user_id)->where('status', 1)->groupBy('class_id');
 
         return ArticleClass::leftJoinSub($subJoin, 'sub_join', function ($join) {
             $join->on('article_class.id', '=', DB::raw('sub_join.class_id'));
-        })->where('article_class.user_id', $user_id)->orderBy('article_class.sort', 'asc')
+        })->where('article_class.user_id', $user_id)
+            ->orderBy('article_class.sort', 'asc')
             ->get(['article_class.id', 'article_class.class_name', 'article_class.is_default', DB::raw('sub_join.count')])
             ->toArray();
     }
@@ -115,11 +116,13 @@ class ArticleLogic extends Logic
      */
     public function getArticleDetail(int $article_id, $uid = 0)
     {
-        $info = Article::where('id', $article_id)->where('user_id', $uid)->first(['id', 'class_id', 'tags_id', 'title', 'status', 'is_asterisk','created_at' ,'updated_at']);
+        $info = Article::where('id', $article_id)->where('user_id', $uid)->first(['id', 'class_id', 'tags_id', 'title', 'status', 'is_asterisk', 'created_at', 'updated_at']);
         if (!$info) return [];
 
         $detail = $info->detail;
-        if (!$detail) return [];
+        if (!$detail) {
+            return [];
+        }
 
         $data = [
             'id' => $article_id,
@@ -154,6 +157,7 @@ class ArticleLogic extends Logic
             if (!ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default', 0)->update(['class_name' => $class_name])) {
                 return false;
             }
+
             return $class_id;
         }
 
@@ -197,24 +201,24 @@ class ArticleLogic extends Logic
     {
         $id = ArticleTags::where('user_id', $uid)->where('tag_name', $tag_name)->value('id');
         if ($tag_id) {
-            if ($id && $id != $tag_id) return false;
-
-            if (!ArticleTags::where('id', $tag_id)->where('user_id', $uid)->update(['tag_name' => $tag_name])) {
+            if ($id && $id != $tag_id) {
                 return false;
             }
 
-            return $tag_id;
+            return ArticleTags::where('id', $tag_id)->where('user_id', $uid)->update(['tag_name' => $tag_name]) ? $tag_id : false;
         } else {
             //判断新添加的标签名是否存在
-            if ($id) return false;
+            if ($id) {
+                return false;
+            }
 
             $insRes = ArticleTags::create(['user_id' => $uid, 'tag_name' => $tag_name, 'sort' => 1, 'created_at' => time()]);
-            if (!$insRes) return false;
+            if (!$insRes) {
+                return false;
+            }
 
             return $insRes->id;
         }
-
-        return false;
     }
 
     /**
@@ -234,6 +238,7 @@ class ArticleLogic extends Logic
         if ($count > 0) {
             return false;
         }
+
         return (bool)ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default', 0)->delete();
     }
 
@@ -254,6 +259,7 @@ class ArticleLogic extends Logic
         if ($count > 0) {
             return false;
         }
+
         return (bool)ArticleTags::where('id', $tag_id)->where('user_id', $uid)->delete();
     }
 

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
  * Class FriendsLogic
  * @package App\Logic
  */
-class FriendsLogic extends Logic
+class FriendsLogic extends BaseLogic
 {
 
     /**
@@ -204,6 +204,6 @@ class FriendsLogic extends Logic
             $data['user1_remark'] = $remarks;
         }
 
-        return (bool)UsersFriends::where('user1', $user_id)->where('user2', $friend_id)->update(['user1_remark' => $remarks]);
+        return (bool)UsersFriends::where('user1', $user_id)->where('user2', $friend_id)->update($data);
     }
 }

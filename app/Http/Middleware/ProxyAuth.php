@@ -1,17 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: admin
- * Date: 2020/4/11
- * Time: 15:25
- */
-
 namespace App\Http\Middleware;
 
 use Closure;
 class ProxyAuth
 {
-
     /**
      * Handle an incoming request.
      *

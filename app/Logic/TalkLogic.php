@@ -15,7 +15,7 @@ use App\Models\UsersGroup;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\Cache\CacheHelper;
 
-class TalkLogic extends Logic
+class TalkLogic extends BaseLogic
 {
     /**
      * 获取用户的聊天列表
@@ -93,7 +93,6 @@ class TalkLogic extends Logic
         return $rows;
     }
 
-
     /**
      * 同步未读的消息到数据库中
      *
@@ -111,7 +110,6 @@ class TalkLogic extends Logic
         }
     }
 
-
     /**
      * 处理聊天记录信息
      *
@@ -120,7 +118,9 @@ class TalkLogic extends Logic
      */
     public function handleChatRecords(array $rows)
     {
-        if (empty($rows)) return [];
+        if (empty($rows)) {
+            return [];
+        }
 
         $files = $codes = $forwards = $invites = [];
         foreach ($rows as $value) {

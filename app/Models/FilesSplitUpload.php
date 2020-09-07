@@ -21,13 +21,6 @@ class FileSplitUpload extends Model
     protected $guarded = ['id'];
 
     /**
-     * 可以被批量赋值的属性.
-     *
-     * @var array
-     */
-    protected $fillable = ['user_id', 'hash_name', 'original_name', 'split_index', 'split_num', 'save_dir', 'file_ext', 'file_size', 'is_delete', 'upload_at', 'file_type'];
-
-    /**
      * 表明模型是否应该被打上时间戳
      *
      * @var bool

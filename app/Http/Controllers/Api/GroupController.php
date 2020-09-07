@@ -81,16 +81,26 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        $uids = array_filter(explode(',', $params['uids']));
-        if (!checkIds($uids)) return $this->ajaxParamError();
+        $friend_ids = array_filter(explode(',', $params['uids']));
+        if (!checkIds($friend_ids)) {
+            return $this->ajaxParamError();
+        }
 
-        [$isTrue, $data] = $this->groupLogic->createGroupChat($this->uid(), $params['group_name'], '', $params['group_profile'], array_unique($uids));
-        if ($isTrue) {//群聊创建成功后需要创建聊天室并发送消息通知
+        [$isTrue, $data] = $this->groupLogic->create($this->uid(), [
+            'name' => $params['group_name'],
+            'avatar' => '',
+            'profile' => $params['group_profile'],
+        ], array_unique($friend_ids));
+
+        if ($isTrue) {
+            //群聊创建成功后需要创建聊天室并发送消息通知
             $this->requestProxy->send('proxy/event/group-notify', [
                 'record_id' => $data['record_id']
             ]);
 
-            return $this->ajaxSuccess('创建群聊成功...', ['group_id' => $data['group_id']]);
+            return $this->ajaxSuccess('创建群聊成功...', [
+                'group_id' => $data['group_id']
+            ]);
         }
 
         return $this->ajaxError('创建群聊失败，请稍后再试...');
@@ -132,7 +142,7 @@ class GroupController extends CController
         }
 
         $user_id = $this->uid();
-        [$isTrue, $record_id] = $this->groupLogic->inviteFriendsGroupChat($user_id, $group_id, array_unique($uids));
+        [$isTrue, $record_id] = $this->groupLogic->invite($user_id, $group_id, array_unique($uids));
         if ($isTrue) {
             $this->requestProxy->send('proxy/event/group-notify', [
                 'record_id' => $record_id
@@ -156,7 +166,7 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue, $record_id] = $this->groupLogic->removeGroupChat($group_id, $this->uid(), $member_ids);
+        [$isTrue, $record_id] = $this->groupLogic->removeMember($group_id, $this->uid(), $member_ids);
         if ($isTrue) {
             $this->requestProxy->send('proxy/event/group-notify', [
                 'record_id' => $record_id
@@ -178,7 +188,7 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->groupLogic->dismissGroupChat($group_id, $this->uid());
+        $isTrue = $this->groupLogic->dismiss($group_id, $this->uid());
         if ($isTrue) {
             // ... 推送群消息
         }
@@ -197,7 +207,7 @@ class GroupController extends CController
         if (!isInt($group_id)) return $this->ajaxParamError();
 
         $user_id = $this->uid();
-        [$isTrue, $record_id] = $this->groupLogic->quitGroupChat($user_id, $group_id);
+        [$isTrue, $record_id] = $this->groupLogic->quit($user_id, $group_id);
         if ($isTrue) {
             $this->requestProxy->send('proxy/event/group-notify', [
                 'record_id' => $record_id

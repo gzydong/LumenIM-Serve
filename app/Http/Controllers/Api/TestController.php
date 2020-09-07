@@ -1,7 +1,8 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Jwt\Jwt;
+use App\Models\Emoticon;
 use Illuminate\Http\Request;
 
 
@@ -15,73 +16,35 @@ class TestController extends CController
 {
     public function test(Request $request)
     {
-        $result = app('client.manage')->bindUserIdToFds(41,2054);
+        $jwtObject = Jwt::getInstance()
+            ->setSecretKey('easyswoole') // 秘钥
+            ->publish();
 
-        dd($result);
-    }
+        $jwtObject->setAlg('HMACSHA256'); // 加密方式
+        $jwtObject->setAud('user'); // 用户
+        $jwtObject->setExp(time()+3600); // 过期时间
+        $jwtObject->setIat(time()); // 发布时间
+        $jwtObject->setIss('easyswoole'); // 发行人
+        $jwtObject->setJti(md5(time())); // jwt id 用于标识该jwt
+        $jwtObject->setNbf(time()+60*5); // 在此之前不可用
+        $jwtObject->setSub('主题'); // 主题
 
-    /**
-     * 将字符串转换成二进制
-     * @param type $str
-     * @return type
-     */
-    function StrToBin($str)
-    {
-        //1.列出每个字符
-        $arr = preg_split('/(?<!^)(?!$)/u', $str);
-        //2.unpack字符
-        foreach ($arr as &$v) {
-            $temp = unpack('H*', $v);
-            $v = base_convert($temp[1], 16, 2);
-            unset($temp);
-        }
+// 自定义数据
+        $jwtObject->setData([
+            'other_info'
+        ]);
+//
+//
+//// 最终生成的token
+//        echo $token = $jwtObject->__toString();
 
-        return join(' ', $arr);
-    }
-
-    /**
-     * 将二进制转换成字符串
-     * @param type $str
-     * @return type
-     */
-    function BinToStr($str)
-    {
-        $arr = explode(' ', $str);
-        foreach ($arr as &$v) {
-            $v = pack("H" . strlen(base_convert($v, 2, 16)), base_convert($v, 2, 16));
-        }
-        return join('', $arr);
+        $token = $request->get('token');
+        $model = Jwt::getInstance()->decode($token);
+        var_dump($model->getStatus());
     }
 
     public function index(Request $request)
     {
-
-    }
-
-    function createCode($user_id)
-    {
-
-        static $source_string = 'E5FCDG3HQA4B1NOPIJ2RSTUV67MWX89KLYZ';
-
-        $num = $user_id;
-
-        $code = '';
-
-        while ($num > 0) {
-
-            $mod = $num % 35;
-
-            $num = ($num - $mod) / 35;
-
-            $code = $source_string[$mod] . $code;
-
-        }
-
-        if (empty($code[3]))
-
-            $code = str_pad($code, 4, '0', STR_PAD_LEFT);
-
-        return $code;
 
     }
 }

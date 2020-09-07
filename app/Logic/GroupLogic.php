@@ -3,33 +3,28 @@
 namespace App\Logic;
 
 use App\Helpers\Cache\CacheHelper;
+use Illuminate\Support\Facades\DB;
 use App\Models\{
     ChatRecords,
     ChatRecordsInvite,
     UsersChatList,
-    UsersChatRecords,
     UsersGroup,
     UsersGroupMember
 };
 
-use Illuminate\Support\Facades\DB;
-
-class GroupLogic extends Logic
+class GroupLogic extends BaseLogic
 {
-
     /**
-     * 创建群聊
+     * 创建群组
      *
      * @param int $user_id 用户ID
-     * @param string $group_name 群聊名称
-     * @param string $group_avatar 群聊头像
-     * @param string $group_profile 群聊用户ID(不包括群成员)
-     * @param array $friends
+     * @param array $group_info 群聊名称
+     * @param array $friend_ids 好友的用户ID
      * @return array
      */
-    public function createGroupChat(int $user_id, string $group_name, string $group_avatar, string $group_profile, $friends = [])
+    public function create(int $user_id, array $group_info, $friend_ids = [])
     {
-        $friends[] = $user_id;
+        $friend_ids[] = $user_id;
         $groupMember = [];
         $chatList = [];
 
@@ -37,16 +32,18 @@ class GroupLogic extends Logic
         try {
             $insRes = UsersGroup::create([
                 'user_id' => $user_id,
-                'group_name' => $group_name,
-                'avatar' => $group_avatar,
-                'group_profile' => $group_profile,
+                'group_name' => $group_info['name'],
+                'avatar' => $group_info['avatar'],
+                'group_profile' => $group_info['profile'],
                 'status' => 0,
                 'created_at' => date('Y-m-d H:i:s')
             ]);
 
-            if (!$insRes) throw new \Exception('创建群失败');
+            if (!$insRes) {
+                throw new \Exception('创建群失败');
+            }
 
-            foreach ($friends as $k => $uid) {
+            foreach ($friend_ids as $k => $uid) {
                 $groupMember[] = [
                     'group_id' => $insRes->id,
                     'user_id' => $uid,
@@ -82,14 +79,15 @@ class GroupLogic extends Logic
                 'send_time' => date('Y-m-d H:i;s')
             ]);
 
-            if (!$result) throw new \Exception('创建群成员的聊天列表失败');
-
+            if (!$result) {
+                throw new \Exception('创建群成员的聊天列表失败');
+            }
 
             ChatRecordsInvite::create([
                 'record_id' => $result->id,
                 'type' => 1,
                 'operate_user_id' => $user_id,
-                'user_ids' => implode(',', $friends)
+                'user_ids' => implode(',', $friend_ids)
             ]);
 
             DB::commit();
@@ -105,14 +103,45 @@ class GroupLogic extends Logic
     }
 
     /**
-     * 邀请好友加入群聊
+     * 解散群组
+     *
+     * @param int $group_id 群ID
+     * @param int $user_id 用户ID
+     * @return bool
+     */
+    public function dismiss(int $group_id, int $user_id)
+    {
+        if (!UsersGroup::where('id', $group_id)->where('status', 0)->exists()) {
+            return false;
+        }
+
+        //判断执行者是否属于群主
+        if (!UsersGroup::isManager($user_id, $group_id)) {
+            return false;
+        }
+
+        DB::beginTransaction();
+        try {
+            UsersGroup::where('id', $group_id)->update(['status' => 1]);
+            UsersGroupMember::where('group_id', $group_id)->update(['status' => 1]);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 邀请加入群组
      *
      * @param int $user_id 用户ID
      * @param int $group_id 聊天群ID
-     * @param array $uids 被邀请的用户ID
+     * @param array $friend_ids 被邀请的用户ID
      * @return array
      */
-    public function inviteFriendsGroupChat(int $user_id, int $group_id, $uids = [])
+    public function invite(int $user_id, int $group_id, $friend_ids = [])
     {
         $info = UsersGroupMember::select(['id', 'status'])->where('group_id', $group_id)->where('user_id', $user_id)->first();
 
@@ -121,26 +150,26 @@ class GroupLogic extends Logic
             return [false, 0];
         }
 
-        if (empty($uids)) {
+        if (empty($friend_ids)) {
             return [false, 0];
         }
 
         $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
 
-        $members = UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $uids)->get(['id', 'user_id', 'status'])->keyBy('user_id')->toArray();
-        $cahtArr = UsersChatList::where('group_id', $group_id)->whereIn('uid', $uids)->get(['id', 'uid', 'status'])->keyBy('uid')->toArray();
+        $members = UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $friend_ids)->get(['id', 'user_id', 'status'])->keyBy('user_id')->toArray();
+        $chatArr = UsersChatList::where('group_id', $group_id)->whereIn('uid', $friend_ids)->get(['id', 'uid', 'status'])->keyBy('uid')->toArray();
 
-        foreach ($uids as $uid) {
+        foreach ($friend_ids as $uid) {
             if (!isset($members[$uid])) {//存在聊天群成员记录
                 $insertArr[] = ['group_id' => $group_id, 'user_id' => $uid, 'group_owner' => 0, 'status' => 0, 'created_at' => date('Y-m-d H:i:s')];
             } else if ($members[$uid]['status'] == 1) {
                 $updateArr[] = $members[$uid]['id'];
             }
 
-            if (!isset($cahtArr[$uid])) {
+            if (!isset($chatArr[$uid])) {
                 $insertArr1[] = ['type' => 2, 'uid' => $uid, 'friend_id' => 0, 'group_id' => $group_id, 'status' => 1, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')];
-            } else if ($cahtArr[$uid]['status'] == 0) {
-                $updateArr1[] = $cahtArr[$uid]['id'];
+            } else if ($chatArr[$uid]['status'] == 0) {
+                $updateArr1[] = $chatArr[$uid]['id'];
             }
         }
 
@@ -175,7 +204,7 @@ class GroupLogic extends Logic
                 'record_id' => $result->id,
                 'type' => 1,
                 'operate_user_id' => $user_id,
-                'user_ids' => implode(',', $uids)
+                'user_ids' => implode(',', $friend_ids)
             ]);
 
             if (!$result2) throw new \Exception('添加群通知记录失败2');
@@ -191,14 +220,66 @@ class GroupLogic extends Logic
     }
 
     /**
-     * 将指定的用户踢出群聊
+     * 退出群组
+     *
+     * @param int $user_id 用户ID
+     * @param int $group_id 群组ID
+     * @return array
+     */
+    public function quit(int $user_id, int $group_id)
+    {
+        $record_id = 0;
+        DB::beginTransaction();
+        try {
+            $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status' => 1]);
+            if ($res) {
+                UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->update(['status' => 0]);
+
+                $result = ChatRecords::create([
+                    'msg_type' => 3,
+                    'source' => 2,
+                    'user_id' => 0,
+                    'receive_id' => $group_id,
+                    'content' => $user_id,
+                    'created_at' => date('Y-m-d H:i;s')
+                ]);
+
+                if (!$result) {
+                    throw new \Exception('添加群通知记录失败 : quitGroupChat');
+                }
+
+                $result2 = ChatRecordsInvite::create([
+                    'record_id' => $result->id,
+                    'type' => 2,
+                    'operate_user_id' => $user_id,
+                    'user_ids' => $user_id
+                ]);
+
+                if (!$result2) {
+                    throw new \Exception('添加群通知记录失败2  : quitGroupChat');
+                }
+
+                $record_id = $result->id;
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [false, 0];
+        }
+
+        return [true, $record_id];
+    }
+
+    /**
+     * 踢出群组(管理员特殊权限)
      *
      * @param int $group_id 群ID
      * @param int $user_id 操作用户ID
      * @param array $member_ids 群成员ID
      * @return array
      */
-    public function removeGroupChat(int $group_id, int $user_id, array $member_ids)
+    public function removeMember(int $group_id, int $user_id, array $member_ids)
     {
         if (!UsersGroup::isManager($user_id, $group_id)) {
             return [false, 0];
@@ -219,7 +300,9 @@ class GroupLogic extends Logic
                 'created_at' => date('Y-m-d H:i;s')
             ]);
 
-            if (!$result) throw new \Exception('添加群通知记录失败1');
+            if (!$result) {
+                throw new \Exception('添加群通知记录失败1');
+            }
 
             $result2 = ChatRecordsInvite::create([
                 'record_id' => $result->id,
@@ -228,85 +311,8 @@ class GroupLogic extends Logic
                 'user_ids' => implode(',', $member_ids)
             ]);
 
-            if (!$result2) throw new \Exception('添加群通知记录失败2');
-
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return [false, 0];
-        }
-
-        return [true, $result->id];
-    }
-
-    /**
-     * 解散指定的群聊
-     *
-     * @param int $group_id 群ID
-     * @param int $user_id 用户ID
-     * @return bool
-     */
-    public function dismissGroupChat(int $group_id, int $user_id)
-    {
-        if (!UsersGroup::where('id', $group_id)->where('status', 0)->exists()) {
-            return false;
-        }
-
-        //判断执行者是否属于群主
-        if (!UsersGroup::isManager($user_id, $group_id)) {
-            return false;
-        }
-
-        DB::beginTransaction();
-        try {
-            UsersGroup::where('id', $group_id)->update(['status' => 1]);
-            UsersGroupMember::where('group_id', $group_id)->update(['status' => 1]);
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * 用户退出群聊
-     *
-     * @param int $user_id 用户ID
-     * @param int $group_id 群聊ID
-     * @return array
-     */
-    public function quitGroupChat(int $user_id, int $group_id)
-    {
-        $record_id = 0;
-        DB::beginTransaction();
-        try {
-            $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status' => 1]);
-            if ($res) {
-                UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->update(['status' => 0]);
-
-                $result = ChatRecords::create([
-                    'msg_type' => 3,
-                    'source' => 2,
-                    'user_id' => 0,
-                    'receive_id' => $group_id,
-                    'content' => $user_id,
-                    'created_at' => date('Y-m-d H:i;s')
-                ]);
-
-                if (!$result) throw new \Exception('添加群通知记录失败 : quitGroupChat');
-
-                $result2 = ChatRecordsInvite::create([
-                    'record_id' => $result->id,
-                    'type' => 2,
-                    'operate_user_id' => $user_id,
-                    'user_ids' => $user_id
-                ]);
-
-                if (!$result2) throw new \Exception('添加群通知记录失败2  : quitGroupChat');
-
-                $record_id = $result->id;
+            if (!$result2) {
+                throw new \Exception('添加群通知记录失败2');
             }
 
             DB::commit();
@@ -315,6 +321,6 @@ class GroupLogic extends Logic
             return [false, 0];
         }
 
-        return [true, $record_id];
+        return [true, $result->id];
     }
 }

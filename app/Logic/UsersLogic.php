@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Mail;
  * Class UsersLogic
  * @package App\Logic
  */
-class UsersLogic extends Logic
+class UsersLogic extends BaseLogic
 {
     /**
      * 验证用户密码是否正确
@@ -27,7 +27,7 @@ class UsersLogic extends Logic
      * @param string $password 账户密码
      * @return bool
      */
-    public function checkAccountPassword(string $str, string $password)
+    public function checkPassword(string $str, string $password)
     {
         return Hash::check($str, $password);
     }
@@ -171,7 +171,7 @@ class UsersLogic extends Logic
      * @param string $new_password 新密码
      * @return array
      */
-    public function userChagePassword(int $user_id, string $old_password, string $new_password)
+    public function chagePassword(int $user_id, string $old_password, string $new_password)
     {
         $info = User::select(['id', 'password'])->where('id', $user_id)->first();
         if (!$info) {
@@ -199,7 +199,9 @@ class UsersLogic extends Logic
     public function renewalUserMobile(int $user_id, string $mobile)
     {
         $uid = User::where('mobile', $mobile)->value('id');
-        if ($uid) return [false, '手机号已被他人绑定'];
+        if ($uid) {
+            return [false, '手机号已被他人绑定'];
+        }
 
         $isTrue = (bool)User::where('id', $user_id)->update(['mobile' => $mobile]);
         return [$isTrue, null];

@@ -22,13 +22,6 @@ class UsersFriends extends Model
     protected $guarded = ['id'];
 
     /**
-     * 可以被批量赋值的属性.
-     *
-     * @var array
-     */
-    protected $fillable = ['user1', 'user2', 'active', 'status', 'agree_time', 'created_at', 'user1_remark', 'user2_remark'];
-
-    /**
      * 表明模型是否应该被打上时间戳
      *
      * @var bool

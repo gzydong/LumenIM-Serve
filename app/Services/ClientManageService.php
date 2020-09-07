@@ -105,10 +105,6 @@ class ClientManageService
     /**
      * 清除 Redis 中 Socket fd 相关的缓存信息
      */
-
-    /**
-     *
-     */
     public function clearRedisCache()
     {
         // 定义初始游标

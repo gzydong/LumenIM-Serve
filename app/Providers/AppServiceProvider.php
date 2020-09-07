@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Helpers\Socket\SocketResourceHandle;
 use App\Services\ClientManageService;
 use App\Services\RoomManageService;
 use Illuminate\Support\Facades\DB;

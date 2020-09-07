@@ -21,13 +21,6 @@ class UsersChatList extends Model
     protected $guarded = ['id'];
 
     /**
-     * 可以被批量赋值的属性.
-     *
-     * @var array
-     */
-    protected $fillable = ['type', 'uid', 'friend_id', 'group_id', 'status', 'not_disturb', 'created_at', 'updated_at'];
-
-    /**
      * 表明模型是否应该被打上时间戳
      *
      * @var bool

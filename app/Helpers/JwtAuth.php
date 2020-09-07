@@ -68,6 +68,7 @@ class JwtAuth
 
     /**
      * 加密jwt
+     * 
      * @return $this
      */
     public function encode()

@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Storage;
  */
 class FileSplitUploadLogic
 {
-
     // 文件拆分大小
     protected $splitSize;
 

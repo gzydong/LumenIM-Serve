@@ -20,13 +20,6 @@ class ChatRecordsForward extends Model
     protected $guarded = ['id'];
 
     /**
-     * 可以被批量赋值的属性.
-     *
-     * @var array
-     */
-    protected $fillable = ['record_id', 'user_id', 'records_id', 'text', 'created_at'];
-
-    /**
      * 表明模型是否应该被打上时间戳
      *
      * @var bool

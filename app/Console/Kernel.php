@@ -51,5 +51,13 @@ class Kernel extends ConsoleKernel
             })->after(function () {
                 Log::info('lumen-im:forever-article ------- end:' . time());
             })->runInBackground();
+
+        // 每十分钟执行一次
+        $schedule->command('lumen-im:test')
+            ->everyTenMinutes()
+            ->before(function () {
+                Log::info('lumen-im:test ------- start:' . time());
+            })
+            ->runInBackground();
     }
 }

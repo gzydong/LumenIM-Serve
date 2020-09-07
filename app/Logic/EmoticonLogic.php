@@ -13,7 +13,7 @@ use App\Models\UsersGroup;
  *
  * @package App\Logic
  */
-class EmoticonLogic extends Logic
+class EmoticonLogic extends BaseLogic
 {
 
     /**
@@ -80,14 +80,15 @@ class EmoticonLogic extends Logic
      */
     public function collectEmoticon(int $user_id, int $cid)
     {
-
         $result = ChatRecords::where([
             ['id', '=', $cid],
             ['msg_type', '=', 2],
             ['is_revoke', '=', 0],
         ])->first(['id', 'source', 'msg_type', 'user_id', 'receive_id', 'is_revoke']);
 
-        if (!$result) return [false, []];
+        if (!$result) {
+            return [false, []];
+        }
 
         if ($result->source == 1) {
             if ($result->user_id != $user_id && $result->receive_id != $user_id) {
@@ -105,10 +106,14 @@ class EmoticonLogic extends Logic
             'save_dir'
         ]);
 
-        if (!$fileInfo) return [false, []];
+        if (!$fileInfo) {
+            return [false, []];
+        }
 
         $result = EmoticonDetails::where('user_id', $user_id)->where('url', $fileInfo->save_dir)->first();
-        if ($result) return [false, []];
+        if ($result) {
+            return [false, []];
+        }
 
         $res = EmoticonDetails::create([
             'user_id' => $user_id,
