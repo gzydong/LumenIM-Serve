@@ -33,36 +33,6 @@ class TestCommand extends Command
 
     public function handle()
     {
-
-        $hashids = new Hashids('yuandong', 6, 'abcdefghijklmnopqrstuvwxyz123456789');
-
-//        dd(DB::table('hash_test')->get());
-
-
-        for ($i=1;$i<1000000;$i++){
-            $id = mt_rand(1089,5378863);
-
-            $res = DB::table('hash_test')->where('id',$id)->first(['user_id','hash_id']);
-            if($res){
-                $decode = $hashids->decode($res->hash_id);
-                if($decode[0] != $res->user_id){
-                    dd($decode,$res);
-                }
-            }
-        }
-
-        exit;
-        for ($i=3146929;$i<10000000;$i++){
-            $str = $hashids->encode($i);
-            DB::table('hash_test')->insert([
-                'user_id'=>$i,
-                'hash_id'=>$str
-            ]);
-
-            echo "{$i} : {$str}".PHP_EOL;
-        }
-
-        exit;
         $id = Redis::get('last_login_id') | 518;
         $rows = DB::connection('mysql2')->table('user_login_log')
             ->leftJoin('users', 'user_login_log.user_id', '=', 'users.id')
