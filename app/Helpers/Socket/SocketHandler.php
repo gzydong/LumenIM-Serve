@@ -4,13 +4,12 @@ namespace App\Helpers\Socket;
 
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
-use App\Helpers\JwtAuth;
 use App\Models\UsersFriends;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
+use App\Facades\JwtAuthFacade;
 
 class SocketHandler extends WebsocketHandler
 {
-
     /**
      * 连接成功方法
      *
@@ -21,11 +20,15 @@ class SocketHandler extends WebsocketHandler
     public function onOpen($fd, Request $request)
     {
         $token = $request->get('token', '');
-        $auth = new JwtAuth();
-        $auth->setToken($token);
-        $auth->decode();
 
-        $user_id = $auth->getUid();
+        $user_id = 0;
+        try {
+            $jwtObject = JwtAuthFacade::decode($token);
+            if ($jwtObject->getStatus() == 1) {
+                $user_id = $jwtObject->getData()['uid']??0;
+            }
+        } catch (\Exception $e) {
+        }
 
         //判断用户是否在其它地方登录
         $isLogin = app('client.manage')->isOnline($user_id);

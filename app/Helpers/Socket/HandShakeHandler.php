@@ -1,7 +1,8 @@
 <?php
 namespace App\Helpers\Socket;
 
-use App\Helpers\JwtAuth;
+use App\Facades\JwtAuthFacade;
+use App\Helpers\Jwt\JwtObject;
 
 /**
  * Websocket 自定义挥手处理
@@ -20,11 +21,15 @@ class HandShakeHandler
      */
     public function handle($request, $response)
     {
+        $token = $request->get['token']??'';
         try{
-            $auth = new JwtAuth();
-            $auth->setToken($request->get['token']);
-            if($auth->validate() == false ||  $auth->verify() == false){
-                throw new \Exception('授权失败...');
+            $jwtObject = JwtAuthFacade::decode($token);
+            $status = $jwtObject->getStatus();
+
+            if ($status == JwtObject::STATUS_SIGNATURE_ERROR) {
+                throw new \Exception('Token 授权验证失败');
+            } else if ($status == JwtObject::STATUS_EXPIRED) {
+                throw new \Exception('Token 授权已过期');
             }
         }catch (\Exception $e){
             $response->status(401);

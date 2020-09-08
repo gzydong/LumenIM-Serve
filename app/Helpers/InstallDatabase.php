@@ -320,7 +320,7 @@ class InstallDatabase
         }
 
         if (!Schema::hasTable('chat_records_delete')) {
-            Schema::create('users_chat_records_del', function (Blueprint $table) {
+            Schema::create('chat_records_delete', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('聊天删除记录ID');
                 $table->unsignedInteger('record_id')->default(0)->comment('聊天记录ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');

@@ -77,23 +77,7 @@ return [
             'password' => env('DB_PASSWORD', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => env('DB_PREFIX', ''),
-        ],
-
-        'mysql2' => [
-            'driver' => 'mysql',
-            'host' => env('DB_HOST2', 'localhost'),
-            'port' => 3306,
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME2', ''),
-            'password' => env('DB_PASSWORD2', ''),
-            'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-            'prefix' => env('DB_PREFIX', ''),
-            'strict' => env('DB_STRICT_MODE', true),
-            'engine' => env('DB_ENGINE', null),
-            'timezone' => env('DB_TIMEZONE', '+00:00'),
-        ],
+        ]
     ],
 
     /*

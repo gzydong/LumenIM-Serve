@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Facades\JwtAuthFacade;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Helpers\JwtAuth;
 
 class CController extends Controller
 {
@@ -12,15 +12,21 @@ class CController extends Controller
      * 获取用户ID
      *
      * @return int
+     * @throws \Exception
      */
     protected function uid()
     {
-        $auth = new JwtAuth();
-        $auth->setToken(JwtAuth::parseToken());
-        $auth->decode();
-        $uid = $auth->getUid();
+        $token = parseToken();
+        try{
+            $jwtObject = JwtAuthFacade::decode($token);
+            if($jwtObject->getStatus() != 1){
+                return 0;
+            }
+        }catch (\Exception $e){
+            return 0;
+        }
 
-        return $uid ? intval($uid) : 0;
+        return $jwtObject->getData()['uid']??0;
     }
 
     /**
@@ -28,6 +34,7 @@ class CController extends Controller
      *
      * @param bool $isArray
      * @return array
+     * @throws \Exception
      */
     protected function getUser($isArray = false)
     {

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\ClientManageService;
+use App\Services\JwtAuthService;
 use App\Services\RoomManageService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -43,6 +44,11 @@ class AppServiceProvider extends ServiceProvider
             return new RoomManageService();
         });
         $this->app->alias(RoomManageService::class, 'room.manage');
+
+        $this->app->singleton(JwtAuthService::class, function ($app) {
+            return new JwtAuthService();
+        });
+        $this->app->alias(JwtAuthService::class, 'jwt.auth');
     }
 
     /**

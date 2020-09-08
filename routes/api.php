@@ -169,5 +169,5 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
  * 测试控制器
  */
 $router->group([], function () use ($router) {
-    $router->get('test/test', ['middleware' => [], 'uses' => 'TestController@test']);
+    $router->get('test/test', ['middleware' => ['jwt'], 'uses' => 'TestController@test']);
 });
