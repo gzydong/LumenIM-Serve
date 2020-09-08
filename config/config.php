@@ -16,5 +16,6 @@ return [
         'port'=>'9501'
     ],
 
+    'mobile_secret'=>env('mobile_secret',''),
     'web_url'=>'http://im.gzydong.club',
 ];
