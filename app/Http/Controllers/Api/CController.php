@@ -12,7 +12,6 @@ class CController extends Controller
      * 获取用户ID
      *
      * @return int
-     * @throws \Exception
      */
     protected function uid()
     {
