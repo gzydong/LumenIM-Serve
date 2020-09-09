@@ -11,8 +11,6 @@ class RedisLock
 
     /**
      * 获取Redis实例
-     *
-     * @return \Illuminate\Foundation\Application|mixed
      */
     public static function getRedis()
     {

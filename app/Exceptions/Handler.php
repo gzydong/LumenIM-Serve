@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Exceptions;
 
 use Exception;
@@ -37,17 +38,12 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $exception
+     * @param  \Illuminate\Http\Request $request
+     * @param  \Exception $exception
      * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
     public function render($request, Exception $exception)
     {
-        //友好的出输出授权验证异常错误
-        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException) {
-            return response()->json(['code'=>401,'msg'=>$exception->getMessage()]);
-        }
-
         return parent::render($request, $exception);
     }
 }

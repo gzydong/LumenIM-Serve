@@ -169,7 +169,7 @@ class TalkLogic extends BaseLogic
             switch ($row['msg_type']) {
                 case 1://1:文本消息
                     if (!empty($rows[$k]['content'])) {
-                        $rows[$k]['content'] = emojiReplace(replaceUrlToLink($row['content']));
+                        $rows[$k]['content'] = replaceUrlToLink($row['content']);
                     }
                     break;
                 case 2://2:文件消息

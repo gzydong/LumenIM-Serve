@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\MobileInfo;
 use Illuminate\Http\Request;
 use App\Models\{User, UsersChatList, UsersFriends};
 use App\Logic\{UsersLogic, FriendsLogic};
@@ -309,26 +308,18 @@ class UsersController extends CController
             return $this->ajaxParamError('短信验证码不正确');
         }
 
-        //  这里使用邮箱发送验证码，可自行根据业务替换
-        $result = MobileInfo::info($mobile);
-        if (!isset($result['email'])) {
-            return $this->ajaxParamError('验证码填写错误...');
-        }
-
-        $sendEmailCode = new SendEmailCode();
-        if (!$sendEmailCode->check(SendEmailCode::CHANGE_MOBILE, $result['email'], $sms_code)) {
+        if (!app('sms.code')->check('change_mobile', $mobile, $sms_code)) {
             return $this->ajaxParamError('验证码填写错误...');
         }
 
         $uid = $this->uid();
-        $user_password = User::where('id', $uid)->value('password');
-        if (!$usersLogic->checkPassword($password, $user_password)) {
+        if (!$usersLogic->checkPassword($password, User::where('id', $uid)->value('password'))) {
             return $this->ajaxError('账号密码验证失败');
         }
 
         [$isTrue, $message] = $usersLogic->renewalUserMobile($this->uid(), $mobile);
         if ($isTrue) {
-            $sendEmailCode->delCode(SendEmailCode::CHANGE_MOBILE, $result['email']);
+            app('sms.code')->delCode('change_mobile', $mobile);
         }
 
         return $isTrue ? $this->ajaxSuccess('手机号更换成功') : $this->ajaxError($message);
@@ -341,8 +332,12 @@ class UsersController extends CController
      */
     public function sendMobileCode()
     {
-        $mobile = $this->request->post('mobile', '');
+        $user_id = $this->uid();
+        if(in_array($user_id,[2054,2055])){
+            return $this->ajaxParamError('测试账号不支持修改手机号');
+        }
 
+        $mobile = $this->request->post('mobile', '');
         if (!isMobile($mobile)) {
             return $this->ajaxParamError('手机号格式不正确');
         }
@@ -351,13 +346,15 @@ class UsersController extends CController
             return $this->ajaxError('手机号已被他人注册');
         }
 
-        $result = MobileInfo::info($mobile);
-        if (isset($result['email'])) {
-            $sendEmailCode = new SendEmailCode();
-            $sendEmailCode->send(SendEmailCode::CHANGE_MOBILE, '绑定手机', $result['email']);
+        $data = ['is_debug' => true];
+        [$isTrue, $result] = app('sms.code')->send('change_mobile', $mobile);
+        if ($isTrue) {
+            $data['sms_code'] = $result['data']['code'];
+        } else {
+            // ... 处理发送失败逻辑，当前默认发送成功
         }
 
-        return $this->ajaxSuccess('验证码发送成功...');
+        return $this->ajaxSuccess('验证码发送成功...', $data);
     }
 
     /**

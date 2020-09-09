@@ -31,29 +31,6 @@ class CacheFlag
     }
 
     /**
-     * 好友关系缓存
-     *
-     * @param int $user_id 用户ID
-     * @param int $friends_id 好友ID
-     * @return string
-     */
-    public static function friendRelationCacheKey(int $user_id,int $friends_id){
-        $key = $user_id > $friends_id ? "{$friends_id}_$user_id":"{$user_id}_$friends_id";
-        return "user:friends:relation:{$key}";
-    }
-
-    /**
-     * 群成员关系缓存
-     *
-     * @param int $user_id 用户ID
-     * @param int $group_id 群聊ID
-     * @return string
-     */
-    public static function groupRelationCacheKey(int $user_id,int $group_id){
-        return "user:group:relation:{$user_id}_$group_id";
-    }
-
-    /**
      * 好友备注缓存key
      *
      * @return string

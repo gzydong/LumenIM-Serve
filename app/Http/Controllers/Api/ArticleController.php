@@ -6,7 +6,6 @@ use App\Helpers\RedisLock;
 use Illuminate\Http\Request;
 use App\Logic\ArticleLogic;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ArticleController extends CController
 {
@@ -328,7 +327,7 @@ class ArticleController extends CController
             'original_name' => $file->getClientOriginalName()
         ];
 
-        if (!$save_path = Storage::disk('uploads')->putFileAs('files/notes/' . date('Ymd'), $file, "[{$ext}]" . uniqid() . Str::random() . '.' . 'tmp')) {
+        if (!$save_path = Storage::disk('uploads')->putFileAs('files/notes/' . date('Ymd'), $file, "[{$ext}]" . uniqid() . str_random(16) . '.' . 'tmp')) {
             return $this->ajaxError('附件上传失败，请稍后再试...');
         }
 

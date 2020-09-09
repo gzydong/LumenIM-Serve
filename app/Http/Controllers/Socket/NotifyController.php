@@ -82,7 +82,7 @@ class NotifyController extends Controller
         }
 
         if ($result->content) {
-            $result->content = emojiReplace(replaceUrlToLink($result->content));
+            $result->content = replaceUrlToLink($result->content);
         }
 
         SocketResourceHandle::response('chat_message', $clientFds, [

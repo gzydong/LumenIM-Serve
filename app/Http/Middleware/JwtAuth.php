@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use App\Facades\JwtAuthFacade;
 use App\Helpers\Jwt\JwtObject;
 use Closure;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class JwtAuth
 {
@@ -20,7 +19,7 @@ class JwtAuth
     {
         $token = parseToken();
         if (empty($token)) {
-            throw new UnauthorizedHttpException('jwt-auth', 'Token not provided');
+            return response()->json(['code' => 401, 'msg' => 'Token not provided'], 401);
         }
 
         try {
@@ -28,9 +27,9 @@ class JwtAuth
             $status = $jwtObject->getStatus();
 
             if ($status == JwtObject::STATUS_SIGNATURE_ERROR) {
-                throw new \Exception('Token 授权验证失败');
+                throw new \Exception('Token 验证失败');
             } else if ($status == JwtObject::STATUS_EXPIRED) {
-                throw new \Exception('Token 授权已过期');
+                throw new \Exception('Token 已过期');
             }
 
             // 验证是否是黑名单
@@ -38,7 +37,7 @@ class JwtAuth
                 throw new \Exception('Token 已失效');
             }
         } catch (\Exception $e) {
-            throw new UnauthorizedHttpException('jwt-auth', $e->getMessage());
+            return response()->json(['code' => 401, 'msg' => $e->getMessage()], 401);
         }
 
         return $next($request);

@@ -232,15 +232,6 @@ class GroupController extends CController
         }
 
         $isTrue = UsersGroupMember::where('group_id', $group_id)->where('user_id', $this->uid())->where('status', 0)->update(['visit_card' => $visit_card]);
-        if ($isTrue) {
-            $user = $this->getUser();
-            CacheHelper::setUserGroupVisitCard($group_id, $this->uid(), [
-                'avatar' => $user->avatar,
-                'nickname' => $user->nickname,
-                'visit_card' => $visit_card
-            ]);
-        }
-
         return $isTrue ? $this->ajaxSuccess('设置成功') : $this->ajaxError('设置失败');
     }
 

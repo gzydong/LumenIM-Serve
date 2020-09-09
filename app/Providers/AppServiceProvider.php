@@ -45,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         });
         $this->app->alias(RoomManageService::class, 'room.manage');
 
+        // jwt 授权服务
         $this->app->singleton(JwtAuthService::class, function ($app) {
             return new JwtAuthService();
         });

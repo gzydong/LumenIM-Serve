@@ -1,8 +1,6 @@
 <?php
 namespace App\Helpers;
 
-use App\Helpers\Curl;
-
 class RequestProxy
 {
 

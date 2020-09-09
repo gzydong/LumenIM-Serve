@@ -33,7 +33,6 @@ class CController extends Controller
      *
      * @param bool $isArray
      * @return array
-     * @throws \Exception
      */
     protected function getUser($isArray = false)
     {

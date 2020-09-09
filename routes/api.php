@@ -13,7 +13,7 @@ $router->get('/', ['as' => 'api', function () {
 $router->group([], function () use ($router) {
     $router->post('auth/login', ['middleware' => [], 'uses' => 'AuthController@login']);
     $router->post('auth/register', ['middleware' => [], 'uses' => 'AuthController@register']);
-    $router->post('auth/logout', ['middleware' => ['jwt'], 'uses' => 'AuthController@logout']);
+    $router->get('auth/logout', ['middleware' => ['jwt'], 'uses' => 'AuthController@logout']);
 
     $router->post('auth/send-verify-code', ['middleware' => [], 'uses' => 'AuthController@sendVerifyCode']);
     $router->post('auth/forget-password', ['middleware' => [], 'uses' => 'AuthController@forgetPassword']);
@@ -169,5 +169,5 @@ $router->group(['middleware' => ['jwt']], function () use ($router) {
  * 测试控制器
  */
 $router->group([], function () use ($router) {
-    $router->get('test/test', ['middleware' => ['jwt'], 'uses' => 'TestController@test']);
+    $router->get('test/test', ['middleware' => [], 'uses' => 'TestController@test']);
 });
