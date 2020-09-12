@@ -1,13 +1,12 @@
 <?php
-
-namespace App\Models;
+namespace App\Helpers;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Console\Command;
 
-class InstallDatabaseTables
+class InstallDatabase
 {
     public $command;
 

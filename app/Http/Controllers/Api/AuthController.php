@@ -75,15 +75,16 @@ class AuthController extends CController
             return $this->ajaxReturn(305, '登录密码错误...');
         }
 
+        $jwtConfig = config('config.jwt');
         $jwtObject = JwtAuthFacade::jwtObject();
-        $jwtObject->setAlg('HMACSHA256'); // 加密方式
+        $jwtObject->setAlg($jwtConfig['algo']); // 加密方式
         $jwtObject->setAud('user'); // 用户
-        $jwtObject->setExp(time() + 60 * 60 * 24 * 7); //  jwt的过期时间，这个过期时间必须要大于签发时间
+        $jwtObject->setExp(time() + $jwtConfig['ttl']); //  jwt的过期时间，这个过期时间必须要大于签发时间
         $jwtObject->setIat(time()); // 发布时间
         $jwtObject->setIss('lumen-im'); // 发行人
         $jwtObject->setJti(md5(time() . mt_rand(10000, 99999) . uniqid())); // jwt id 用于标识该jwt
         $jwtObject->setNbf(time()); // 定义在什么时间之前，该jwt都是不可用的.
-        $jwtObject->setSub('im.gzydong.club'); // 主题
+        $jwtObject->setSub('Authorized login'); // 主题
         $jwtObject->setData([
             'uid' => $user->id
         ]);

@@ -16,11 +16,6 @@ class TestController extends CController
     public function test(Request $request)
     {
 
-        $random = str_random(40);
-        dd($random);
-        $token = parseToken();
-//        app('jwt.auth')->joinBlackList($token);
-        dd($token);
     }
 
     public function index(Request $request)

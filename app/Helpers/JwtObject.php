@@ -1,13 +1,10 @@
 <?php
 
-namespace App\Helpers\Jwt;
-
-use Illuminate\Support\Str;
-
+namespace App\Helpers;
 
 /**
  * Class JwtObject
- * @package App\Helpers\Jwt
+ * @package App\Helpers
  */
 class JwtObject
 {
@@ -69,7 +66,8 @@ class JwtObject
             $this->exp = time() + 7200;
         }
         if (empty($this->jti)) {
-            $this->jti = Str::random(10);
+
+            $this->jti = str_random(10);
         }
 
         // 解包：验证签名
@@ -298,7 +296,7 @@ class JwtObject
             'typ' => 'JWT'
         ]);
 
-        $this->header = base64UrlEncode($header);
+        $this->header = Encryption::base64UrlEncode($header);
     }
 
     public function getHeader()
@@ -319,7 +317,7 @@ class JwtObject
             'data' => $this->getData()
         ]);
 
-        $this->payload = base64UrlEncode($payload);
+        $this->payload = Encryption::base64UrlEncode($payload);
     }
 
     public function getPayload()
@@ -337,17 +335,17 @@ class JwtObject
 
         switch ($this->getAlg()) {
             case self::ALG_METHOD_HMACSHA256:
-                $signature = base64UrlEncode(
+                $signature = Encryption::base64UrlEncode(
                     hash_hmac('sha256', $content, $this->getSecretKey(), true)
                 );
                 break;
             case self::ALG_METHOD_HS256:
-                $signature = base64UrlEncode(
+                $signature = Encryption::base64UrlEncode(
                     hash_hmac('sha256', $content, $this->getSecretKey(), true)
                 );
                 break;
             case self::ALG_METHOD_AES:
-                $signature = base64UrlEncode(
+                $signature = Encryption::base64UrlEncode(
                     openssl_encrypt($content, 'AES-128-ECB', $this->getSecretKey())
                 );
                 break;

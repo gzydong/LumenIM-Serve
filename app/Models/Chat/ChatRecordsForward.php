@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Chat;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ChatRecordsDelete extends Model
+class ChatRecordsForward extends Model
 {
     /**
      * 关联到模型的数据表
      *
      * @var string
      */
-    protected $table = 'chat_records_delete';
+    protected $table = 'chat_records_forward';
 
     /**
      * 不能被批量赋值的属性

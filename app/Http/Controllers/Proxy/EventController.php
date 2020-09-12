@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Proxy;
 
 use App\Http\Controllers\Controller;
-use App\Models\ChatRecords;
-use App\Models\ChatRecordsCode;
-use App\Models\ChatRecordsFile;
-use App\Models\ChatRecordsForward;
-use App\Models\ChatRecordsInvite;
+
+use App\Models\Chat\{
+    ChatRecords,
+    ChatRecordsCode,
+    ChatRecordsFile,
+    ChatRecordsForward,
+    ChatRecordsInvite
+};
+
 use App\Models\User;
-use App\Models\UsersGroup;
+use App\Models\Group\UsersGroup;
 use Illuminate\Http\Request;
 use App\Helpers\Socket\SocketResourceHandle;
 

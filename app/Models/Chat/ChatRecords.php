@@ -1,16 +1,17 @@
 <?php
-namespace App\Models;
+
+namespace App\Models\Chat;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UsersGroupNotice extends Model
+class ChatRecords extends Model
 {
     /**
      * 关联到模型的数据表
      *
      * @var string
      */
-    protected $table = 'users_group_notice';
+    protected $table = 'chat_records';
 
     /**
      * 不能被批量赋值的属性

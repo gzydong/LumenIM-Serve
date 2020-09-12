@@ -2,12 +2,12 @@
 
 namespace App\Logic;
 
-use App\Models\ArticleClass;
+use App\Models\Article\ArticleClass;
 use App\Models\User;
 use App\Models\UsersChatList;
 use App\Models\UsersFriends;
 use App\Models\UsersFriendsApply;
-use App\Models\UsersGroupMember;
+use App\Models\Group\UsersGroupMember;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;

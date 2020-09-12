@@ -2,15 +2,18 @@
 
 namespace App\Logic;
 
-use App\Models\ChatRecords;
-use App\Models\ChatRecordsCode;
-use App\Models\ChatRecordsFile;
-use App\Models\ChatRecordsForward;
-use App\Models\ChatRecordsInvite;
+use App\Models\Chat\{
+    ChatRecords,
+    ChatRecordsCode,
+    ChatRecordsFile,
+    ChatRecordsForward,
+    ChatRecordsInvite
+};
+
 use App\Models\User;
 use App\Models\UsersChatList;
 use App\Models\UsersFriends;
-use App\Models\UsersGroup;
+use App\Models\Group\UsersGroup;
 
 use Illuminate\Support\Facades\DB;
 use App\Helpers\Cache\CacheHelper;

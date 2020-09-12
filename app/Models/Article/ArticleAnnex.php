@@ -1,14 +1,17 @@
 <?php
-namespace App\Models;
+
+namespace App\Models\Article;
+
 use Illuminate\Database\Eloquent\Model;
-class ChatRecordsInvite extends Model
+
+class ArticleAnnex extends Model
 {
     /**
      * 关联到模型的数据表
      *
      * @var string
      */
-    protected $table = 'chat_records_invite';
+    protected $table = 'article_annex';
 
     /**
      * 不能被批量赋值的属性

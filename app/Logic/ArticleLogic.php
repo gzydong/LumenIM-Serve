@@ -2,11 +2,7 @@
 
 namespace App\Logic;
 
-use App\Models\Article;
-use App\Models\ArticleAnnex;
-use App\Models\ArticleClass;
-use App\Models\ArticleDetail;
-use App\Models\ArticleTags;
+use App\Models\Article\{Article, ArticleAnnex, ArticleClass, ArticleDetail, ArticleTags};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -26,6 +22,7 @@ class ArticleLogic extends BaseLogic
      */
     public function getUserArticleClass(int $user_id)
     {
+
         $subJoin = Article::select('class_id', DB::raw('count(class_id) as count'))->where('user_id', $user_id)->where('status', 1)->groupBy('class_id');
 
         return ArticleClass::leftJoinSub($subJoin, 'sub_join', function ($join) {

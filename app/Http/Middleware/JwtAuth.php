@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Facades\JwtAuthFacade;
-use App\Helpers\Jwt\JwtObject;
+use App\Helpers\JwtObject;
 use Closure;
 
 class JwtAuth

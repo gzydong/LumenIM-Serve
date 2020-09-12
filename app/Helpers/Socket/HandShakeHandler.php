@@ -2,7 +2,7 @@
 namespace App\Helpers\Socket;
 
 use App\Facades\JwtAuthFacade;
-use App\Helpers\Jwt\JwtObject;
+use App\Helpers\JwtObject;
 
 /**
  * Websocket 自定义挥手处理

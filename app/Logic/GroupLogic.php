@@ -4,13 +4,9 @@ namespace App\Logic;
 
 use App\Helpers\Cache\CacheHelper;
 use Illuminate\Support\Facades\DB;
-use App\Models\{
-    ChatRecords,
-    ChatRecordsInvite,
-    UsersChatList,
-    UsersGroup,
-    UsersGroupMember
-};
+use App\Models\UsersChatList;
+use App\Models\Group\{UsersGroup, UsersGroupMember};
+use App\Models\Chat\{ChatRecords, ChatRecordsInvite};
 
 class GroupLogic extends BaseLogic
 {

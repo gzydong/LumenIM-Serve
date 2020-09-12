@@ -27,4 +27,3 @@ class EmoticonDetails extends Model
      */
     public $timestamps = false;
 }
-

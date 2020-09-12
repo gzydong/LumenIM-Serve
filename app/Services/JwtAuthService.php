@@ -3,7 +3,8 @@
 namespace App\Services;
 
 use \Exception;
-use App\Helpers\Jwt\JwtObject;
+use App\Helpers\JwtObject;
+use App\Helpers\Encryption;
 
 /**
  * jwt 授权服务
@@ -21,7 +22,7 @@ class JwtAuthService
      */
     private function _secret()
     {
-        return config('config.jwt_secret');
+        return config('config.jwt.secret');
     }
 
     /**
@@ -73,13 +74,13 @@ class JwtAuthService
         }
 
         // 验证header
-        $header = json_decode(base64UrlDecode($items[0]), true);
+        $header = json_decode(Encryption::base64UrlDecode($items[0]), true);
         if (empty($header)) {
             throw new Exception('Token header is empty!', 1002);
         }
 
         // 验证payload
-        $payload = json_decode(base64UrlDecode($items[1]), true);
+        $payload = json_decode(Encryption::base64UrlDecode($items[1]), true);
         if (empty($header)) {
             throw new Exception('Token payload is empty!', 1003);
         }

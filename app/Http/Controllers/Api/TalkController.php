@@ -8,16 +8,17 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Logic\{TalkLogic};
 
-use App\Models\{ChatRecords,
-    ChatRecordsCode,
-    ChatRecordsFile,
+use App\Models\{
     EmoticonDetails,
     FileSplitUpload,
     User,
     UsersChatList,
-    UsersFriends,
-    UsersGroup
+    UsersFriends
 };
+
+use App\Models\Group\UsersGroup;
+
+use App\Models\Chat\{ChatRecords, ChatRecordsCode, ChatRecordsFile};
 
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\RequestProxy;

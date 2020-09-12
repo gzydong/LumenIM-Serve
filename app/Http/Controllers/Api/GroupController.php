@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\RequestProxy;
 use App\Logic\GroupLogic;
 use Illuminate\Http\Request;
-use App\Helpers\Cache\CacheHelper;
+use App\Models\{UsersChatList, UsersFriends};
 
-use App\Models\{UsersChatList, UsersFriends, UsersGroup, UsersGroupMember, UsersGroupNotice};
+use App\Models\Group\{UsersGroup, UsersGroupMember, UsersGroupNotice};
 
 /**
  * 聊天群组控制器

@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\InstallDatabaseTables;
+use App\Helpers\InstallDatabase;
 
 /**
  *  项目安装命令
@@ -28,7 +28,7 @@ class LumenImInstallCommand extends Command
 
     public function handle()
     {
-        $install = new InstallDatabaseTables($this);
+        $install = new InstallDatabase($this);
         $install->init();
     }
 }

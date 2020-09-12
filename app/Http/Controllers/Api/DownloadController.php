@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use App\Models\{ChatRecords, ChatRecordsFile, UsersGroup, ArticleAnnex};
+use App\Models\Group\UsersGroup;
+
+use App\Models\Article\ArticleAnnex;
+use App\Models\Chat\{ChatRecords, ChatRecordsFile};
+
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -90,7 +94,7 @@ class DownloadController extends CController
     {
 
         $isTrue = Storage::disk('uploads')->exists($save_dir);
-        if(!$isTrue){
+        if (!$isTrue) {
             return $this->ajaxError('文件已被清理...');
         }
 

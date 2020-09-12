@@ -265,19 +265,6 @@ function diffDate($day1, $day2)
     return ceil(($second1 - $second2) / 86400);
 }
 
-function base64UrlEncode($data)
-{
-    return str_replace('=', '', strtr(base64_encode($data), '+/', '-_'));
-}
-
-function base64UrlDecode($data)
-{
-    if ($remainder = strlen($data) % 4) {
-        $data .= str_repeat('=', 4 - $remainder);
-    }
-    return base64_decode(strtr($data, '-_', '+/'));
-}
-
 /**
  * 获取请求token
  *

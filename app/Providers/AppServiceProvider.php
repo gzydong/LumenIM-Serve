@@ -2,13 +2,13 @@
 
 namespace App\Providers;
 
-use App\Services\ClientManageService;
-use App\Services\JwtAuthService;
-use App\Services\RoomManageService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
+use App\Services\ClientManageService;
+use App\Services\JwtAuthService;
+use App\Services\RoomManageService;
 use App\Services\UnreadTalkService;
 use App\Services\SmsCodeService;
 

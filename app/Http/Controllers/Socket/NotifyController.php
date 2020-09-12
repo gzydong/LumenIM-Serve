@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Socket;
 
 use App\Helpers\Socket\SocketResourceHandle;
 use App\Helpers\Cache\CacheHelper;
-use App\Models\ChatRecords;
+use App\Models\Chat\ChatRecords;
 use App\Models\UsersFriends;
-use App\Models\UsersGroup;
+use App\Models\Group\UsersGroup;
 use App\Http\Controllers\Controller;
 
 class NotifyController extends Controller

@@ -2,11 +2,10 @@
 
 namespace App\Logic;
 
-use App\Models\ChatRecords;
-use App\Models\ChatRecordsFile;
+use App\Models\Chat\{ChatRecords, ChatRecordsFile};
 use App\Models\EmoticonDetails;
 use App\Models\UsersEmoticon;
-use App\Models\UsersGroup;
+use App\Models\Group\UsersGroup;
 
 /**
  * 表情包处理逻辑层
