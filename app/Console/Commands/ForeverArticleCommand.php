@@ -3,8 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Logic\ArticleLogic;
-use App\Models\Article;
-use App\Models\ArticleAnnex;
+use App\Models\Article\{Article,ArticleAnnex};
 use Illuminate\Console\Command;
 
 set_time_limit(0);

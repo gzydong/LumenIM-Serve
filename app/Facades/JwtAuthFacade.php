@@ -3,7 +3,7 @@
 namespace App\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use App\Helpers\Jwt\JwtObject;
+use App\Helpers\JwtObject;
 
 /**
  * @method bool joinBlackList(string $token) 加入黑名单

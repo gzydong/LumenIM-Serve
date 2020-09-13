@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Proxy;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\Chat\{
     ChatRecords,
     ChatRecordsCode,
@@ -11,11 +10,10 @@ use App\Models\Chat\{
     ChatRecordsForward,
     ChatRecordsInvite
 };
-
 use App\Models\User;
 use App\Models\Group\UsersGroup;
 use Illuminate\Http\Request;
-use App\Helpers\Socket\SocketResourceHandle;
+use App\Helpers\PushMessageHelper;
 
 class EventController extends Controller
 {
@@ -76,11 +74,11 @@ class EventController extends Controller
         }
 
         //推送群聊消息
-        SocketResourceHandle::response('chat_message', $clientFds, [
+        PushMessageHelper::response('chat_message', $clientFds, [
             'send_user' => 0,
             'receive_user' => $recordInfo->receive_id,
             'source_type' => 2,
-            'data' => SocketResourceHandle::formatTalkMsg([
+            'data' => PushMessageHelper::formatTalkMsg([
                 "id" => $recordInfo->id,
                 "source" => 2,
                 "msg_type" => 3,
@@ -97,7 +95,7 @@ class EventController extends Controller
 
         // 推送入群通知
         if ($notifyInfo->type == 1) {
-            SocketResourceHandle::response('join_group',
+            PushMessageHelper::response('join_group',
                 $joinClientFds,
                 [
                     'group_name' => UsersGroup::where('id', $recordInfo->receive_id)->value('group_name')
@@ -132,7 +130,7 @@ class EventController extends Controller
             $client = app('room.manage')->getRoomGroupName($records->receive_id);
         }
 
-        SocketResourceHandle::response('revoke_records',
+        PushMessageHelper::response('revoke_records',
             $client,
             [
                 'record_id' => $records->id,
@@ -185,11 +183,11 @@ class EventController extends Controller
                 $client = app('room.manage')->getRoomGroupName($records->receive_id);
             }
 
-            SocketResourceHandle::response('chat_message', $client, [
+            PushMessageHelper::response('chat_message', $client, [
                 'send_user' => $records->user_id,
                 'receive_user' => $records->receive_id,
                 'source_type' => $records->source,
-                'data' => SocketResourceHandle::formatTalkMsg([
+                'data' => PushMessageHelper::formatTalkMsg([
                     'id' => $records->id,
                     'msg_type' => $records->msg_type,
                     'source' => $records->source,
@@ -256,11 +254,11 @@ class EventController extends Controller
             $code_block = $code_block ? $code_block->toArray() : [];
         }
 
-        SocketResourceHandle::response('chat_message', $client, [
+        PushMessageHelper::response('chat_message', $client, [
             'send_user' => $info->user_id,
             'receive_user' => $info->receive_id,
             'source_type' => $info->source,
-            'data' => SocketResourceHandle::formatTalkMsg([
+            'data' => PushMessageHelper::formatTalkMsg([
                 'id' => $info->id,
                 'msg_type' => $info->msg_type,
                 'source' => $info->source,

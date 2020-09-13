@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\RequestProxy;
-use App\Logic\GroupLogic;
 use Illuminate\Http\Request;
 use App\Models\{UsersChatList, UsersFriends};
-
 use App\Models\Group\{UsersGroup, UsersGroupMember, UsersGroupNotice};
+use App\Helpers\RequestProxy;
+use App\Logic\GroupLogic;
 
 /**
  * 聊天群组控制器

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers\Socket;
+namespace App\Http\Controllers\Socket\Handler;
 
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ class SocketHandler extends WebsocketHandler
         try {
             $jwtObject = JwtAuthFacade::decode($token);
             if ($jwtObject->getStatus() == 1) {
-                $user_id = $jwtObject->getData()['uid']??0;
+                $user_id = $jwtObject->getData()['uid'] ?? 0;
             }
         } catch (\Exception $e) {
         }

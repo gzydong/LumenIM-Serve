@@ -2,13 +2,7 @@
 
 namespace App\Console\Commands;
 
-use Hashids\Hashids;
 use Illuminate\Console\Command;
-
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Mail;
-
 
 /**
  * 测试命令行

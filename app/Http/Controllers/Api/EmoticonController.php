@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\{Emoticon, EmoticonDetails, UsersEmoticon};
 use App\Logic\EmoticonLogic;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * 表情包相关服务接口

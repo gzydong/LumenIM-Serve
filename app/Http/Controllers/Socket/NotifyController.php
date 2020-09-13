@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Socket;
 
-use App\Helpers\Socket\SocketResourceHandle;
+use App\Helpers\PushMessageHelper;
 use App\Helpers\Cache\CacheHelper;
 use App\Models\Chat\ChatRecords;
 use App\Models\UsersFriends;
@@ -23,7 +23,7 @@ class NotifyController extends Controller
 
         //检测发送者与客户端是否是同一个用户
         if ($uid != $msgData['send_user']) {
-            SocketResourceHandle::response('notify', $fd, ['notify' => '非法操作!!!']);
+            PushMessageHelper::response('notify', $fd, ['notify' => '非法操作!!!']);
             return true;
         }
 
@@ -36,13 +36,13 @@ class NotifyController extends Controller
         if ($msgData['source_type'] == 1) {//私信
             //判断发送者和接受者是否是好友关系
             if (!UsersFriends::isFriend($msgData['send_user'], $msgData['receive_user'])) {
-                SocketResourceHandle::response('notify', $fd, ['notify' => '温馨提示:您当前与对方尚未成功好友！']);
+                PushMessageHelper::response('notify', $fd, ['notify' => '温馨提示:您当前与对方尚未成功好友！']);
                 return true;
             }
         } else if ($msgData['source_type'] == 2) {//群聊
             //判断是否属于群成员
             if (!UsersGroup::isMember($msgData['receive_user'], $msgData['send_user'])) {
-                SocketResourceHandle::response('notify', $fd, ['notify' => '温馨提示:您还没有加入该聊天群！']);
+                PushMessageHelper::response('notify', $fd, ['notify' => '温馨提示:您还没有加入该聊天群！']);
                 return true;
             }
         }
@@ -85,11 +85,11 @@ class NotifyController extends Controller
             $result->content = replaceUrlToLink($result->content);
         }
 
-        SocketResourceHandle::response('chat_message', $clientFds, [
+        PushMessageHelper::response('chat_message', $clientFds, [
             'send_user' => $msgData['send_user'],
             'receive_user' => $msgData['receive_user'],
             'source_type' => $msgData['source_type'],
-            'data' => SocketResourceHandle::formatTalkMsg([
+            'data' => PushMessageHelper::formatTalkMsg([
                 "id" => $result->id,
                 "source" => $result->source,
                 "msg_type" => 1,
@@ -111,7 +111,7 @@ class NotifyController extends Controller
     {
         $clientFds = app('client.manage')->findUserIdFds($data['receive_user']);
         if ($clientFds) {
-            SocketResourceHandle::response('input_tip', $clientFds, $data);
+            PushMessageHelper::response('input_tip', $clientFds, $data);
         }
     }
 }

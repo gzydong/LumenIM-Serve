@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
     */
     //'handler' => SwooleTW\Http\Websocket\SocketIO\WebsocketHandler::class,
-    'handler' => App\Helpers\Socket\SocketHandler::class,
+    'handler' => App\Http\Controllers\Socket\Handler\SocketHandler::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -17,7 +17,7 @@ return [
     |--------------------------------------------------------------------------
     */
     //'parser' => SwooleTW\Http\Websocket\SocketIO\SocketIOParser::class,
-    'parser' => App\Helpers\Socket\SocketIOParser::class,
+    'parser' => App\Http\Controllers\Socket\Handler\SocketIOParser::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -47,7 +47,7 @@ return [
     'handshake' => [
         'enabled' => true,
         //'handler' => SwooleTW\Http\Websocket\HandShakeHandler::class,
-        'handler' => App\Helpers\Socket\HandShakeHandler::class,
+        'handler' => App\Http\Controllers\Socket\Handler\HandShakeHandler::class,
     ],
 
     /*

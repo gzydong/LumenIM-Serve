@@ -1,5 +1,6 @@
 <?php
-namespace App\Helpers\Socket;
+
+namespace App\Http\Controllers\Socket\Handler;
 
 use App\Facades\JwtAuthFacade;
 use App\Helpers\JwtObject;
@@ -21,8 +22,8 @@ class HandShakeHandler
      */
     public function handle($request, $response)
     {
-        $token = $request->get['token']??'';
-        try{
+        $token = $request->get['token'] ?? '';
+        try {
             $jwtObject = JwtAuthFacade::decode($token);
             $status = $jwtObject->getStatus();
 
@@ -31,7 +32,7 @@ class HandShakeHandler
             } else if ($status == JwtObject::STATUS_EXPIRED) {
                 throw new \Exception('Token 授权已过期');
             }
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             $response->status(401);
             $response->end();
             return false;

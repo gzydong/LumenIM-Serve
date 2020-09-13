@@ -1,5 +1,6 @@
 <?php
-namespace App\Helpers\Socket;
+
+namespace App\Http\Controllers\Socket\Handler;
 
 use SwooleTW\Http\Websocket\Parser;
 
@@ -18,15 +19,15 @@ class SocketIOParser extends Parser
      * @param \Swoole\WebSocket\Frame $frame
      * @return bool
      */
-    public function execute($server, $frame) :bool
+    public function execute($server, $frame): bool
     {
         //判断接收的消息是否为心跳检测
-        if($frame->data == 'heartbeat'){
+        if ($frame->data == 'heartbeat') {
             return true;
         }
 
-        $data = json_decode($frame->data,true);
-        if(!$data || !array_has($data,['event','data'])){
+        $data = json_decode($frame->data, true);
+        if (!$data || !array_has($data, ['event', 'data'])) {
             return true;
         }
 
@@ -61,7 +62,7 @@ class SocketIOParser extends Parser
      */
     public function decode($frame)
     {
-        $data = json_decode($frame->data,true);
+        $data = json_decode($frame->data, true);
         $data['data']['fd'] = $frame->fd;
 
         return [

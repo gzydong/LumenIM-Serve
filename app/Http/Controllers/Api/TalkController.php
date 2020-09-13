@@ -5,24 +5,12 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-
 use App\Logic\{TalkLogic};
-
-use App\Models\{
-    EmoticonDetails,
-    FileSplitUpload,
-    User,
-    UsersChatList,
-    UsersFriends
-};
-
+use App\Models\{EmoticonDetails, FileSplitUpload, User, UsersChatList, UsersFriends};
 use App\Models\Group\UsersGroup;
-
 use App\Models\Chat\{ChatRecords, ChatRecordsCode, ChatRecordsFile};
-
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\RequestProxy;
-use Illuminate\Support\Str;
 
 /**
  * 聊天对话处理
@@ -617,7 +605,7 @@ class TalkController extends CController
             return $this->ajaxReturn(302, '文件不存在...');
         }
 
-        $file_hash_name = uniqid() . Str::random() . '.' . $file->file_ext;
+        $file_hash_name = uniqid() . str_random() . '.' . $file->file_ext;
         $save_dir = "files/talks/" . date('Ymd') . '/' . $file_hash_name;
 
         if (!Storage::disk('uploads')->copy($file->save_dir, $save_dir)) {

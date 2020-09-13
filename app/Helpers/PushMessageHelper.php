@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Helpers\Socket;
+namespace App\Helpers;
 
 use App\Models\User;
 use SwooleTW\Http\Websocket\Facades\Websocket;
 
 /**
  * Socket 资源处理
- * Class SocketResourceHandle
+ * Class PushMessageHelper
  * @package App\Helpers
  */
-class SocketResourceHandle
+class PushMessageHelper
 {
     // 消息事件类型
     const events = [

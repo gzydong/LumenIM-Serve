@@ -333,7 +333,7 @@ class UsersController extends CController
     public function sendMobileCode()
     {
         $user_id = $this->uid();
-        if(in_array($user_id,[2054,2055])){
+        if (in_array($user_id, [2054, 2055])) {
             return $this->ajaxParamError('测试账号不支持修改手机号');
         }
 
