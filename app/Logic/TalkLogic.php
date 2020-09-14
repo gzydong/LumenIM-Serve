@@ -170,13 +170,13 @@ class TalkLogic extends BaseLogic
             switch ($row['msg_type']) {
                 case 1://1:文本消息
                     if (!empty($rows[$k]['content'])) {
-                        $rows[$k]['content'] = replaceUrlToLink($row['content']);
+                        $rows[$k]['content'] = replace_url_link($row['content']);
                     }
                     break;
                 case 2://2:文件消息
                     $rows[$k]['file'] = $files[$row['id']] ?? [];
                     if ($rows[$k]['file']) {
-                        $rows[$k]['file']['file_url'] = getFileUrl($rows[$k]['file']['save_dir']);
+                        $rows[$k]['file']['file_url'] = get_media_url($rows[$k]['file']['save_dir']);
                     }
                     break;
                 case 3://3:入群消息/退群消息

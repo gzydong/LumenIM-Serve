@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Facades\JwtAuthFacade;
 use App\Helpers\JwtObject;
 use Closure;
 
@@ -17,13 +16,13 @@ class JwtAuth
      */
     public function handle($request, Closure $next)
     {
-        $token = parseToken();
+        $token = parse_token();
         if (empty($token)) {
             return response()->json(['code' => 401, 'msg' => 'Token not provided'], 401);
         }
 
         try {
-            $jwtObject = JwtAuthFacade::decode($token);
+            $jwtObject = app('jwt.auth')->decode($token);
             $status = $jwtObject->getStatus();
 
             if ($status == JwtObject::STATUS_SIGNATURE_ERROR) {

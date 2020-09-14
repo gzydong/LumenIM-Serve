@@ -88,7 +88,7 @@ class UsersController extends CController
     public function editUserDetail()
     {
         $params = ['nickname', 'avatar', 'motto', 'gender'];
-        if (!$this->request->has($params) || !isInt($this->request->post('gender'), true)) {
+        if (!$this->request->has($params) || !check_int($this->request->post('gender'), true)) {
             return $this->ajaxParamError();
         }
 
@@ -107,8 +107,7 @@ class UsersController extends CController
         if (!$this->request->filled(['old_password', 'new_password'])) {
             return $this->ajaxParamError();
         }
-
-        if (!isPassword($this->request->post('new_password'))) {
+        if (!check_password($this->request->post('new_password'))) {
             return $this->ajaxParamError('新密码格式错误(8~16位字母加数字)');
         }
 
@@ -157,7 +156,7 @@ class UsersController extends CController
     {
         $friend_id = $this->request->post('friend_id', 0);
         $remarks = $this->request->post('remarks', '');
-        if (!isInt($friend_id)) {
+        if (!check_int($friend_id)) {
             return $this->ajaxParamError();
         }
 
@@ -186,7 +185,7 @@ class UsersController extends CController
     {
         $apply_id = $this->request->post('apply_id', 0);
         $remarks = $this->request->post('remarks', '');
-        if (!isInt($apply_id)) {
+        if (!check_int($apply_id)) {
             return $this->ajaxParamError();
         }
 
@@ -207,7 +206,7 @@ class UsersController extends CController
     public function deleteFriendApply()
     {
         $apply_id = $this->request->post('apply_id', 0);
-        if (!isInt($apply_id)) {
+        if (!check_int($apply_id)) {
             return $this->ajaxParamError();
         }
 
@@ -237,7 +236,7 @@ class UsersController extends CController
         $friend_id = $this->request->post('friend_id', 0);
         $remarks = $this->request->post('remarks', '');
 
-        if (!isInt($friend_id) || empty($remarks)) {
+        if (!check_int($friend_id) || empty($remarks)) {
             return $this->ajaxParamError();
         }
 
@@ -262,9 +261,9 @@ class UsersController extends CController
         $mobile = $this->request->post('mobile', '');
         $where = [];
 
-        if (isInt($user_id)) {
+        if (check_int($user_id)) {
             $where['uid'] = $user_id;
-        } else if (isMobile($mobile)) {
+        } else if (check_mobile($mobile)) {
             $where['mobile'] = $mobile;
         } else {
             return $this->ajaxParamError();
@@ -301,7 +300,7 @@ class UsersController extends CController
         $mobile = $this->request->post('mobile', '');
         $password = $this->request->post('password', '');
 
-        if (!isMobile($mobile)) {
+        if (!check_mobile($mobile)) {
             return $this->ajaxParamError('手机号格式不正确');
         }
         if (empty($sms_code)) {
@@ -338,7 +337,7 @@ class UsersController extends CController
         }
 
         $mobile = $this->request->post('mobile', '');
-        if (!isMobile($mobile)) {
+        if (!check_mobile($mobile)) {
             return $this->ajaxParamError('手机号格式不正确');
         }
 
@@ -366,7 +365,7 @@ class UsersController extends CController
     {
         $friend_id = $this->request->post('friend_id', 0);
         $user_id = $this->uid();
-        if (!isInt($friend_id)) {
+        if (!check_int($friend_id)) {
             return $this->ajaxParamError();
         }
 

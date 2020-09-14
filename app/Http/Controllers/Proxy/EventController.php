@@ -30,7 +30,7 @@ class EventController extends Controller
     public function groupNotify()
     {
         $record_id = $this->request->post('record_id', 0);
-        if (!isInt($record_id)) {
+        if (!check_int($record_id)) {
             return $this->ajaxReturn(301, '请求参数错误');
         }
 
@@ -112,7 +112,7 @@ class EventController extends Controller
     public function revokeRecords()
     {
         $record_id = $this->request->post('record_id', 0);
-        if (!isInt($record_id)) {
+        if (!check_int($record_id)) {
             return $this->ajaxReturn(301, '请求参数错误');
         }
 
@@ -247,7 +247,7 @@ class EventController extends Controller
             $file = ChatRecordsFile::where('record_id', $info->id)->first(['id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir']);
             $file = $file ? $file->toArray() : [];
             if ($file) {
-                $file['file_url'] = getFileUrl($file['save_dir']);
+                $file['file_url'] = get_media_url($file['save_dir']);
             }
         } else if ($info->msg_type == 5) {
             $code_block = ChatRecordsCode::where('record_id', $info->id)->first(['record_id', 'code_lang', 'code']);

@@ -37,7 +37,7 @@ class ClientManageService
      */
     public function findFdUserId(int $fd)
     {
-        return $this->getRedis()->hget(self::BIND_FD_TO_USER, $fd) | 0;
+        return $this->getRedis()->hget(self::BIND_FD_TO_USER, $fd) ?: 0;
     }
 
     /**

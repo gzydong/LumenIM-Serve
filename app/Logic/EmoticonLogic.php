@@ -122,6 +122,6 @@ class EmoticonLogic extends BaseLogic
             'created_at' => time()
         ]);
 
-        return $res ? [true, ['media_id' => $res->id, 'src' => getFileUrl($res->url)]] : [false, []];
+        return $res ? [true, ['media_id' => $res->id, 'src' => get_media_url($res->url)]] : [false, []];
     }
 }

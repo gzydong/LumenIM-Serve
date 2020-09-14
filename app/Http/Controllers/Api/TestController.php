@@ -15,7 +15,7 @@ class TestController extends CController
 {
     public function test(Request $request)
     {
-        app('client.manage')->findFdUserId(5);
+        get_media_url();
     }
 
     public function index(Request $request)

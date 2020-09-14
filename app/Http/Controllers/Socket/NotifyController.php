@@ -82,7 +82,7 @@ class NotifyController extends Controller
         }
 
         if ($result->content) {
-            $result->content = replaceUrlToLink($result->content);
+            $result->content = replace_url_link($result->content);
         }
 
         PushMessageHelper::response('chat_message', $clientFds, [

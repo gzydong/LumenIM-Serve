@@ -35,7 +35,7 @@ class FileSplitUploadLogic
      */
     public function createSplitInfo(string $fileName, string $fileSize)
     {
-        $hash_name = implode('-', [shortCode($fileName), uniqid(), random_int(10000000, 99999999)]);
+        $hash_name = implode('-', [create_short_code($fileName), uniqid(), random_int(10000000, 99999999)]);
         $split_num = intval(ceil($fileSize / $this->splitSize));
 
         $data = [];

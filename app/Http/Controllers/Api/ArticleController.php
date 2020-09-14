@@ -58,7 +58,7 @@ class ArticleController extends CController
         $cid = $this->request->get('cid', -1);
         $page = $this->request->get('page', 1);
 
-        if (!in_array($findType, [1, 2, 3, 4, 5, 6]) || !isInt($page)) {
+        if (!in_array($findType, [1, 2, 3, 4, 5, 6]) || !check_int($page)) {
             return $this->ajaxParamError();
         }
 
@@ -89,7 +89,7 @@ class ArticleController extends CController
         $content = $this->request->post('content', '');
         $title = $this->request->post('title', '');
 
-        if (!isInt($article_id, true) || !isInt($class_id, true) || empty($title) || empty($md_content) || empty($content)) {
+        if (!check_int($article_id, true) || !check_int($class_id, true) || empty($title) || empty($md_content) || empty($content)) {
             return $this->ajaxParamError();
         }
 
@@ -97,7 +97,7 @@ class ArticleController extends CController
             'title' => $title,
             'abstract' => mb_substr(strip_tags($content), 0, 200),
             'class_id' => $class_id,
-            'image' => getTtmlImgs($content),
+            'image' => get_html_images($content),
             'md_content' => htmlspecialchars($md_content),
             'content' => htmlspecialchars($content)
         ]);
@@ -115,7 +115,7 @@ class ArticleController extends CController
     public function getArticleDetail()
     {
         $article_id = $this->request->get('article_id', 0);
-        if (!isInt($article_id)) {
+        if (!check_int($article_id)) {
             return $this->ajaxParamError();
         }
 
@@ -135,7 +135,7 @@ class ArticleController extends CController
         $class_id = $this->request->post('class_id', 0);
         $class_name = $this->request->post('class_name', '');
 
-        if (!isInt($class_id, true) || empty($class_name)) {
+        if (!check_int($class_id, true) || empty($class_name)) {
             return $this->ajaxParamError();
         }
 
@@ -154,7 +154,7 @@ class ArticleController extends CController
         $tag_id = $this->request->post('tag_id', 0);
         $tag_name = $this->request->post('tag_name', '');
 
-        if (!isInt($tag_id, true) || empty($tag_name)) {
+        if (!check_int($tag_id, true) || empty($tag_name)) {
             return $this->ajaxParamError();
         }
 
@@ -170,7 +170,7 @@ class ArticleController extends CController
     public function delArticleClass()
     {
         $class_id = $this->request->post('class_id', 0);
-        if (!isInt($class_id)) {
+        if (!check_int($class_id)) {
             return $this->ajaxParamError();
         }
 
@@ -186,7 +186,7 @@ class ArticleController extends CController
     public function delArticleTags()
     {
         $tag_id = $this->request->post('tag_id', 0);
-        if (!isInt($tag_id)) {
+        if (!check_int($tag_id)) {
             return $this->ajaxParamError();
         }
 
@@ -208,7 +208,7 @@ class ArticleController extends CController
         $class_id = $this->request->post('class_id', 0);
         $sort_type = $this->request->post('sort_type', 0);
         $user_id = $this->uid();
-        if (!isInt($class_id) || !in_array($sort_type, [1, 2])) {
+        if (!check_int($class_id) || !in_array($sort_type, [1, 2])) {
             return $this->ajaxParamError();
         }
 
@@ -232,7 +232,7 @@ class ArticleController extends CController
     {
         $class_id = $this->request->post('class_id', 0);
         $toid = $this->request->post('toid', 0);
-        if (!isInt($class_id) || !isInt($toid)) {
+        if (!check_int($class_id) || !check_int($toid)) {
             return $this->ajaxParamError();
         }
 
@@ -249,7 +249,7 @@ class ArticleController extends CController
     {
         $article_id = $this->request->post('article_id', 0);
         $class_id = $this->request->post('class_id', 0);
-        if (!isInt($article_id) || !isInt($class_id)) {
+        if (!check_int($article_id) || !check_int($class_id)) {
             return $this->ajaxParamError();
         }
 
@@ -266,7 +266,7 @@ class ArticleController extends CController
     {
         $article_id = $this->request->post('article_id', 0);
         $type = $this->request->post('type', 0);
-        if (!isInt($article_id) || !in_array($type, [1, 2])) {
+        if (!check_int($article_id) || !in_array($type, [1, 2])) {
             return $this->ajaxParamError();
         }
 
@@ -294,14 +294,14 @@ class ArticleController extends CController
         }
 
         $imgInfo = getimagesize($file->getRealPath());
-        $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
+        $filename = create_image_name($ext, $imgInfo[0], $imgInfo[1]);
 
         //保存图片
         if (!$save_path = Storage::disk('uploads')->putFileAs('media/images/notes/' . date('Ymd'), $file, $filename)) {
             return $this->ajaxError('图片上传失败，请稍后再试...');
         }
 
-        return $this->ajaxSuccess('success', ['save_path' => getFileUrl($save_path)]);
+        return $this->ajaxSuccess('success', ['save_path' => get_media_url($save_path)]);
     }
 
     /**
@@ -313,7 +313,7 @@ class ArticleController extends CController
     {
         $file = $this->request->file('annex');
         $article_id = $this->request->post('article_id', 0);
-        if (!$file->isValid() || !isInt($article_id)) {
+        if (!$file->isValid() || !check_int($article_id)) {
             return $this->ajaxParamError('附件上传失败，请稍后再试...');
         }
 
@@ -349,7 +349,7 @@ class ArticleController extends CController
     public function deleteArticleAnnex()
     {
         $annex_id = $this->request->post('annex_id', 0);
-        if (!isInt($annex_id)) {
+        if (!check_int($annex_id)) {
             return $this->ajaxParamError();
         }
 
@@ -365,7 +365,7 @@ class ArticleController extends CController
     public function foreverDelAnnex()
     {
         $annex_id = $this->request->post('annex_id', 0);
-        if (!isInt($annex_id)) {
+        if (!check_int($annex_id)) {
             return $this->ajaxParamError();
         }
 
@@ -381,7 +381,7 @@ class ArticleController extends CController
     public function recoverArticleAnnex()
     {
         $annex_id = $this->request->post('annex_id', 0);
-        if (!isInt($annex_id)) {
+        if (!check_int($annex_id)) {
             return $this->ajaxParamError();
         }
 
@@ -401,7 +401,7 @@ class ArticleController extends CController
             $getDay = function ($delete_at) {
                 $last_time = strtotime('+30 days', strtotime($delete_at));
 
-                return (time() > $last_time) ? 0 : diffDate(date('Y-m-d', $last_time), date('Y-m-d'));
+                return (time() > $last_time) ? 0 : diff_date(date('Y-m-d', $last_time), date('Y-m-d'));
             };
 
             array_walk($rows, function (&$item) use ($getDay) {
@@ -421,7 +421,7 @@ class ArticleController extends CController
     public function deleteArticle()
     {
         $article_id = $this->request->post('article_id', 0);
-        if (!isInt($article_id)) {
+        if (!check_int($article_id)) {
             return $this->ajaxParamError();
         }
 
@@ -437,7 +437,7 @@ class ArticleController extends CController
     public function recoverArticle()
     {
         $article_id = $this->request->post('article_id', 0);
-        if (!isInt($article_id)) {
+        if (!check_int($article_id)) {
             return $this->ajaxParamError();
         }
 
@@ -453,7 +453,7 @@ class ArticleController extends CController
     public function foreverDelArticle()
     {
         $article_id = $this->request->post('article_id', 0);
-        if (!isInt($article_id)) {
+        if (!check_int($article_id)) {
             return $this->ajaxParamError();
         }
 
@@ -470,7 +470,7 @@ class ArticleController extends CController
     {
         $article_id = $this->request->post('article_id', 0);
         $tags = $this->request->post('tags', []);
-        if (!isInt($article_id) || !checkIds($tags)) {
+        if (!check_int($article_id) || !check_ids($tags)) {
             return $this->ajaxParamError();
         }
 

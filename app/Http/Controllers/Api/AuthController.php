@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Facades\JwtAuthFacade;
 use Illuminate\Http\Request;
 use App\Events\UserLoginLogEvent;
 use App\Models\User;
@@ -31,7 +30,7 @@ class AuthController extends CController
         }
 
         $params = $request->only($fields);
-        if (!isMobile($params['mobile'])) {
+        if (!check_mobile($params['mobile'])) {
             return $this->ajaxParamError('手机号格式不正确...');
         }
 
@@ -76,7 +75,7 @@ class AuthController extends CController
         }
 
         $jwtConfig = config('config.jwt');
-        $jwtObject = JwtAuthFacade::jwtObject();
+        $jwtObject = app('jwt.auth')->jwtObject();
         $jwtObject->setAlg($jwtConfig['algo']); // 加密方式
         $jwtObject->setAud('user'); // 用户
         $jwtObject->setExp(time() + $jwtConfig['ttl']); //  jwt的过期时间，这个过期时间必须要大于签发时间
@@ -121,7 +120,7 @@ class AuthController extends CController
      */
     public function logout()
     {
-        $token = parseToken();
+        $token = parse_token();
         app('jwt.auth')->joinBlackList($token, app('jwt.auth')->decode($token)->getExp() - time());
         return $this->ajaxReturn(200, '退出成功...', []);
     }
@@ -141,7 +140,7 @@ class AuthController extends CController
             return $this->ajaxParamError('验证码发送失败...');
         }
 
-        if (!isMobile($mobile)) {
+        if (!check_mobile($mobile)) {
             return $this->ajaxParamError('手机号格式错误...');
         }
 
@@ -179,11 +178,11 @@ class AuthController extends CController
         $code = $request->post('sms_code', '');
         $password = $request->post('password', '');
 
-        if (!isMobile($mobile) || empty($code) || empty($password)) {
+        if (!check_mobile($mobile) || empty($code) || empty($password)) {
             return $this->ajaxParamError();
         }
 
-        if (!isPassword($password)) {
+        if (!check_password($password)) {
             //return $this->ajaxParamError('密码格式不正确...');
         }
 

@@ -39,12 +39,12 @@ class EmoticonController extends CController
             foreach ($items as $item) {
                 $list = EmoticonDetails::where('emoticon_id', $item->id)->where('user_id', 0)->get(['id as media_id', 'url as src'])->toArray();
                 array_walk($list, function (&$val) {
-                    $val['src'] = getFileUrl($val['src']);
+                    $val['src'] = get_media_url($val['src']);
                 });
 
                 $emoticonList[] = [
                     'emoticon_id' => $item->id,
-                    'url' => getFileUrl($item->url),
+                    'url' => get_media_url($item->url),
                     'name' => $item->name,
                     'list' => $list
                 ];
@@ -55,7 +55,7 @@ class EmoticonController extends CController
 
         $collectEmoticon = EmoticonDetails::where('user_id', $this->uid())->where('emoticon_id', 0)->get(['id as media_id', 'url as src'])->toArray();
         array_walk($collectEmoticon, function (&$val) {
-            $val['src'] = getFileUrl($val['src']);
+            $val['src'] = get_media_url($val['src']);
         });
 
         return $this->ajaxSuccess('success', [
@@ -77,7 +77,7 @@ class EmoticonController extends CController
 
             array_walk($items, function (&$item) use ($ids) {
                 $item['status'] = in_array($item['id'], $ids) ? 1 : 0;
-                $item['url'] = getFileUrl($item['url']);
+                $item['url'] = get_media_url($item['url']);
             });
         }
 
@@ -93,7 +93,7 @@ class EmoticonController extends CController
     {
         $emoticon_id = $this->request->post('emoticon_id', 0);
         $type = $this->request->post('type', 0);
-        if (!isInt($emoticon_id) || !in_array($type, [1, 2])) {
+        if (!check_int($emoticon_id) || !in_array($type, [1, 2])) {
             return $this->ajaxParamError();
         }
 
@@ -110,12 +110,12 @@ class EmoticonController extends CController
 
             $list = EmoticonDetails::where('emoticon_id', $emoticonInfo->id)->get(['id as media_id', 'url as src'])->toArray();
             array_walk($list, function (&$val) {
-                $val['src'] = getFileUrl($val['src']);
+                $val['src'] = get_media_url($val['src']);
             });
 
             $data = [
                 'emoticon_id' => $emoticonInfo->id,
-                'url' => getFileUrl($emoticonInfo->url),
+                'url' => get_media_url($emoticonInfo->url),
                 'name' => $emoticonInfo->name,
                 'list' => $list
             ];
@@ -135,7 +135,7 @@ class EmoticonController extends CController
     public function collectEmoticon()
     {
         $id = $this->request->post('record_id', 0);
-        if (!isInt($id)) {
+        if (!check_int($id)) {
             return $this->ajaxParamError();
         }
 
@@ -164,7 +164,7 @@ class EmoticonController extends CController
         }
 
         $imgInfo = getimagesize($file->getRealPath());
-        $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
+        $filename = create_image_name($ext, $imgInfo[0], $imgInfo[1]);
 
         if (!$save_path = Storage::disk('uploads')->putFileAs('images/emoticon/' . date('Ymd'), $file, $filename)) {
             return $this->ajaxError('图片上传失败');
@@ -179,7 +179,7 @@ class EmoticonController extends CController
         ]);
 
         return $result ? $this->ajaxSuccess('success', [
-            'media_id' => $result->id, 'src' => getFileUrl($result->url)
+            'media_id' => $result->id, 'src' => get_media_url($result->url)
         ]) : $this->ajaxError('表情包上传失败...');
     }
 
@@ -195,7 +195,7 @@ class EmoticonController extends CController
         }
 
         $ids = explode(',',trim($ids));
-        if(!checkIds($ids)){
+        if(!check_ids($ids)){
             return $this->ajaxParamError();
         }
 

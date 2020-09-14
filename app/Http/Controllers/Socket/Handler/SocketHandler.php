@@ -7,7 +7,6 @@ use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
 use App\Models\UsersFriends;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
-use App\Facades\JwtAuthFacade;
 
 class SocketHandler extends WebsocketHandler
 {
@@ -24,7 +23,7 @@ class SocketHandler extends WebsocketHandler
 
         $user_id = 0;
         try {
-            $jwtObject = JwtAuthFacade::decode($token);
+            $jwtObject = app('jwt.auth')->decode($token);
             if ($jwtObject->getStatus() == 1) {
                 $user_id = $jwtObject->getData()['uid'] ?? 0;
             }

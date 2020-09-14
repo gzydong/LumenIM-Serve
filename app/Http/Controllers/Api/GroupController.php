@@ -35,7 +35,7 @@ class GroupController extends CController
     public function detail()
     {
         $group_id = $this->request->get('group_id', 0);
-        if (!isInt($group_id)) {
+        if (!check_int($group_id)) {
             return $this->ajaxParamError();
         }
 
@@ -81,7 +81,7 @@ class GroupController extends CController
         }
 
         $friend_ids = array_filter(explode(',', $params['uids']));
-        if (!checkIds($friend_ids)) {
+        if (!check_ids($friend_ids)) {
             return $this->ajaxParamError();
         }
 
@@ -136,7 +136,7 @@ class GroupController extends CController
         $group_id = $this->request->post('group_id', 0);
         $uids = array_filter(explode(',', $this->request->post('uids', '')));
 
-        if (!isInt($group_id) || !checkIds($uids)) {
+        if (!check_int($group_id) || !check_ids($uids)) {
             return $this->ajaxParamError();
         }
 
@@ -161,7 +161,7 @@ class GroupController extends CController
         $group_id = $this->request->post('group_id', 0);
         $member_ids = $this->request->post('members_ids', []);
 
-        if (!isInt($group_id) || !checkIds($member_ids)) {
+        if (!check_int($group_id) || !check_ids($member_ids)) {
             return $this->ajaxParamError();
         }
 
@@ -183,7 +183,7 @@ class GroupController extends CController
     public function dismiss()
     {
         $group_id = $this->request->post('group_id', 0);
-        if (!isInt($group_id)) {
+        if (!check_int($group_id)) {
             return $this->ajaxParamError();
         }
 
@@ -203,7 +203,7 @@ class GroupController extends CController
     public function secede()
     {
         $group_id = $this->request->post('group_id', 0);
-        if (!isInt($group_id)) return $this->ajaxParamError();
+        if (!check_int($group_id)) return $this->ajaxParamError();
 
         $user_id = $this->uid();
         [$isTrue, $record_id] = $this->groupLogic->quit($user_id, $group_id);
@@ -226,7 +226,7 @@ class GroupController extends CController
         $group_id = $this->request->post('group_id', 0);
         $visit_card = $this->request->post('visit_card', '');
 
-        if (!isInt($group_id) || empty($visit_card)) {
+        if (!check_int($group_id) || empty($visit_card)) {
             return $this->ajaxParamError();
         }
 
@@ -322,7 +322,7 @@ class GroupController extends CController
     public function editNotice()
     {
         $data = $this->request->only(['notice_id', 'group_id', 'title', 'content']);
-        if (count($data) != 4 || !isInt($data['notice_id'], true)) {
+        if (count($data) != 4 || !check_int($data['notice_id'], true)) {
             return $this->ajaxParamError();
         }
 
@@ -366,7 +366,7 @@ class GroupController extends CController
         $group_id = $this->request->post('group_id', 0);
         $notice_id = $this->request->post('notice_id', 0);
 
-        if (!isInt($group_id) || !isInt($notice_id)) {
+        if (!check_int($group_id) || !check_int($notice_id)) {
             return $this->ajaxParamError();
         }
 

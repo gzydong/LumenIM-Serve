@@ -43,7 +43,7 @@ class TalkController extends CController
         $type = $this->request->post('type', 1);//创建的类型
         $receive_id = $this->request->post('receive_id', 0);//接收者ID
 
-        if (!in_array($type, [1, 2]) || !isInt($receive_id)) {
+        if (!in_array($type, [1, 2]) || !check_int($receive_id)) {
             return $this->ajaxParamError();
         }
 
@@ -108,7 +108,7 @@ class TalkController extends CController
     {
         $list_id = $this->request->post('list_id', 0);
 
-        if (!isInt($list_id)) {
+        if (!check_int($list_id)) {
             return $this->ajaxParamError();
         }
 
@@ -126,7 +126,7 @@ class TalkController extends CController
         $list_id = $this->request->post('list_id', 0);
         $type = $this->request->post('type', 0);
 
-        if (!isInt($list_id) || !in_array($type, [1, 2])) {
+        if (!check_int($list_id) || !in_array($type, [1, 2])) {
             return $this->ajaxParamError();
         }
 
@@ -145,7 +145,7 @@ class TalkController extends CController
         $receive_id = $this->request->post('receive_id', 0);
         $not_disturb = $this->request->post('not_disturb', 0);
 
-        if (!isInt($receive_id) || !in_array($type, [1, 2]) || !in_array($not_disturb, [0, 1])) {
+        if (!check_int($receive_id) || !in_array($type, [1, 2]) || !in_array($not_disturb, [0, 1])) {
             return $this->ajaxParamError();
         }
 
@@ -209,7 +209,7 @@ class TalkController extends CController
         $record_id = $this->request->get('record_id', 0);
         $limit = 30;
 
-        if (!isInt($receive_id) || !isInt($source) || !isInt($record_id, true)) {
+        if (!check_int($receive_id) || !check_int($source) || !check_int($record_id, true)) {
             return $this->ajaxParamError();
         }
 
@@ -240,7 +240,7 @@ class TalkController extends CController
     {
         $user_id = $this->uid();
         $record_id = $this->request->get('record_id', 0);
-        if (!isInt($record_id)) {
+        if (!check_int($record_id)) {
             return $this->ajaxParamError();
         }
 
@@ -272,7 +272,7 @@ class TalkController extends CController
 
         //消息ID
         $record_ids = explode(',', $this->request->get('record_id', ''));
-        if (!in_array($source, [1, 2]) || !isInt($receive_id) || !checkIds($record_ids)) {
+        if (!in_array($source, [1, 2]) || !check_int($receive_id) || !check_ids($record_ids)) {
             return $this->ajaxParamError();
         }
 
@@ -302,7 +302,7 @@ class TalkController extends CController
         //转发的群聊ID
         $receive_group_ids = $this->request->post('receive_group_ids', []);
 
-        if (!in_array($forward_mode, [1, 2]) || !in_array($source, [1, 2]) || !isInt($receive_id) || !checkIds($records_ids) || !checkIds($receive_user_ids) || !checkIds($receive_group_ids)) {
+        if (!in_array($forward_mode, [1, 2]) || !in_array($source, [1, 2]) || !check_int($receive_id) || !check_ids($records_ids) || !check_ids($receive_user_ids) || !check_ids($receive_group_ids)) {
             return $this->ajaxParamError();
         }
 
@@ -347,7 +347,7 @@ class TalkController extends CController
     public function getForwardRecords()
     {
         $records_id = $this->request->post('records_id', 0);
-        if (!isInt($records_id)) {
+        if (!check_int($records_id)) {
             return $this->ajaxParamError();
         }
 
@@ -369,7 +369,7 @@ class TalkController extends CController
         $msg_type = $this->request->get('msg_type', 0);
         $limit = 30;
 
-        if (!isInt($receive_id) || !isInt($source) || !isInt($record_id, true)) {
+        if (!check_int($receive_id) || !check_int($source) || !check_int($record_id, true)) {
             return $this->ajaxParamError();
         }
 
@@ -409,7 +409,7 @@ class TalkController extends CController
         $date = $this->request->get('date', '');
         $page = $this->request->get('page', 1);
 
-        if (!isInt($receive_id) || !in_array($source, [1, 2]) || !isInt($page)) {
+        if (!check_int($receive_id) || !in_array($source, [1, 2]) || !check_int($page)) {
             return $this->ajaxParamError();
         }
 
@@ -435,7 +435,7 @@ class TalkController extends CController
         $record_id = $this->request->post('record_id', 0);
         $find_mode = $this->request->post('find_mode', 1);
 
-        if (!isInt($receive_id) || !in_array($source, [1, 2]) || !isInt($record_id, true) || !in_array($find_mode, [1, 2])) {
+        if (!check_int($receive_id) || !in_array($source, [1, 2]) || !check_int($record_id, true) || !in_array($find_mode, [1, 2])) {
             return $this->ajaxParamError();
         }
 
@@ -453,7 +453,7 @@ class TalkController extends CController
         $receive_id = $this->request->post('receive_id', 0);
         $source = $this->request->post('source', 0);
 
-        if (!isInt($receive_id) || !in_array($source, [1, 2])) {
+        if (!check_int($receive_id) || !in_array($source, [1, 2])) {
             return $this->ajaxParamError();
         }
 
@@ -468,7 +468,7 @@ class TalkController extends CController
         }
 
         $imgInfo = getimagesize($file->getRealPath());
-        $filename = getSaveImgName($ext, $imgInfo[0], $imgInfo[1]);
+        $filename = create_image_name($ext, $imgInfo[0], $imgInfo[1]);
 
         //保存图片
         if (!$save_path = Storage::disk('uploads')->putFileAs('media/images/talks/' . date('Ymd'), $file, $filename)) {
@@ -534,7 +534,7 @@ class TalkController extends CController
         $receive_id = $this->request->post('receive_id', 0);
         $source = $this->request->post('source', 0);
 
-        if (empty($code) || empty($lang) || !isInt($receive_id) || !in_array($source, [1, 2])) {
+        if (empty($code) || empty($lang) || !check_int($receive_id) || !in_array($source, [1, 2])) {
             return $this->ajaxParamError();
         }
 
@@ -595,7 +595,7 @@ class TalkController extends CController
         $receive_id = $this->request->post('receive_id', 0);
         $source = $this->request->post('source', 0);
 
-        if (empty($hash_name) || !isInt($receive_id) || !in_array($source, [1, 2])) {
+        if (empty($hash_name) || !check_int($receive_id) || !in_array($source, [1, 2])) {
             return $this->ajaxParamError();
         }
 
@@ -673,7 +673,7 @@ class TalkController extends CController
         $receive_id = $this->request->post('receive_id', 0);
         $source = $this->request->post('source', 0);
 
-        if (!isInt($emoticon_id) || !isInt($receive_id) || !in_array($source, [1, 2])) {
+        if (!check_int($emoticon_id) || !check_int($receive_id) || !in_array($source, [1, 2])) {
             return $this->ajaxParamError();
         }
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Facades\JwtAuthFacade;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 
@@ -15,9 +14,9 @@ class CController extends Controller
      */
     protected function uid()
     {
-        $token = parseToken();
+        $token = parse_token();
         try{
-            $jwtObject = JwtAuthFacade::decode($token);
+            $jwtObject = app('jwt.auth')->decode($token);
             if($jwtObject->getStatus() != 1){
                 return 0;
             }

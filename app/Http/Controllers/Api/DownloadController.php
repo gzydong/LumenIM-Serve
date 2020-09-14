@@ -28,7 +28,7 @@ class DownloadController extends CController
         $crId = $request->get('cr_id', 0);
         $uid = $this->uid();
 
-        if (!isInt($crId)) {
+        if (!check_int($crId)) {
             return $this->ajaxError('文件下载失败...');
         }
 
@@ -69,7 +69,7 @@ class DownloadController extends CController
         $annex_id = $request->get('annex_id', 0);
         $uid = $this->uid();
 
-        if (!isInt($annex_id)) {
+        if (!check_int($annex_id)) {
             return $this->ajaxError('文件下载失败...');
         }
 

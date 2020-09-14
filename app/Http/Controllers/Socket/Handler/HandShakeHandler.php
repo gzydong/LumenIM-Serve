@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Socket\Handler;
 
-use App\Facades\JwtAuthFacade;
 use App\Helpers\JwtObject;
 
 /**
@@ -24,7 +23,7 @@ class HandShakeHandler
     {
         $token = $request->get['token'] ?? '';
         try {
-            $jwtObject = JwtAuthFacade::decode($token);
+            $jwtObject = app('jwt.auth')->decode($token);
             $status = $jwtObject->getStatus();
 
             if ($status == JwtObject::STATUS_SIGNATURE_ERROR) {

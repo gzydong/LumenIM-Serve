@@ -3,41 +3,45 @@
 
 /**
  * 验证手机号是否正确
- * @param $mobile
+ *
+ * @param string $mobile
  * @return bool
  */
-function isMobile($mobile)
+function check_mobile(string $mobile)
 {
     return (boolean)preg_match('/^[1][3,4,5,6,7,8,9][0-9]{9}$/', $mobile);
 }
 
 /**
  * 验证登录密码格式
- * @param $password
+ *
+ * @param string $password
  * @return bool
  */
-function isPassword($password)
+function check_password(string $password)
 {
     return (boolean)preg_match('/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{8,16}$/', $password);
 }
 
 /**
- * checkNumber() PHP验证字符串是否为一个数字
- * @param   string $num 字符串
- * @return  boolean 验证通过返回 true 没有通过返回 false
+ * 验证字符串是否为一个数字
+ *
+ * @param string $num 字符串
+ * @return bool
  */
-function checkNumber($num)
+function check_number(string $num)
 {
     return is_numeric($num) && (preg_match('/^\s*[+-]?\d+\s*$/', $num) || preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $num));
 }
 
 /**
  * 判断0或正整数
+ *
  * @param string $int 验证字符串
  * @param bool $isZero 判断是否可为0
  * @return bool
  */
-function isInt(string $int, $isZero = false)
+function check_int(string $int, $isZero = false)
 {
     $reg = $isZero ? '/^[+]{0,1}(\d+)$/' : '/^[1-9]\d*$/';
     return is_numeric($int) && preg_match($reg, $int);
@@ -45,62 +49,17 @@ function isInt(string $int, $isZero = false)
 
 /**
  * 验证用户 ids
+ *
  * @param array $ids
  * @return bool
  */
-function checkIds(array $ids)
+function check_ids(array $ids)
 {
     foreach ($ids as $id) {
-        if (!checkNumber($id) || $id <= 0) {
-            return false;
-        }
+        if (!check_number($id) || $id <= 0) return false;
     }
 
     return true;
-}
-
-/**
- * 二维数组用指定的key值作为二维数组的key
- *
- * @param $key
- * @param $array
- * @return array
- */
-function replaceArrayKey($key, $array)
-{
-    if (empty($array)) return [];
-
-    $arr = [];
-    foreach ($array as $value) {
-        $arr[$value[$key]] = $value;
-    }
-
-    unset($array);
-    return $arr;
-}
-
-
-/**
- * 获取目录下的文件信息
- * @param string $path 目录路径
- * @return array 文件信息
- */
-function getPathFileName($path)
-{
-    $arrReturn = [];
-    if (is_dir($path)) {
-        $resource = opendir($path);
-        if ($resource) {
-            while (!!($file = readdir($resource))) {
-                if (is_file($path . '/' . $file)) {
-                    $arrReturn[] = $file;
-                }
-            }
-            closedir($resource);
-        }
-    }
-
-    return $arrReturn;
 }
 
 /**
@@ -109,7 +68,7 @@ function getPathFileName($path)
  * @param string $str
  * @return null|string|string[]
  */
-function replaceUrlToLink(string $str)
+function replace_url_link(string $str)
 {
     $re = '@((https|http)?://([-\w\.]+)+(:\d+)?(/([\w/_\-.#%]*(\?\S+)?)?)?)@';
     return preg_replace_callback($re, function ($matches) {
@@ -118,25 +77,8 @@ function replaceUrlToLink(string $str)
 }
 
 /**
- * @param $arr
- * @param array $sort
- * @return array
- */
-function customSort($arr, $sort = [])
-{
-    $tmp1 = [];
-    foreach ($arr as $val) {
-        $tmp1[$val['id']] = $val;
-    }
-
-    foreach ($sort as $k => $v) {
-        $sort[$k] = $tmp1[$v];
-    }
-    return $sort;
-}
-
-/**
  * 获取随机字符串
+ *
  * @param int $length 长度
  * @param string $type 类型
  * @param int $convert 转换大小写
@@ -171,7 +113,7 @@ function random($length = 6, $type = 'string', $convert = 0)
  * @param string $string
  * @return string
  */
-function shortCode(string $string)
+function create_short_code(string $string)
 {
     $result = sprintf("%u", crc32($string));
     $show = '';
@@ -190,36 +132,25 @@ function shortCode(string $string)
 }
 
 /**
- * 获取文件url
+ * 获取媒体文件url
+ *
  * @param string $path 文件相对路径
  * @return string
  */
-function getFileUrl(string $path)
+function get_media_url(string $path)
 {
     return config('config.file_domain', '') . '/' . $path;
 }
 
 /**
- * 二维数组排序
- * @param array $array 数组
- * @param string $field 排序字段
- * @param int $sort 排序方式
- * @return array
- */
-function arraysSort(array $array, $field, $sort = SORT_DESC)
-{
-    array_multisort(array_column($array, $field), $sort, $array);
-    return $array;
-}
-
-/**
  * 随机生成图片名
+ *
  * @param string $ext 图片后缀名
  * @param int $width 图片宽度
  * @param int $height 图片高度
  * @return string
  */
-function getSaveImgName(string $ext, int $width, int $height)
+function create_image_name(string $ext, int $width, int $height)
 {
     return uniqid() . random(18) . uniqid() . '_' . $width . 'x' . $height . '.' . $ext;
 }
@@ -229,16 +160,14 @@ function getSaveImgName(string $ext, int $width, int $height)
  * @param $content
  * @return array
  */
-function getTtmlImgs($content)
+function get_html_images($content)
 {
     $pattern = "/<img.*?src=[\'|\"](.*?)[\'|\"].*?[\/]?>/";
     preg_match_all($pattern, htmlspecialchars_decode($content), $match);
     $data = [];
     if (!empty($match[1])) {
         foreach ($match[1] as $img) {
-            if (!empty($img)) {
-                $data[] = $img;
-            }
+            if (!empty($img)) $data[] = $img;
         }
         return $data;
     }
@@ -253,7 +182,7 @@ function getTtmlImgs($content)
  * @param $day2
  * @return float|int
  */
-function diffDate($day1, $day2)
+function diff_date($day1, $day2)
 {
     $second1 = strtotime($day1);
     $second2 = strtotime($day2);
@@ -270,7 +199,7 @@ function diffDate($day1, $day2)
  *
  * @return string
  */
-function parseToken()
+function parse_token()
 {
     $token = app('request')->server->get('HTTP_AUTHORIZATION') ?: app('request')->server->get('REDIRECT_HTTP_AUTHORIZATION');
     if (!empty($token)) {
@@ -280,4 +209,17 @@ function parseToken()
     }
 
     return $token;
+}
+
+/**
+ * 二维数组排序
+ * @param array $array 数组
+ * @param string $field 排序字段
+ * @param int $sort 排序方式
+ * @return array
+ */
+function arraysSort(array $array, $field, $sort = SORT_DESC)
+{
+    array_multisort(array_column($array, $field), $sort, $array);
+    return $array;
 }

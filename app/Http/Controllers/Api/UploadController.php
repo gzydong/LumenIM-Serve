@@ -31,7 +31,7 @@ class UploadController extends CController
             return $this->ajaxError('文件保存失败');
         }
 
-        return $this->ajaxSuccess('文件上传成功...', ['avatar' => getFileUrl($path)]);
+        return $this->ajaxSuccess('文件上传成功...', ['avatar' => get_media_url($path)]);
     }
 
     /**
