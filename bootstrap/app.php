@@ -1,9 +1,10 @@
 <?php
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
     (new Dotenv\Dotenv(dirname(__DIR__)))->load();
-} catch (Dotenv\Exception\InvalidPathException $e) {}
+} catch (Dotenv\Exception\InvalidPathException $e) {
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -66,8 +67,8 @@ $app->singleton(
 
 //加载中间件组
 $app->routeMiddleware([
-    'jwt'=>\App\Http\Middleware\JwtAuth::class,
-    'proxy'=>\App\Http\Middleware\ProxyAuth::class,
+    'jwt' => \App\Http\Middleware\JwtAuth::class,
+    'proxy' => \App\Http\Middleware\ProxyAuth::class,
 ]);
 
 //加载默认中间件
@@ -116,19 +117,19 @@ $app->register(Illuminate\Mail\MailServiceProvider::class);
 
 //加载Web路由
 $app->router->group(['namespace' => 'App\Http\Controllers'], function ($router) {
-    $router->get('/', function (){
+    $router->get('/', function () {
         echo '欢迎来到 Lumen-im ...';
     });
 });
 
 //加载接口路由
-$app->router->group(['prefix'=>'api','namespace' => 'App\Http\Controllers\Api'], function ($router) {
-    require __DIR__.'/../routes/api.php';
+$app->router->group(['prefix' => 'api', 'namespace' => 'App\Http\Controllers\Api'], function ($router) {
+    require __DIR__ . '/../routes/api.php';
 });
 
 //加载内网代理接口路由
-$app->router->group(['prefix'=>'proxy','namespace' => 'App\Http\Controllers\Proxy','middleware' => ['proxy']], function ($router) {
-    require __DIR__.'/../routes/proxy.php';
+$app->router->group(['prefix' => 'proxy', 'namespace' => 'App\Http\Controllers\Proxy', 'middleware' => ['proxy']], function ($router) {
+    require __DIR__ . '/../routes/proxy.php';
 });
 
 return $app;

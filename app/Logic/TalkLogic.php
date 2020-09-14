@@ -280,10 +280,7 @@ class TalkLogic extends BaseLogic
             $query->limit(1);
         });
 
-        $rowsSqlObj->orderBy('chat_records.id', 'desc');
-
-        // 聊天列表
-        $rows = $rowsSqlObj->limit($limit)->get()->toArray();
+        $rows = $rowsSqlObj->orderBy('chat_records.id', 'desc')->limit($limit)->get()->toArray();
         return $this->handleChatRecords($rows);
     }
 

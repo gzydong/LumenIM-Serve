@@ -11,7 +11,6 @@
         "illuminate/mail": "5.7.28",
         "illuminate/redis": "5.7.28",
         "laravel/lumen-framework": "5.7.*",
-        "lcobucci/jwt": "^3.3",
         "league/flysystem": "^1.0",
         "predis/predis": "^1.1",
         "swooletw/laravel-swoole": "^2.6",

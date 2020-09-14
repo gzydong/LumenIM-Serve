@@ -68,13 +68,13 @@ class FileSplitUploadLogic
     /**
      * 保存拆分文件
      *
-     * @param $file 文件信息
-     * @param $hashName 上传临时问价hash名
-     * @param $split_index 当前拆分文件索引
-     * @param $fileSize 文件大小
+     * @param string $file 文件信息
+     * @param string $hashName 上传临时问价hash名
+     * @param int $split_index 当前拆分文件索引
+     * @param int $fileSize 文件大小
      * @return bool
      */
-    public function saveSplitFile($file, $hashName, $split_index,$fileSize)
+    public function saveSplitFile(string $file, string $hashName, int $split_index,int $fileSize)
     {
         $fileInfo = FileSplitUpload::select(['id', 'original_name', 'split_num','file_ext'])->where('user_id', $this->user_id)->where('hash_name', $hashName)->where('file_type', 1)->first();
         if (!$fileInfo) {
@@ -116,10 +116,10 @@ class FileSplitUploadLogic
 
     /**
      * 合并拆分文件
-     * @param $hash_name
+     * @param string $hash_name
      * @return array|bool
      */
-    public function fileMerge($hash_name)
+    public function fileMerge(string $hash_name)
     {
         $fileInfo = FileSplitUpload::select(['id', 'original_name', 'split_num', 'file_ext', 'file_size'])->where('user_id', $this->user_id)->where('hash_name', $hash_name)->where('file_type', 1)->first();
         if (!$fileInfo) {
