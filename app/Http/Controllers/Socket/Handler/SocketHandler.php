@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Socket\Handler;
 
+use App\Helpers\PushMessageHelper;
 use App\Logic\UsersLogic;
 use Illuminate\Http\Request;
 use App\Models\UsersFriends;
@@ -56,7 +57,7 @@ class SocketHandler extends WebsocketHandler
                 }
 
                 if ($ffds) {
-                    SocketResourceHandle::response('login_notify', $ffds, ['user_id' => $user_id, 'status' => 1, 'notify' => '好友上线通知...']);
+                    PushMessageHelper::response('login_notify', $ffds, ['user_id' => $user_id, 'status' => 1, 'notify' => '好友上线通知...']);
                 }
             }
         }
@@ -92,7 +93,7 @@ class SocketHandler extends WebsocketHandler
             }
 
             if ($fds) {
-                SocketResourceHandle::response('login_notify', array_unique($fds), [
+                PushMessageHelper::response('login_notify', array_unique($fds), [
                     'user_id' => $user_id,
                     'status' => 0,
                     'notify' => '好友离线通知通知...'
