@@ -5,8 +5,8 @@ class RequestProxy
 {
 
     public function send(string $url,$data = []){
-        $host = config('config.swoole_proxy.host');
-        $port = config('config.swoole_proxy.port');
+        $host = config('config.proxy.host');
+        $port = config('config.proxy.port');
         $curl = new Curl();
         $curl->post("http://{$host}:{$port}/{$url}", $data);
         $response = $curl->getBody();

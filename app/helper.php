@@ -139,7 +139,7 @@ function create_short_code(string $string)
  */
 function get_media_url(string $path)
 {
-    return config('config.file_domain', '') . '/' . $path;
+    return config('config.domain.img_url', '') . '/' . $path;
 }
 
 /**

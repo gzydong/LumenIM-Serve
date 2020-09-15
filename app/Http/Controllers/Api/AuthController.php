@@ -117,11 +117,14 @@ class AuthController extends CController
      * 退出登录
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function logout()
     {
         $token = parse_token();
+
         app('jwt.auth')->joinBlackList($token, app('jwt.auth')->decode($token)->getExp() - time());
+
         return $this->ajaxReturn(200, '退出成功...', []);
     }
 

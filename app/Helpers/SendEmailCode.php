@@ -52,7 +52,7 @@ class SendEmailCode
 
         $this->setCode($key, $sms_code);
         try{
-            Mail::send('emails.verify-code', ['service_name' => $title, 'sms_code' => $sms_code, 'domain' => config('config.web_url')], function ($message) use ($email, $title) {
+            Mail::send('emails.verify-code', ['service_name' => $title, 'sms_code' => $sms_code, 'domain' => config('config.domain.web_url')], function ($message) use ($email, $title) {
                 $message->to($email)->subject("{$title}(验证码)");
             });
         }catch (\Exception $e){

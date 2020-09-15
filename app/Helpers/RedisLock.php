@@ -40,11 +40,6 @@ class RedisLock
         $redis = self::getRedis();
 
         do {
-
-            /**
-             *  注：当前写法是根据laravel 中 Redis 的使用方法 , 若 $redis 是自定义 new \Redis() 的实例 应使用 redis 原生写法
-             *  $acquired = $redis->set(self::getLockKey($key), $requestId,['NX', 'EX', $lockSecond]); 这个方法
-             */
             $acquired = $redis->set(self::getLockKey($key), $requestId, 'NX', 'EX', $lockSecond);
             if ($acquired) {
                 break;
@@ -98,7 +93,7 @@ LAU;
     /**
      * 获取当前微秒
      *
-     * @return bigint
+     * @return string
      */
     protected static function getMicroTime()
     {
