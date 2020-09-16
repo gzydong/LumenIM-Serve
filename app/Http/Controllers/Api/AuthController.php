@@ -139,7 +139,7 @@ class AuthController extends CController
         $mobile = $request->post('mobile', '');
         $type = $request->post('type', '');
 
-        if (!in_array($type, app('sms.code')->getTags())) {
+        if (!app('sms.code')->isUsages($type)) {
             return $this->ajaxParamError('验证码发送失败...');
         }
 

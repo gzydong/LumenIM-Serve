@@ -26,10 +26,6 @@ class CacheFlag
         return 'friend:apply:unread:num';
     }
 
-    public static function userGroupVisitCardCacheKey(int $group_id){
-        return "users:group:visit_card:{$group_id}";
-    }
-
     /**
      * 好友备注缓存key
      *

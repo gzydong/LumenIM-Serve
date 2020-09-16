@@ -27,7 +27,6 @@ class UsersEmoticon extends Model
      */
     public $timestamps = false;
 
-
     /**
      *
      * @param  string $value

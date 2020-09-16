@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Logic\TalkLogic;
 use Illuminate\Http\Request;
 
 
@@ -13,9 +14,9 @@ use Illuminate\Http\Request;
  */
 class TestController extends CController
 {
-    public function test(Request $request)
+    public function test(Request $request,TalkLogic $talkLogic)
     {
-        get_media_url();
+
     }
 
     public function index(Request $request)

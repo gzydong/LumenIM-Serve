@@ -3,18 +3,21 @@
 namespace App\Services;
 
 /**
- * 短信发送服务类
+ * 短信发送服务
  *
  * Class SmsCodeService
  * @package App\Services
  */
 class SmsCodeService
 {
-    //  验证码用途渠道
-    const CACHE_TAGS = [
-        'forget_password',
-        'change_mobile',
-        'user_register'
+
+    /**
+     * 短信验证码用途渠道
+     */
+    const SMS_USAGE = [
+        'user_register',     // 注册账号
+        'forget_password',   // 找回密码验
+        'change_mobile',     // 修改手机
     ];
 
     /**
@@ -50,9 +53,6 @@ class SmsCodeService
     public function check(string $type, string $mobile, string $code)
     {
         $sms_code = $this->redis()->get($this->getKey($type, $mobile));
-        if (!$sms_code) {
-            return false;
-        }
 
         return $sms_code == $code;
     }
@@ -60,38 +60,39 @@ class SmsCodeService
     /**
      * 发送验证码
      *
-     * @param string $type 类型
+     * @param string $usage 验证码用途
      * @param string $mobile 手机号
      * @return array|bool
      */
-    public function send(string $type, string $mobile)
+    public function send(string $usage, string $mobile)
     {
-        if (!in_array($type, self::CACHE_TAGS)) {
+        if (!$this->isUsages($usage)) {
             return [false, [
-                'msg' => "[{$type}]：此类短信验证码不支持发送",
+                'msg' => "[{$usage}]：此类短信验证码不支持发送",
                 'data' => []
             ]];
         }
 
-        $key = $this->getKey($type, $mobile);
+        $key = $this->getKey($usage, $mobile);
 
         // 为防止刷短信行为，此处可进行过滤处理
-        [$isTrue, $data] = $this->filter($type, $mobile);
+        [$isTrue, $data] = $this->filter($usage, $mobile);
         if (!$isTrue) {
             return [false, $data];
         }
 
         if (!$sms_code = $this->getCode($key)) {
-            $sms_code = random(6, 'number');
+            $sms_code = mt_rand(100000, 999999);
         }
 
+        // 设置短信验证码
         $this->setCode($key, $sms_code);
 
-        // 调取短信接口，建议异步任务执行 (暂无短信接口，省略处理)
+        // ... 调取短信接口，建议异步任务执行 (暂无短信接口，省略处理)
 
         return [true, [
             'msg' => 'success',
-            'data' => ['type' => $type, 'code' => $sms_code]
+            'data' => ['type' => $usage, 'code' => $sms_code]
         ]];
     }
 
@@ -122,23 +123,23 @@ class SmsCodeService
     /**
      * 删除验证码缓存
      *
-     * @param string $type 类型
+     * @param string $usage 验证码用途
      * @param string $mobile 手机号
      * @return mixed
      */
-    public function delCode(string $type, string $mobile)
+    public function delCode(string $usage, string $mobile)
     {
-        return $this->redis()->del($this->getKey($type, $mobile));
+        return $this->redis()->del($this->getKey($usage, $mobile));
     }
 
     /**
      * 短信发送过滤验证
      *
-     * @param string $type 验证码用途
+     * @param string $usage 验证码用途
      * @param string $mobile 手机号
      * @return array
      */
-    public function filter(string $type, string $mobile)
+    public function filter(string $usage, string $mobile)
     {
         // ... 省略处理
         if (false) {
@@ -155,12 +156,13 @@ class SmsCodeService
     }
 
     /**
-     * 获取所有验证码用途
+     * 判断验证码用途渠道是否注册
      *
-     * @return array
+     * @param string $usage
+     * @return bool
      */
-    public function getTags()
+    public function isUsages(string $usage)
     {
-        return self::CACHE_TAGS;
+        return in_array($usage, self::SMS_USAGE);
     }
 }
