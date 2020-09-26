@@ -4,11 +4,9 @@ namespace App\Models;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
 
-
-class User extends Model implements AuthenticatableContract, AuthorizableContract
+class User extends BaseModel implements AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable, Authorizable;
 
@@ -27,11 +25,4 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $hidden = [
         'password',
     ];
-
-    /**
-     * 表明模型是否应该被打上时间戳
-     *
-     * @var bool
-     */
-    public $timestamps = false;
 }

@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class UsersChatList extends Model
+class UsersChatList extends BaseModel
 {
     /**
      * 关联到模型的数据表
@@ -19,13 +17,6 @@ class UsersChatList extends Model
      * @var array
      */
     protected $guarded = ['id'];
-
-    /**
-     * 表明模型是否应该被打上时间戳
-     *
-     * @var bool
-     */
-    public $timestamps = false;
 
     /**
      * 创建聊天列表记录

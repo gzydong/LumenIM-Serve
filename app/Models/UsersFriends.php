@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class UsersFriends extends Model
+class UsersFriends extends BaseModel
 {
     /**
      * 关联到模型的数据表
@@ -20,13 +19,6 @@ class UsersFriends extends Model
      * @var array
      */
     protected $guarded = ['id'];
-
-    /**
-     * 表明模型是否应该被打上时间戳
-     *
-     * @var bool
-     */
-    public $timestamps = false;
 
     /**
      * 获取用户所有好友

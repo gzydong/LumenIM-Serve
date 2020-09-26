@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Logic\TalkLogic;
 use Illuminate\Http\Request;
 
 
@@ -14,13 +13,16 @@ use Illuminate\Http\Request;
  */
 class TestController extends CController
 {
-    public function test(Request $request,TalkLogic $talkLogic)
+    public function test(Request $request)
     {
+        
+        dd(app('request')->ajax());
 
+        $fds = app('services')->articleService->getUserArticleClass(2054);
     }
 
     public function index(Request $request)
     {
-
+        echo 'asdfasd';
     }
 }

@@ -47,7 +47,7 @@ class SendEmailCode
     {
         $key = $this->getKey($type, $email);
         if (!$sms_code = $this->getCode($key)) {
-            $sms_code = random(6, 'number');
+            $sms_code = mt_rand(100000,999999);
         }
 
         $this->setCode($key, $sms_code);

@@ -2,18 +2,45 @@
 
 namespace App\Providers;
 
+use App\Services\Service;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
-use App\Services\ClientManageService;
-use App\Services\JwtAuthService;
-use App\Services\RoomManageService;
-use App\Services\UnreadTalkService;
-use App\Services\SmsCodeService;
+use App\Services\Base\ClientManageService;
+use App\Services\Base\JwtAuthService;
+use App\Services\Base\RoomManageService;
+use App\Services\Base\UnreadTalkService;
+use App\Services\Base\SmsCodeService;
 
 class AppServiceProvider extends ServiceProvider
 {
+
+    /**
+     * 设定所有的单例模式容器绑定的对应关系
+     *
+     * @var array
+     */
+    public $singletons = [
+        // 注册用户未读消息服务类
+        UnreadTalkService::class => UnreadTalkService::class,
+
+        // 发送短信验证码服务
+        SmsCodeService::class => SmsCodeService::class,
+
+        // WebSocket 客户端fd 管理服务
+        ClientManageService::class => ClientManageService::class,
+
+        // 聊天室服务管理
+        RoomManageService::class => RoomManageService::class,
+
+        // jwt 授权服务
+        JwtAuthService::class => JwtAuthService::class,
+
+        // App 服务基类
+        Service::class => Service::class,
+    ];
+
     /**
      * Register any application services.
      *
@@ -21,34 +48,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // 注册用户未读消息服务类
-        $this->app->singleton(UnreadTalkService::class, function ($app) {
-            return new UnreadTalkService();
-        });
+        $this->app->alias(Service::class, 'services');
         $this->app->alias(UnreadTalkService::class, 'unread.talk');
-
-        // 发送短信验证码服务
-        $this->app->singleton(SmsCodeService::class, function ($app) {
-            return new SmsCodeService();
-        });
         $this->app->alias(SmsCodeService::class, 'sms.code');
-
-        // WebSocket 客户端fd 管理服务
-        $this->app->singleton(ClientManageService::class, function ($app) {
-            return new ClientManageService();
-        });
         $this->app->alias(ClientManageService::class, 'client.manage');
-
-        // 聊天室服务管理
-        $this->app->singleton(RoomManageService::class, function ($app) {
-            return new RoomManageService();
-        });
         $this->app->alias(RoomManageService::class, 'room.manage');
-
-        // jwt 授权服务
-        $this->app->singleton(JwtAuthService::class, function ($app) {
-            return new JwtAuthService();
-        });
         $this->app->alias(JwtAuthService::class, 'jwt.auth');
     }
 
@@ -65,15 +69,5 @@ class AppServiceProvider extends ServiceProvider
                 Log::alert($query->sql . " >>> 查询时间 time {$query->time}ms");
             }
         });
-    }
-
-    public function provides()
-    {
-        return [
-            UnreadTalkService::class,
-            SmsCodeService::class,
-            ClientManageService::class,
-            RoomManageService::class
-        ];
     }
 }

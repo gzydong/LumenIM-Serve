@@ -2,9 +2,9 @@
 
 namespace App\Models\Group;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class UsersGroup extends Model
+class UsersGroup extends BaseModel
 {
     /**
      * 关联到模型的数据表

@@ -2,9 +2,9 @@
 
 namespace App\Models\Group;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class UsersGroupMember extends Model
+class UsersGroupMember extends BaseModel
 {
 
     /**

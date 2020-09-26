@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Base;
 
 /**
  * 客户端Fd管理服务

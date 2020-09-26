@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Base;
 
 /**
  * 好友未读消息服务

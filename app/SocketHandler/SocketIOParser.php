@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Socket\Handler;
+namespace App\SocketHandler;
 
 use SwooleTW\Http\Websocket\Parser;
 

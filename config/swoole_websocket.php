@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
     */
     //'handler' => SwooleTW\Http\Websocket\SocketIO\WebsocketHandler::class,
-    'handler' => App\Http\Controllers\Socket\Handler\SocketHandler::class,
+    'handler' => App\SocketHandler\SocketHandler::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -17,7 +17,7 @@ return [
     |--------------------------------------------------------------------------
     */
     //'parser' => SwooleTW\Http\Websocket\SocketIO\SocketIOParser::class,
-    'parser' => App\Http\Controllers\Socket\Handler\SocketIOParser::class,
+    'parser' => App\SocketHandler\SocketIOParser::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -33,9 +33,9 @@ return [
     */
     'middleware' => [
         /**
-         SwooleTW\Http\Websocket\Middleware\DecryptCookies::class,
-         SwooleTW\Http\Websocket\Middleware\StartSession::class,
-         SwooleTW\Http\Websocket\Middleware\Authenticate::class,
+         * SwooleTW\Http\Websocket\Middleware\DecryptCookies::class,
+         * SwooleTW\Http\Websocket\Middleware\StartSession::class,
+         * SwooleTW\Http\Websocket\Middleware\Authenticate::class,
          */
     ],
 
@@ -47,7 +47,7 @@ return [
     'handshake' => [
         'enabled' => true,
         //'handler' => SwooleTW\Http\Websocket\HandShakeHandler::class,
-        'handler' => App\Http\Controllers\Socket\Handler\HandShakeHandler::class,
+        'handler' => App\SocketHandler\HandShakeHandler::class,
     ],
 
     /*
@@ -62,7 +62,7 @@ return [
     | Websocket client's heartbeat interval (ms)
     |--------------------------------------------------------------------------
     */
-    'ping_interval' => 25*1000,
+    'ping_interval' => 25 * 1000,
 
     /*
     |--------------------------------------------------------------------------

@@ -50,6 +50,3 @@
     </tbody>
 </table>
 </body>
-<script>
-    new Blob
-</script>

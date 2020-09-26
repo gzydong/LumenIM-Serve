@@ -216,7 +216,7 @@ class UsersLogic extends BaseLogic
     public function sendEmailCode(string $email)
     {
         $key = "email_code:{$email}";
-        $sms_code = random(6, 'number');
+        $sms_code = mt_rand(100000,999999);
         $res = Redis::setex($key, 60 * 15, $sms_code);
         if ($res) {
             $title = '绑定邮箱';

@@ -7,6 +7,7 @@
     "require": {
         "php": ">=7.1.3",
         "barryvdh/laravel-cors": "^0.11.4",
+        "hashids/hashids": "^4.0",
         "illuminate/mail": "5.7.28",
         "illuminate/redis": "5.7.28",
         "laravel/lumen-framework": "5.7.*",
@@ -17,8 +18,8 @@
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
-        "phpunit/phpunit": "~7.0",
-        "mockery/mockery": "~1.0"
+        "mockery/mockery": "~1.0",
+        "phpunit/phpunit": "~7.0"
     },
     "autoload": {
         "classmap": [

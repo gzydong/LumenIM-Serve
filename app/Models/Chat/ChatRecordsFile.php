@@ -2,9 +2,8 @@
 
 namespace App\Models\Chat;
 
-use Illuminate\Database\Eloquent\Model;
-
-class ChatRecordsFile extends Model
+use App\Models\BaseModel;
+class ChatRecordsFile extends BaseModel
 {
     /**
      * 关联到模型的数据表
@@ -19,11 +18,4 @@ class ChatRecordsFile extends Model
      * @var array
      */
     protected $guarded = ['id'];
-
-    /**
-     * 表明模型是否应该被打上时间戳
-     *
-     * @var bool
-     */
-    public $timestamps = false;
 }

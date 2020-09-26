@@ -2,9 +2,8 @@
 
 namespace App\Models\Group;
 
-use Illuminate\Database\Eloquent\Model;
-
-class UsersGroupNotice extends Model
+use App\Models\BaseModel;
+class UsersGroupNotice extends BaseModel
 {
     /**
      * 关联到模型的数据表
