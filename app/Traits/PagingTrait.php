@@ -4,6 +4,7 @@ namespace App\Traits;
 
 trait PagingTrait
 {
+
     /**
      * 计算分页大小
      *

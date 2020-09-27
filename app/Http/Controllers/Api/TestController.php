@@ -15,9 +15,6 @@ class TestController extends CController
 {
     public function test(Request $request)
     {
-        
-        dd(app('request')->ajax());
-
         $fds = app('services')->articleService->getUserArticleClass(2054);
     }
 

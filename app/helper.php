@@ -193,6 +193,12 @@ function arraysSort(array $array, $field, $sort = SORT_DESC)
 }
 
 
+/**
+ * 格式化查询时间
+ *
+ * @param float $seconds sql 查询时间
+ * @return string
+ */
 function format_duration(float $seconds)
 {
     if ($seconds < 0.001) {
