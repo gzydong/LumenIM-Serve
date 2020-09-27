@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Base;
+namespace App\Services;
 
 use \Exception;
 use App\Helpers\JwtObject;

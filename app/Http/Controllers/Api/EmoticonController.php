@@ -166,7 +166,7 @@ class EmoticonController extends CController
         $imgInfo = getimagesize($file->getRealPath());
         $filename = create_image_name($ext, $imgInfo[0], $imgInfo[1]);
 
-        if (!$save_path = Storage::disk('uploads')->putFileAs('images/emoticon/' . date('Ymd'), $file, $filename)) {
+        if (!$save_path = Storage::disk('uploads')->putFileAs('media/images/emoticon/' . date('Ymd'), $file, $filename)) {
             return $this->ajaxError('图片上传失败');
         }
 

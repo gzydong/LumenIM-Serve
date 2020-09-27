@@ -31,7 +31,7 @@ class ClearTmpFileCommand extends Command
 
     public function handle()
     {
-        FileSplitUpload::select(['id', 'save_dir', 'hash_name'])->where('file_type', 1)->where('is_delete', 0)->where('upload_at', '<', time() - 60 * 60 * 6)->chunk(200, function ($rows) {
+        FileSplitUpload::select(['id', 'save_dir', 'hash_name'])->where('file_type', 1)->where('is_delete', 0)->where('upload_at', '<', time() - 60 * 60 * 6)->chunk(100, function ($rows) {
             $hash_name = [];
             try {
                 foreach ($rows as $row) {

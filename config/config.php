@@ -3,7 +3,7 @@ return [
     // 域名相关配置
     'domain'=>[
         'web_url' => 'http://im.gzydong.club',// Web 端首页地址
-        'img_url' => 'http://im-img.gzydong.club',//设置文件图片访问的域名
+        'img_url' => 'http://im-img0.gzydong.club',//设置文件图片访问的域名
     ],
 
     // Swoole 配置信息

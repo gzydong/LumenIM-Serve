@@ -12,7 +12,6 @@ use Illuminate\Container\Container;
  */
 class Service
 {
-
     /**
      * 服务列表
      *

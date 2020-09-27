@@ -64,18 +64,16 @@ $app->singleton(
 |
 */
 
-
-//加载中间件组
-$app->routeMiddleware([
-    'jwt' => \App\Http\Middleware\JwtAuth::class,
-    'proxy' => \App\Http\Middleware\ProxyAuth::class,
-]);
-
-//加载默认中间件
+//注册全局中间件
 $app->middleware([
     \Barryvdh\Cors\HandleCors::class
 ]);
 
+//注册路由中间件
+$app->routeMiddleware([
+    'jwt' => \App\Http\Middleware\JwtAuth::class,
+    'proxy' => \App\Http\Middleware\ProxyAuth::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -89,8 +87,8 @@ $app->middleware([
 */
 
 $app->register(App\Providers\AppServiceProvider::class);
-
 $app->register(App\Providers\EventServiceProvider::class);
+$app->register(App\Providers\QueryLoggerServiceProvider::class);
 
 //注册支持Swoole服务
 $app->register(App\Providers\LumenIMServiceProvider::class);
@@ -116,19 +114,28 @@ $app->register(Illuminate\Mail\MailServiceProvider::class);
 */
 
 //加载Web路由
-$app->router->group(['namespace' => 'App\Http\Controllers'], function ($router) {
+$app->router->group([
+    'namespace' => 'App\Http\Controllers'
+], function ($router) {
     $router->get('/', function () {
         echo '欢迎来到 Lumen-im ...';
     });
 });
 
 //加载接口路由
-$app->router->group(['prefix' => 'api', 'namespace' => 'App\Http\Controllers\Api'], function ($router) {
+$app->router->group([
+    'prefix' => 'api',
+    'namespace' => 'App\Http\Controllers\Api'
+], function ($router) {
     require __DIR__ . '/../routes/api.php';
 });
 
 //加载内网代理接口路由
-$app->router->group(['prefix' => 'proxy', 'namespace' => 'App\Http\Controllers\Proxy', 'middleware' => ['proxy']], function ($router) {
+$app->router->group([
+    'prefix' => 'proxy',
+    'namespace' => 'App\Http\Controllers\Proxy',
+    'middleware' => ['proxy']
+], function ($router) {
     require __DIR__ . '/../routes/proxy.php';
 });
 

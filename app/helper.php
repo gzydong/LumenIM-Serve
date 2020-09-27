@@ -193,3 +193,13 @@ function arraysSort(array $array, $field, $sort = SORT_DESC)
 }
 
 
+function format_duration(float $seconds)
+{
+    if ($seconds < 0.001) {
+        return round($seconds * 1000000) . 'μs';
+    } elseif ($seconds < 1) {
+        return round($seconds * 1000, 2) . 'ms';
+    }
+
+    return round($seconds, 2) . 's';
+}

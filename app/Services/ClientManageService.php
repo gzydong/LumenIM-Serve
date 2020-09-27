@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Base;
+namespace App\Services;
 
 /**
  * 客户端Fd管理服务
@@ -86,9 +86,6 @@ class ClientManageService
 
         $this->getRedis()->hdel(self::BIND_FD_TO_USER, $fd);
         $this->getRedis()->srem($this->getUserFdsName($user_id), $fd);
-
-        // 将fd 退出所有聊天室
-        app('room.manage')->removeFdRoomAll($fd);
     }
 
     /**

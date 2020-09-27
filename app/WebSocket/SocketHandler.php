@@ -1,6 +1,6 @@
 <?php
 
-namespace App\SocketHandler;
+namespace App\WebSocket;
 
 use App\Helpers\PushMessageHelper;
 use App\Logic\UsersLogic;
@@ -13,7 +13,7 @@ class SocketHandler extends WebsocketHandler
     /**
      * 连接成功方法
      *
-     * @param int $fd
+     * @param int $fd 客户端ID
      * @param Request $request
      * @return bool
      */
@@ -65,10 +65,10 @@ class SocketHandler extends WebsocketHandler
     }
 
     /**
-     * 这里需要将fd关闭后的相关数据清除掉
+     * Websocket 客户端断开事件
      *
-     * @param int $fd
-     * @param int $reactorId
+     * @param int $fd 客户端ID
+     * @param int $reactorId swoole 线程ID
      * @return bool|void
      */
     public function onClose($fd, $reactorId)
@@ -77,6 +77,9 @@ class SocketHandler extends WebsocketHandler
         $user_id = app('client.manage')->findFdUserId($fd);
 
         app('client.manage')->deleteFd($fd);
+
+        // 将fd 退出所有聊天室
+        app('room.manage')->removeFdRoomAll($fd);
 
         // 判断用户是否多平台登录
         if (app('client.manage')->isOnline($user_id)) {
