@@ -1,17 +1,15 @@
 <?php
+namespace App\Models;
 
-namespace App\Models\Chat;
 
-use App\Models\BaseModel;
-
-class ChatRecords extends BaseModel
+class FileSplitUpload extends BaseModel
 {
     /**
      * 关联到模型的数据表
      *
      * @var string
      */
-    protected $table = 'chat_records';
+    protected $table = 'file_split_upload';
 
     /**
      * 不能被批量赋值的属性

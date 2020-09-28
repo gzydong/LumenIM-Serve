@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Logic\ArticleLogic;
 use App\Models\Article\{Article, ArticleAnnex};
+use App\Services\ArticleService;
 use Illuminate\Console\Command;
 
 set_time_limit(0);
@@ -25,13 +25,13 @@ class ForeverArticleCommand extends Command
     protected $description = '永久删除笔记回收站中的笔记&回收站中的笔记附件';
 
     /**
-     * @var ArticleLogic
+     * @var ArticleService
      */
-    protected $articleLogic;
+    protected $articleService;
 
     public function handle()
     {
-        $this->articleLogic = new ArticleLogic();
+        $this->articleService = new ArticleService();
 
         $this->deleteArticle();
         $this->deleteArticleAnnex();
@@ -46,7 +46,7 @@ class ForeverArticleCommand extends Command
         Article::select(['id', 'user_id'])->where('status', 2)->where('deleted_at', '<', $last_date)
             ->chunk(100, function ($rows) {
                 foreach ($rows as $row) {
-                    $this->articleLogic->foreverDelArticle($row['user_id'], $row['id']);
+                    $this->articleService->foreverDelArticle($row['user_id'], $row['id']);
                 }
             });
     }
@@ -60,7 +60,7 @@ class ForeverArticleCommand extends Command
         ArticleAnnex::select(['id', 'user_id'])->where('status', 2)->where('deleted_at', '<', $last_date)
             ->chunk(100, function ($rows) {
                 foreach ($rows as $row) {
-                    $this->articleLogic->foreverDelAnnex($row['user_id'], $row['id']);
+                    $this->articleService->foreverDelAnnex($row['user_id'], $row['id']);
                 }
             });
     }

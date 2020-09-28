@@ -3,7 +3,7 @@
 namespace App\WebSocket;
 
 use App\Helpers\PushMessageHelper;
-use App\Logic\UsersLogic;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use App\Models\UsersFriends;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
@@ -38,7 +38,7 @@ class SocketHandler extends WebsocketHandler
         app('client.manage')->bindUserIdToFds($fd, $user_id);
 
         // 绑定聊天群
-        $group_ids = UsersLogic::getUserGroupIds($user_id);
+        $group_ids = UserService::getUserGroupIds($user_id);
         if ($group_ids) {
             foreach ($group_ids as $group_id) {
                 app('room.manage')->bindUserToRoom($group_id, $user_id);

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Common;
 
 use SwooleTW\Http\Websocket\Facades\Room;
 

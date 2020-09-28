@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 
 class CController extends Controller
 {
@@ -15,36 +14,16 @@ class CController extends Controller
     protected function uid()
     {
         $token = parse_token();
-        try{
+        try {
             $jwtObject = app('jwt.auth')->decode($token);
-            if($jwtObject->getStatus() != 1){
+            if ($jwtObject->getStatus() != 1) {
                 return 0;
             }
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return 0;
         }
 
-        return $jwtObject->getData()['uid']??0;
-    }
-
-    /**
-     * 获取当前用户信息
-     *
-     * @param bool $isArray
-     * @return array
-     */
-    protected function getUser($isArray = false)
-    {
-        $uid = $this->uid();
-        if ($uid == 0) {
-            return [];
-        }
-
-        if (!$isArray) {
-            return User::where('id', $uid)->first();
-        }
-
-        return User::where('id', $uid)->first()->toArray();
+        return $jwtObject->getData()['uid'] ?? 0;
     }
 
     /**

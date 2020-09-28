@@ -3,19 +3,27 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\RedisLock;
+use App\Services\ArticleService;
 use Illuminate\Http\Request;
-use App\Logic\ArticleLogic;
 use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends CController
 {
-    public $request;
-    public $articleLogic;
 
-    public function __construct(Request $request, ArticleLogic $articleLogic)
+    /**
+     * @var Request
+     */
+    private $request;
+
+    /**
+     * @var ArticleService
+     */
+    private $articleService;
+
+    public function __construct(Request $request, ArticleService $articleService)
     {
         $this->request = $request;
-        $this->articleLogic = $articleLogic;
+        $this->articleService = $articleService;
     }
 
     /**
@@ -26,7 +34,7 @@ class ArticleController extends CController
     public function getArticleClass()
     {
         return $this->ajaxSuccess('success', [
-            'rows' => $this->articleLogic->getUserArticleClass($this->uid()),
+            'rows' => $this->articleService->getUserArticleClass($this->uid()),
         ]);
     }
 
@@ -39,7 +47,7 @@ class ArticleController extends CController
     {
         $user_id = $this->uid();
         return $this->ajaxSuccess('success', [
-            'tags' => $this->articleLogic->getUserArticleTags($user_id)
+            'tags' => $this->articleService->getUserArticleTags($user_id)
         ]);
     }
 
@@ -72,7 +80,7 @@ class ArticleController extends CController
             $params['keyword'] = addslashes($keyword);
         }
 
-        $data = $this->articleLogic->getUserArticleList($this->uid(), $page, 2000, $params);
+        $data = $this->articleService->getUserArticleList($this->uid(), $page, 2000, $params);
         return $this->ajaxSuccess('success', $data);
     }
 
@@ -93,7 +101,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $id = $this->articleLogic->editArticle($this->uid(), $article_id, [
+        $id = $this->articleService->editArticle($this->uid(), $article_id, [
             'title' => $title,
             'abstract' => mb_substr(strip_tags($content), 0, 200),
             'class_id' => $class_id,
@@ -119,7 +127,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $data = $this->articleLogic->getArticleDetail($article_id, $this->uid());
+        $data = $this->articleService->getArticleDetail($article_id, $this->uid());
 
         return empty($data) ? $this->ajaxReturn(303, '文章信息不存在') :
             $this->ajaxSuccess('success', $data);
@@ -139,7 +147,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $id = $this->articleLogic->editArticleClass($this->uid(), $class_id, $class_name);
+        $id = $this->articleService->editArticleClass($this->uid(), $class_id, $class_name);
 
         return $id ? $this->ajaxSuccess('success', ['id' => $id]) : $this->ajaxError('编辑失败...');
     }
@@ -158,7 +166,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $id = $this->articleLogic->editArticleTag($this->uid(), $tag_id, $tag_name);
+        $id = $this->articleService->editArticleTag($this->uid(), $tag_id, $tag_name);
         return $id ? $this->ajaxSuccess('success', ['id' => $id]) : $this->ajaxError('编辑失败...');
     }
 
@@ -174,7 +182,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->delArticleClass($this->uid(), $class_id);
+        $isTrue = $this->articleService->delArticleClass($this->uid(), $class_id);
         return $isTrue ? $this->ajaxSuccess('删除完成...') : $this->ajaxError('删除失败...');
     }
 
@@ -190,7 +198,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->delArticleTags($this->uid(), $tag_id);
+        $isTrue = $this->articleService->delArticleTags($this->uid(), $tag_id);
 
         return $isTrue ?
             $this->ajaxSuccess('删除标签完成...') :
@@ -215,7 +223,7 @@ class ArticleController extends CController
         $isTrue = false;
         $lockKey = "article_class_sort:{$user_id}_{$class_id}";
         if (RedisLock::lock($lockKey, 0, 5)) {
-            $isTrue = $this->articleLogic->articleClassSort($user_id, $class_id, $sort_type);
+            $isTrue = $this->articleService->articleClassSort($user_id, $class_id, $sort_type);
 
             RedisLock::release($lockKey, 0);
         }
@@ -236,7 +244,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->mergeArticleClass($this->uid(), $class_id, $toid);
+        $isTrue = $this->articleService->mergeArticleClass($this->uid(), $class_id, $toid);
         return $isTrue ? $this->ajaxSuccess('合并完成...') : $this->ajaxError('合并失败...');
     }
 
@@ -253,7 +261,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->moveArticle($this->uid(), $article_id, $class_id);
+        $isTrue = $this->articleService->moveArticle($this->uid(), $article_id, $class_id);
         return $isTrue ? $this->ajaxSuccess('操作完成...') : $this->ajaxError('操作失败...');
     }
 
@@ -270,7 +278,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->setAsteriskArticle($this->uid(), $article_id, $type);
+        $isTrue = $this->articleService->setAsteriskArticle($this->uid(), $article_id, $type);
         return $isTrue ? $this->ajaxSuccess('success') : $this->ajaxError('fail');
     }
 
@@ -332,7 +340,7 @@ class ArticleController extends CController
         }
 
         $annex['save_dir'] = $save_path;
-        $insId = $this->articleLogic->insertArticleAnnex($user_id, $article_id, $annex);
+        $insId = $this->articleService->insertArticleAnnex($user_id, $article_id, $annex);
         if (!$insId) {
             return $this->ajaxError('附件上传失败，请稍后再试...');
         }
@@ -353,7 +361,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->updateArticleAnnexStatus($this->uid(), $annex_id, 2);
+        $isTrue = $this->articleService->updateArticleAnnexStatus($this->uid(), $annex_id, 2);
         return $isTrue ? $this->ajaxSuccess('附件删除成功...') : $this->ajaxError('附件删除失败...');
     }
 
@@ -369,7 +377,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->foreverDelAnnex($this->uid(), $annex_id);
+        $isTrue = $this->articleService->foreverDelAnnex($this->uid(), $annex_id);
         return $isTrue ? $this->ajaxSuccess('附件删除成功...') : $this->ajaxError('附件删除失败...');
     }
 
@@ -385,7 +393,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->updateArticleAnnexStatus($this->uid(), $annex_id, 1);
+        $isTrue = $this->articleService->updateArticleAnnexStatus($this->uid(), $annex_id, 1);
         return $isTrue ? $this->ajaxSuccess('附件恢复成功...') : $this->ajaxError('附件恢复失败...');
     }
 
@@ -396,7 +404,7 @@ class ArticleController extends CController
      */
     public function recoverAnnexList()
     {
-        $rows = $this->articleLogic->recoverAnnexList($this->uid());
+        $rows = $this->articleService->recoverAnnexList($this->uid());
         if ($rows) {
             $getDay = function ($delete_at) {
                 $last_time = strtotime('+30 days', strtotime($delete_at));
@@ -425,7 +433,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->updateArticleStatus($this->uid(), $article_id, 2);
+        $isTrue = $this->articleService->updateArticleStatus($this->uid(), $article_id, 2);
         return $isTrue ? $this->ajaxSuccess('笔记删除成功...') : $this->ajaxError('笔记删除失败...');
     }
 
@@ -441,7 +449,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->updateArticleStatus($this->uid(), $article_id, 1);
+        $isTrue = $this->articleService->updateArticleStatus($this->uid(), $article_id, 1);
         return $isTrue ? $this->ajaxSuccess('笔记恢复成功...') : $this->ajaxError('笔记恢复失败...');
     }
 
@@ -457,7 +465,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->foreverDelArticle($this->uid(), $article_id);
+        $isTrue = $this->articleService->foreverDelArticle($this->uid(), $article_id);
         return $isTrue ? $this->ajaxSuccess('笔记删除成功...') : $this->ajaxError('笔记删除失败...');
     }
 
@@ -474,7 +482,7 @@ class ArticleController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->articleLogic->updateArticleTag($this->uid(), $article_id, $tags);
+        $isTrue = $this->articleService->updateArticleTag($this->uid(), $article_id, $tags);
         return $isTrue ? $this->ajaxSuccess('success') : $this->ajaxError('编辑失败...');
     }
 }

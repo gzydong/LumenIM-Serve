@@ -3,16 +3,13 @@
 namespace App\Providers;
 
 use App\Services\Service;
-use Illuminate\Database\Events\QueryExecuted;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
-use App\Services\ClientManageService;
-use App\Services\JwtAuthService;
-use App\Services\RoomManageService;
-use App\Services\UnreadTalkService;
-use App\Services\SmsCodeService;
+use App\Services\Common\ClientManageService;
+use App\Services\Common\JwtAuthService;
+use App\Services\Common\RoomManageService;
+use App\Services\Common\UnreadTalkService;
+use App\Services\Common\SmsCodeService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -65,19 +62,5 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
 
-        DB::listen(function (QueryExecuted $query) {
-            $sqlWithPlaceholders = str_replace(['%', '?'], ['%%', '%s'], $query->sql);
-
-            $bindings = $query->connection->prepareBindings($query->bindings);
-            $pdo = $query->connection->getPdo();
-            $realSql = $sqlWithPlaceholders;
-            $duration = format_duration($query->time / 1000);
-
-            if (count($bindings) > 0) {
-                $realSql = vsprintf($sqlWithPlaceholders, array_map([$pdo, 'quote'], $bindings));
-            }
-
-            Log::debug(sprintf('[%s] [%s] %s | %s: %s', $query->connection->getDatabaseName(), $duration, $realSql, app('request')->method(), app('request')->getRequestUri()));
-        });
     }
 }

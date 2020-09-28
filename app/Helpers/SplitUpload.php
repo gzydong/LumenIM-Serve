@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Logic;
+namespace App\Helpers;
 
 use App\Models\FileSplitUpload;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\File\File;
+
 
 /**
  * 文件拆分上传逻辑
  *
- * Class FileSplitUploadLogic
- * @package App\Logic
+ * Class FileSplitUploadHelper
+ * @package App\Helpers
  */
-class FileSplitUploadLogic
+class SplitUpload
 {
     // 文件拆分大小
     protected $splitSize;
@@ -68,15 +70,15 @@ class FileSplitUploadLogic
     /**
      * 保存拆分文件
      *
-     * @param string $file 文件信息
+     * @param  File $file 文件信息
      * @param string $hashName 上传临时问价hash名
      * @param int $split_index 当前拆分文件索引
      * @param int $fileSize 文件大小
      * @return bool
      */
-    public function saveSplitFile(string $file, string $hashName, int $split_index,int $fileSize)
+    public function saveSplitFile($file, string $hashName, int $split_index, int $fileSize)
     {
-        $fileInfo = FileSplitUpload::select(['id', 'original_name', 'split_num','file_ext'])->where('user_id', $this->user_id)->where('hash_name', $hashName)->where('file_type', 1)->first();
+        $fileInfo = FileSplitUpload::select(['id', 'original_name', 'split_num', 'file_ext'])->where('user_id', $this->user_id)->where('hash_name', $hashName)->where('file_type', 1)->first();
         if (!$fileInfo) {
             return false;
         }
@@ -86,7 +88,7 @@ class FileSplitUploadLogic
         $save_dir = "tmp/{$hashName}";
 
         // 判断上传目录是否存在(不存在则创建)
-        if(!Storage::disk('uploads')->exists($save_dir)){
+        if (!Storage::disk('uploads')->exists($save_dir)) {
             Storage::disk('uploads')->makeDirectory($save_dir);
         }
 
@@ -99,7 +101,7 @@ class FileSplitUploadLogic
         if (!$info) {
             return FileSplitUpload::create([
                 'user_id' => $this->user_id,
-                'file_type'=>2,
+                'file_type' => 2,
                 'hash_name' => $hashName,
                 'original_name' => $fileInfo->original_name,
                 'split_index' => $split_index,
@@ -141,12 +143,12 @@ class FileSplitUploadLogic
             file_put_contents($dir . '/' . $fileMerge, file_get_contents($dir . '/' . $file['save_dir']), FILE_APPEND);
         }
 
-        FileSplitUpload::select(['id', 'original_name', 'split_num', 'file_ext', 'file_size'])->where('user_id', $this->user_id)->where('hash_name', $hash_name)->where('file_type', 1)->update(['save_dir'=>$fileMerge]);
+        FileSplitUpload::select(['id', 'original_name', 'split_num', 'file_ext', 'file_size'])->where('user_id', $this->user_id)->where('hash_name', $hash_name)->where('file_type', 1)->update(['save_dir' => $fileMerge]);
         return [
-            'path'=>$fileMerge,
-            'tmp_file_name'=>"{$fileInfo->original_name}.tmp",
-            'original_name'=>$fileInfo->original_name,
-            'file_size'=>$fileInfo->file_size
+            'path' => $fileMerge,
+            'tmp_file_name' => "{$fileInfo->original_name}.tmp",
+            'original_name' => $fileInfo->original_name,
+            'file_size' => $fileInfo->file_size
         ];
     }
 }

@@ -10,7 +10,7 @@ use Illuminate\Container\Container;
  * Class Service
  * @package App\Services
  */
-class Service
+final class Service
 {
     /**
      * 服务列表

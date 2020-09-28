@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Services\GroupService;
 use Illuminate\Http\Request;
 use App\Models\{UsersChatList, UsersFriends};
 use App\Models\Group\{UsersGroup, UsersGroupMember, UsersGroupNotice};
 use App\Helpers\RequestProxy;
-use App\Logic\GroupLogic;
 
 /**
  * 聊天群组控制器
@@ -16,15 +16,26 @@ use App\Logic\GroupLogic;
  */
 class GroupController extends CController
 {
+    /**
+     * @var Request
+     */
     public $request;
-    public $requestProxy;
-    public $groupLogic;
 
-    public function __construct(Request $request, RequestProxy $requestProxy, GroupLogic $groupLogic)
+    /**
+     * @var RequestProxy
+     */
+    public $requestProxy;
+
+    /**
+     * @var GroupService
+     */
+    public $groupService;
+
+    public function __construct(Request $request, RequestProxy $requestProxy, GroupService $groupService)
     {
         $this->request = $request;
         $this->requestProxy = $requestProxy;
-        $this->groupLogic = $groupLogic;
+        $this->groupService = $groupService;
     }
 
     /**
@@ -85,7 +96,7 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue, $data] = $this->groupLogic->create($this->uid(), [
+        [$isTrue, $data] = $this->groupService->create($this->uid(), [
             'name' => $params['group_name'],
             'avatar' => '',
             'profile' => $params['group_profile'],
@@ -141,7 +152,7 @@ class GroupController extends CController
         }
 
         $user_id = $this->uid();
-        [$isTrue, $record_id] = $this->groupLogic->invite($user_id, $group_id, array_unique($uids));
+        [$isTrue, $record_id] = $this->groupService->invite($user_id, $group_id, array_unique($uids));
         if ($isTrue) {
             $this->requestProxy->send('proxy/event/group-notify', [
                 'record_id' => $record_id
@@ -165,7 +176,7 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue, $record_id] = $this->groupLogic->removeMember($group_id, $this->uid(), $member_ids);
+        [$isTrue, $record_id] = $this->groupService->removeMember($group_id, $this->uid(), $member_ids);
         if ($isTrue) {
             $this->requestProxy->send('proxy/event/group-notify', [
                 'record_id' => $record_id
@@ -187,7 +198,7 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->groupLogic->dismiss($group_id, $this->uid());
+        $isTrue = $this->groupService->dismiss($group_id, $this->uid());
         if ($isTrue) {
             // ... 推送群消息
         }
@@ -206,7 +217,7 @@ class GroupController extends CController
         if (!check_int($group_id)) return $this->ajaxParamError();
 
         $user_id = $this->uid();
-        [$isTrue, $record_id] = $this->groupLogic->quit($user_id, $group_id);
+        [$isTrue, $record_id] = $this->groupService->quit($user_id, $group_id);
         if ($isTrue) {
             $this->requestProxy->send('proxy/event/group-notify', [
                 'record_id' => $record_id

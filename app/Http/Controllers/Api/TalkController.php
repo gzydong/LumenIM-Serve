@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use App\Logic\{TalkLogic};
+
 use App\Models\{EmoticonDetails, FileSplitUpload, User, UsersChatList, UsersFriends};
 use App\Models\Group\UsersGroup;
 use App\Models\Chat\{ChatRecords, ChatRecordsCode, ChatRecordsFile};
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\RequestProxy;
+
+use App\Services\TalkService;
 
 /**
  * 聊天对话处理
@@ -21,15 +24,26 @@ use App\Helpers\RequestProxy;
 class TalkController extends CController
 {
 
+    /**
+     * @var Request
+     */
     public $request;
-    public $talkLogic;
+
+    /**
+     * @var TalkService
+     */
+    public $talkService;
+
+    /**
+     * @var RequestProxy
+     */
     public $requestProxy;
 
-    public function __construct(Request $request, RequestProxy $requestProxy, TalkLogic $talkLogic)
+    public function __construct(Request $request, RequestProxy $requestProxy, TalkService $talkService)
     {
         $this->request = $request;
         $this->requestProxy = $requestProxy;
-        $this->talkLogic = $talkLogic;
+        $this->talkService = $talkService;
     }
 
     /**
@@ -166,10 +180,10 @@ class TalkController extends CController
         // 读取用户的未读消息列表
         $result = app('unread.talk')->getAll($user_id);
         if ($result) {
-            $this->talkLogic->updateUnreadTalkList($user_id, $result);
+            $this->talkService->updateUnreadTalkList($user_id, $result);
         }
 
-        $rows = $this->talkLogic->talkLists($user_id);
+        $rows = $this->talkService->talkLists($user_id);
         if ($rows) {
             $rows = arraysSort($rows, 'updated_at');
         }
@@ -222,7 +236,7 @@ class TalkController extends CController
             ]);
         }
 
-        $result = $this->talkLogic->getChatRecords($user_id, $receive_id, $source, $record_id, $limit);
+        $result = $this->talkService->getChatRecords($user_id, $receive_id, $source, $record_id, $limit);
 
         return $this->ajaxSuccess('success', [
             'rows' => $result,
@@ -244,7 +258,7 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue, $message, $data] = $this->talkLogic->revokeRecord($user_id, $record_id);
+        [$isTrue, $message, $data] = $this->talkService->revokeRecord($user_id, $record_id);
         if ($isTrue) {
             //这里需要调用WebSocket推送接口
             $this->requestProxy->send('proxy/event/revoke-records', [
@@ -276,7 +290,7 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->talkLogic->removeRecords($user_id, $source, $receive_id, $record_ids);
+        $isTrue = $this->talkService->removeRecords($user_id, $source, $receive_id, $record_ids);
         return $isTrue ? $this->ajaxSuccess('删除成功...') : $this->ajaxError('删除失败...');
     }
 
@@ -316,9 +330,9 @@ class TalkController extends CController
         );
 
         if ($forward_mode == 1) {//单条转发
-            $ids = $this->talkLogic->forwardRecords($user_id, $receive_id, $records_ids, $items);
+            $ids = $this->talkService->forwardRecords($user_id, $receive_id, $records_ids, $items);
         } else {//合并转发
-            $ids = $this->talkLogic->mergeForwardRecords($user_id, $receive_id, $source, $records_ids, $items);
+            $ids = $this->talkService->mergeForwardRecords($user_id, $receive_id, $source, $records_ids, $items);
         }
 
         if (!$ids) {
@@ -351,7 +365,7 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        $rows = $this->talkLogic->getForwardRecords($this->uid(), $records_id);
+        $rows = $this->talkService->getForwardRecords($this->uid(), $records_id);
         return $this->ajaxSuccess('success', ['rows' => $rows]);
     }
 
@@ -388,7 +402,7 @@ class TalkController extends CController
             $msg_type = [1, 2, 4, 5];
         }
 
-        $result = $this->talkLogic->getChatRecords($user_id, $receive_id, $source, $record_id, $limit, $msg_type);
+        $result = $this->talkService->getChatRecords($user_id, $receive_id, $source, $record_id, $limit, $msg_type);
         return $this->ajaxSuccess('success', [
             'rows' => $result,
             'record_id' => $result ? $result[count($result) - 1]['id'] : 0,

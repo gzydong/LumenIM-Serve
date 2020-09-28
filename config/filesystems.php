@@ -67,12 +67,7 @@ return [
         //自定义上传文件目录，需要单独配置域名指向这个文件夹
         'uploads' => [
             'driver' => 'local',
-            'root' => base_path('../../data/lumenim')
-        ],
-
-        'img' => [
-            'driver' => 'local',
-            'root' => base_path('public/static/image/sys-head'),
-        ],
+            'root' => '/www/data/lumenim'
+        ]
     ]
 ];

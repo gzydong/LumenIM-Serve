@@ -11,16 +11,16 @@ namespace PHPSTORM_META {
      * @see https://github.com/barryvdh/laravel-ide-helper
      */
     override(\app(0), map([
-        'App\Services\ClientManageService' => \App\Services\ClientManageService::class,
-        'client.manage' => \App\Services\ClientManageService::class,
-        'App\Services\JwtAuthService' => \App\Services\JwtAuthService::class,
-        'jwt.auth' => \App\Services\JwtAuthService::class,
-        'App\Services\RoomManageService' => \App\Services\RoomManageService::class,
-        'room.manage' => \App\Services\RoomManageService::class,
-        'App\Services\SmsCodeService' => \App\Services\SmsCodeService::class,
-        'sms.code' => \App\Services\SmsCodeService::class,
-        'App\Services\UnreadTalkService' => \App\Services\UnreadTalkService::class,
-        'unread.talk' => \App\Services\UnreadTalkService::class,
+        'App\Services\ClientManageService' => \App\Services\Common\ClientManageService::class,
+        'client.manage' => \App\Services\Common\ClientManageService::class,
+        'App\Services\JwtAuthService' => \App\Services\Common\JwtAuthService::class,
+        'jwt.auth' => \App\Services\Common\JwtAuthService::class,
+        'App\Services\RoomManageService' => \App\Services\Common\RoomManageService::class,
+        'room.manage' => \App\Services\Common\RoomManageService::class,
+        'App\Services\SmsCodeService' => \App\Services\Common\SmsCodeService::class,
+        'sms.code' => \App\Services\Common\SmsCodeService::class,
+        'App\Services\UnreadTalkService' => \App\Services\Common\UnreadTalkService::class,
+        'unread.talk' => \App\Services\Common\UnreadTalkService::class,
         'services' => \App\Services\Service::class,
         'request' => \Illuminate\Http\Request::class
     ]));

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\SplitUpload;
 use Illuminate\Http\Request;
-use App\Logic\FileSplitUploadLogic;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -47,7 +47,7 @@ class UploadController extends CController
             return $this->ajaxParamError();
         }
 
-        $logic = new FileSplitUploadLogic($this->uid());
+        $logic = new SplitUpload($this->uid());
         $data = $logic->createSplitInfo($request->post('file_name'), $request->post('file_size'));
 
         return $data ? $this->ajaxSuccess('success', $data) : $this->ajaxError('获取文件拆分信息失败...');
@@ -62,15 +62,17 @@ class UploadController extends CController
     public function fileSubareaUpload(Request $request)
     {
         $file = $request->file('file');
+
         $params = ['name', 'hash', 'ext', 'size', 'split_index', 'split_num'];
-        if (!$request->filled($params) || !$file) {
+        if (!$request->filled($params) || !$file->isValid()) {
             return $this->ajaxParamError();
         }
 
         $info = $request->only($params);
         $fileSize = $file->getClientSize();
 
-        $logic = new FileSplitUploadLogic($this->uid());
+        $logic = new SplitUpload($this->uid());
+
         if (!$uploadRes = $logic->saveSplitFile($file, $info['hash'], $info['split_index'], $fileSize)) {
             return $this->ajaxError('上传文件失败...');
         }

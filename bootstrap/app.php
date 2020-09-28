@@ -66,13 +66,13 @@ $app->singleton(
 
 //注册全局中间件
 $app->middleware([
-    \Barryvdh\Cors\HandleCors::class
+    Barryvdh\Cors\HandleCors::class,
 ]);
 
 //注册路由中间件
 $app->routeMiddleware([
-    'jwt' => \App\Http\Middleware\JwtAuth::class,
-    'proxy' => \App\Http\Middleware\ProxyAuth::class,
+    'jwt' => App\Http\Middleware\JwtAuth::class,
+    'proxy' => App\Http\Middleware\ProxyAuth::class,
 ]);
 
 /*

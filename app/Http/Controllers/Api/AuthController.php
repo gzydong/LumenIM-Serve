@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use App\Events\UserLoginLogEvent;
 use App\Models\User;
-use App\Logic\UsersLogic;
 
 /**
  * 接口授权登录控制器
@@ -16,20 +16,34 @@ use App\Logic\UsersLogic;
 class AuthController extends CController
 {
     /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var UserService
+     */
+    protected $userService;
+
+    public function __construct(Request $request, UserService $userService)
+    {
+        $this->request = $request;
+        $this->userService = $userService;
+    }
+
+    /**
      * 注册接口
      *
-     * @param Request $request
-     * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request, UsersLogic $usersLogic)
+    public function register()
     {
         $fields = ['nickname', 'mobile', 'password', 'sms_code'];
-        if (!$request->filled($fields)) {
+        if (!$this->request->filled($fields)) {
             return $this->ajaxParamError();
         }
 
-        $params = $request->only($fields);
+        $params = $this->request->only($fields);
         if (!check_mobile($params['mobile'])) {
             return $this->ajaxParamError('手机号格式不正确...');
         }
@@ -38,7 +52,7 @@ class AuthController extends CController
             return $this->ajaxParamError('验证码填写错误...');
         }
 
-        $isTrue = $usersLogic->register([
+        $isTrue = $this->userService->register([
             'mobile' => $params['mobile'],
             'password' => $params['password'],
             'nickname' => strip_tags($params['nickname']),
@@ -52,25 +66,23 @@ class AuthController extends CController
     }
 
     /**
-     * 登录接口
+     * 授权登录接口
      *
-     * @param Request $request
-     * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request, UsersLogic $usersLogic)
+    public function login()
     {
-        if (!$request->filled(['mobile', 'password'])) {
+        if (!$this->request->filled(['mobile', 'password'])) {
             return $this->ajaxParamError();
         }
 
-        $data = $request->only(['mobile', 'password']);
+        $data = $this->request->only(['mobile', 'password']);
         $user = User::where('mobile', $data['mobile'])->first();
         if (!$user) {
             return $this->ajaxReturn(302, '登录账号不存在...');
         }
 
-        if (!$usersLogic->checkPassword($data['password'], $user->password)) {
+        if (!$this->userService->checkPassword($data['password'], $user->password)) {
             return $this->ajaxReturn(305, '登录密码错误...');
         }
 
@@ -93,7 +105,7 @@ class AuthController extends CController
         }
 
         // 记录登录日志
-        event(new UserLoginLogEvent($user->id, $request->getClientIp()));
+        event(new UserLoginLogEvent($user->id, $this->request->getClientIp()));
 
         return $this->ajaxReturn(200, '授权登录成功', [
             // 授权信息
@@ -131,13 +143,12 @@ class AuthController extends CController
     /**
      * 发送验证码
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function sendVerifyCode(Request $request)
+    public function sendVerifyCode()
     {
-        $mobile = $request->post('mobile', '');
-        $type = $request->post('type', '');
+        $mobile = $this->request->post('mobile', '');
+        $type = $this->request->post('type', '');
 
         if (!app('sms.code')->isUsages($type)) {
             return $this->ajaxParamError('验证码发送失败...');
@@ -171,15 +182,13 @@ class AuthController extends CController
     /**
      * 重置用户密码
      *
-     * @param Request $request
-     * @param UsersLogic $usersLogic
      * @return \Illuminate\Http\JsonResponse
      */
-    public function forgetPassword(Request $request, UsersLogic $usersLogic)
+    public function forgetPassword()
     {
-        $mobile = $request->post('mobile', '');
-        $code = $request->post('sms_code', '');
-        $password = $request->post('password', '');
+        $mobile = $this->request->post('mobile', '');
+        $code = $this->request->post('sms_code', '');
+        $password = $this->request->post('password', '');
 
         if (!check_mobile($mobile) || empty($code) || empty($password)) {
             return $this->ajaxParamError();
@@ -193,7 +202,7 @@ class AuthController extends CController
             return $this->ajaxParamError('验证码填写错误...');
         }
 
-        $isTrue = $usersLogic->resetPassword($mobile, $password);
+        $isTrue = $this->userService->resetPassword($mobile, $password);
         if ($isTrue) {
             app('sms.code')->delCode('forget_password', $mobile);
         }

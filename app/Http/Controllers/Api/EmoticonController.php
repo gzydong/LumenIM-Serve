@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Models\{Emoticon, EmoticonDetails, UsersEmoticon};
-use App\Logic\EmoticonLogic;
+use App\Models\{Emoticon, EmoticonDetails};
+use App\Services\EmoticonService;
 
 /**
  * 表情包相关服务接口
@@ -15,13 +15,20 @@ use App\Logic\EmoticonLogic;
  */
 class EmoticonController extends CController
 {
+    /**
+     * @var Request
+     */
     public $request;
-    public $emoticonLogic;
 
-    public function __construct(Request $request, EmoticonLogic $emoticonLogic)
+    /**
+     * @var EmoticonService
+     */
+    public $emoticonService;
+
+    public function __construct(Request $request, EmoticonService $emoticonService)
     {
         $this->request = $request;
-        $this->emoticonLogic = $emoticonLogic;
+        $this->emoticonService = $emoticonService;
     }
 
     /**
@@ -32,12 +39,13 @@ class EmoticonController extends CController
     public function getUserEmoticon()
     {
         $emoticonList = [];
-
-        $ids = UsersEmoticon::where('user_id', $this->uid())->value('emoticon_ids');
+        $user_id = $this->uid();
+        $ids = $this->emoticonService->getInstallIds($user_id);
         if ($ids) {
             $items = Emoticon::select('id', 'name', 'url')->whereIn('id', $ids)->get();
             foreach ($items as $item) {
                 $list = EmoticonDetails::where('emoticon_id', $item->id)->where('user_id', 0)->get(['id as media_id', 'url as src'])->toArray();
+
                 array_walk($list, function (&$val) {
                     $val['src'] = get_media_url($val['src']);
                 });
@@ -48,12 +56,10 @@ class EmoticonController extends CController
                     'name' => $item->name,
                     'list' => $list
                 ];
-
-                unset($list);
             }
         }
 
-        $collectEmoticon = EmoticonDetails::where('user_id', $this->uid())->where('emoticon_id', 0)->get(['id as media_id', 'url as src'])->toArray();
+        $collectEmoticon = EmoticonDetails::where('user_id', $user_id)->where('emoticon_id', 0)->get(['id as media_id', 'url as src'])->toArray();
         array_walk($collectEmoticon, function (&$val) {
             $val['src'] = get_media_url($val['src']);
         });
@@ -73,7 +79,7 @@ class EmoticonController extends CController
     {
         $items = Emoticon::select('id', 'name', 'url')->get()->toArray();
         if ($items) {
-            $ids = UsersEmoticon::where('user_id', $this->uid())->value('emoticon_ids') ?? [];
+            $ids = $this->emoticonService->getInstallIds($this->uid());
 
             array_walk($items, function (&$item) use ($ids) {
                 $item['status'] = in_array($item['id'], $ids) ? 1 : 0;
@@ -97,13 +103,17 @@ class EmoticonController extends CController
             return $this->ajaxParamError();
         }
 
-        if ($type == 1) {
+        $user_id = $this->uid();
+        if ($type == 2) {//移除表情包
+            $isTrue = $this->emoticonService->removeSysEmoticon($user_id, $emoticon_id);
+            return $isTrue ? $this->ajaxSuccess('移除表情包成功...') : $this->ajaxError('移除表情包失败...');
+        } else {//添加表情包
             $emoticonInfo = Emoticon::select('id', 'name', 'url')->where('id', $emoticon_id)->first();
             if (!$emoticonInfo) {
                 return $this->ajaxError('添加表情包失败...');
             }
 
-            $isTrue = $this->emoticonLogic->addUserEmoticon($this->uid(), $emoticon_id);
+            $isTrue = $this->emoticonService->installSysEmoticon($this->uid(), $emoticon_id);
             if (!$isTrue) {
                 return $this->ajaxError('添加表情包失败...');
             }
@@ -122,9 +132,6 @@ class EmoticonController extends CController
 
             return $this->ajaxSuccess('添加表情包成功', $data);
         }
-
-        $isTrue = $this->emoticonLogic->removeUserEmoticon($this->uid(), $emoticon_id);
-        return $isTrue ? $this->ajaxSuccess('移除表情包成功...') : $this->ajaxError('移除表情包失败...');
     }
 
     /**
@@ -139,7 +146,7 @@ class EmoticonController extends CController
             return $this->ajaxParamError();
         }
 
-        [$isTrue, $data] = $this->emoticonLogic->collectEmoticon($this->uid(), $id);
+        [$isTrue, $data] = $this->emoticonService->collect($this->uid(), $id);
 
         return $isTrue ? $this->ajaxSuccess('success', [
             'emoticon' => $data
@@ -188,19 +195,20 @@ class EmoticonController extends CController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function delCollectEmoticon(){
+    public function delCollectEmoticon()
+    {
         $ids = $this->request->post('ids', '');
-        if(empty($ids)){
+        if (empty($ids)) {
             return $this->ajaxParamError();
         }
 
-        $ids = explode(',',trim($ids));
-        if(!check_ids($ids)){
+        $ids = explode(',', trim($ids));
+        if (!check_ids($ids)) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = EmoticonDetails::whereIn('id',$ids)->where('user_id',$this->uid())->delete();
-
-        return $isTrue ? $this->ajaxSuccess('success') : $this->ajaxError('fail');
+        return $this->emoticonService->deleteCollect($this->uid(), $ids) ?
+            $this->ajaxSuccess('success') :
+            $this->ajaxError('fail');
     }
 }
