@@ -27,25 +27,27 @@ class UserService
      * @param array $field 查询字段
      * @return mixed
      */
-    public function findById(int $user_id,$field = ['*']){
-        return User::where('id',$user_id)->first($field);
+    public function findById(int $user_id, $field = ['*'])
+    {
+        return User::where('id', $user_id)->first($field);
     }
 
     /**
      * 验证用户密码是否正确
      *
-     * @param string $str 用户输入密码
+     * @param string $input 用户输入密码
      * @param string $password 账户密码
      * @return bool
      */
-    public function checkPassword(string $str, string $password)
+    public function checkPassword(string $input, string $password)
     {
-        return Hash::check($str, $password);
+        return Hash::check($input, $password);
     }
 
     /**
      * 账号注册逻辑
-     * @param array $data
+     *
+     * @param array $data 用户数据
      * @return bool
      */
     public function register(array $data)
@@ -66,8 +68,6 @@ class UserService
         } catch (\Exception $e) {
             $result = false;
             DB::rollBack();
-
-            var_dump($e->getMessage());
         }
 
         return $result ? true : false;
@@ -97,12 +97,10 @@ class UserService
             ->join('users_group', 'users_group.id', '=', 'users_group_member.group_id')
             ->where('users_group_member.user_id', $user_id)->where('users_group_member.status', 0)->orderBy('id', 'desc')->get()->toarray();
 
-        if ($items) {
-            foreach ($items as $key => $item) {
-                $items[$key]['isGroupLeader'] = $item['group_user_id'] == $user_id;
-                unset($items[$key]['group_user_id']);
-                $items[$key]['not_disturb'] = UserChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $item['id'])->value('not_disturb');
-            }
+        foreach ($items as $key => $item) {
+            $items[$key]['isGroupLeader'] = $item['group_user_id'] == $user_id;
+            unset($items[$key]['group_user_id']);
+            $items[$key]['not_disturb'] = UserChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $item['id'])->value('not_disturb');
         }
 
         return $items;

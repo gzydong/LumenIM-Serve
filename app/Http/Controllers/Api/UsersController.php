@@ -86,7 +86,7 @@ class UsersController extends CController
     {
         $rows = UserFriends::getUserFriends($this->uid());
         foreach ($rows as $k => $row) {
-            $rows[$k] = app('client.manage')->isOnline($row['id']);
+            $rows[$k]['online'] = app('client.manage')->isOnline($row['id']);
         }
 
         return $this->ajaxSuccess('success', $rows);
@@ -124,7 +124,7 @@ class UsersController extends CController
             return $this->ajaxParamError('新密码格式错误(8~16位字母加数字)');
         }
 
-        $userInfo = User::where('id', $this->uid())->first(['id', 'password', 'mobile']);
+        $userInfo = $this->userService->findById($this->uid(), ['id', 'password', 'mobile']);
 
         // 验证密码是否正确
         if (!$this->userService->checkPassword($userInfo->password, $this->request->post('old_password'))) {

@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Helpers\Encryption;
+
 /**
  * Class JwtObject
  * @package App\Helpers

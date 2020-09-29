@@ -183,7 +183,8 @@ class TalkController extends CController
             $this->talkService->updateUnreadTalkList($user_id, $result);
         }
 
-        $rows = $this->talkService->talkLists($user_id);
+        // 获取聊天列表
+        $rows = $this->talkService->talks($user_id);
         if ($rows) {
             $rows = arraysSort($rows, 'updated_at');
         }

@@ -160,7 +160,4 @@ class EmoticonService
 
         return $list;
     }
-
-
-
 }

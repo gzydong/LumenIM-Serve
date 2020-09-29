@@ -27,9 +27,9 @@ class TalkService
      * 获取用户的聊天列表
      *
      * @param int $user_id 用户ID
-     * @return mixed
+     * @return array
      */
-    public function talkLists(int $user_id)
+    public function talks(int $user_id)
     {
         $filed = [
             'list.id', 'list.type', 'list.friend_id', 'list.group_id', 'list.updated_at', 'list.not_disturb', 'list.is_top',
@@ -46,7 +46,9 @@ class TalkService
             ->get($filed)
             ->toArray();
 
-        if (!$rows) return [];
+        if (!$rows) {
+            return [];
+        }
 
         $rows = array_map(function ($item) use ($user_id) {
             $data['id'] = $item['id'];
