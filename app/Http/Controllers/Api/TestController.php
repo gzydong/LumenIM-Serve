@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Emoticon;
 use App\Models\UsersEmoticon;
+use App\Services\EmoticonService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 
@@ -15,10 +17,9 @@ use Illuminate\Http\Request;
  */
 class TestController extends CController
 {
-    public function test(UserService $userService)
+    public function test(EmoticonService $emoticonService)
     {
-        $userInfo = $userService->findById(2054,['mobile']);
-        dd($userInfo);
+
     }
 
     public function index(Request $request)

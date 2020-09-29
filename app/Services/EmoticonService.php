@@ -48,11 +48,7 @@ class EmoticonService
     public function removeSysEmoticon(int $user_id, int $emoticon_id)
     {
         $info = UsersEmoticon::select(['id', 'user_id', 'emoticon_ids'])->where('user_id', $user_id)->first();
-        if (!$info) {
-            return false;
-        }
-
-        if (!in_array($emoticon_id, $info->emoticon_ids)) {
+        if (!$info || !in_array($emoticon_id, $info->emoticon_ids)) {
             return false;
         }
 
@@ -147,4 +143,24 @@ class EmoticonService
     {
         return EmoticonDetails::whereIn('id', $ids)->where('user_id', $user_id)->delete();
     }
+
+    /**
+     * 获取表情包列表
+     *
+     * @param array $where
+     * @return mixed
+     */
+    public function getDetailsAll(array $where = [])
+    {
+        $list = EmoticonDetails::where($where)->get(['id as media_id', 'url as src'])->toArray();
+
+        foreach ($list as $k => $value) {
+            $list[$k]['src'] = get_media_url($value['src']);
+        }
+
+        return $list;
+    }
+
+
+
 }

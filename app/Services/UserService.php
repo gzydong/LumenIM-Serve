@@ -66,6 +66,8 @@ class UserService
         } catch (\Exception $e) {
             $result = false;
             DB::rollBack();
+
+            var_dump($e->getMessage());
         }
 
         return $result ? true : false;

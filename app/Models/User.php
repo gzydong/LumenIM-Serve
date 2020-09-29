@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Auth\Authenticatable;
@@ -21,6 +22,18 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
      * @var string
      */
     protected $table = 'users';
+
+    protected $fillable = [
+        'mobile',
+        'nickname',
+        'avatar',
+        'gender',
+        'password',
+        'invite_code',
+        'motto',
+        'email',
+        'created_at',
+    ];
 
     /**
      * The attributes excluded from the model's JSON form.
