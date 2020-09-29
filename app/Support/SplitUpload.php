@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Support;
 
 use App\Models\FileSplitUpload;
 use Illuminate\Support\Facades\Storage;

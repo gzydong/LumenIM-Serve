@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\UsersFriends;
-use App\Models\UsersFriendsApply;
+use App\Models\UserFriends;
+use App\Models\UserFriendsApply;
 use Illuminate\Support\Facades\DB;
 
 use App\Traits\PagingTrait;
@@ -24,13 +24,13 @@ class FriendService
     public function addFriendApply(int $user_id, int $friend_id, string $remarks)
     {
         // 判断是否是好友关系
-        if (UsersFriends::isFriend($user_id, $friend_id)) {
+        if (UserFriends::isFriend($user_id, $friend_id)) {
             return true;
         }
 
-        $result = UsersFriendsApply::where('user_id', $user_id)->where('friend_id', $friend_id)->orderBy('id', 'desc')->first();
+        $result = UserFriendsApply::where('user_id', $user_id)->where('friend_id', $friend_id)->orderBy('id', 'desc')->first();
         if (!$result) {
-            $result = UsersFriendsApply::create([
+            $result = UserFriendsApply::create([
                 'user_id' => $user_id,
                 'friend_id' => $friend_id,
                 'status' => 0,
@@ -60,7 +60,7 @@ class FriendService
      */
     public function delFriendApply(int $user_id, int $apply_id)
     {
-        return (bool)UsersFriendsApply::where('id', $apply_id)->where('friend_id', $user_id)->delete();
+        return (bool)UserFriendsApply::where('id', $apply_id)->where('friend_id', $user_id)->delete();
     }
 
     /**
@@ -73,14 +73,14 @@ class FriendService
      */
     public function handleFriendApply(int $user_id, int $apply_id, $remarks = '')
     {
-        $info = UsersFriendsApply::where('id', $apply_id)->where('friend_id', $user_id)->where('status', 0)->orderBy('id', 'desc')->first(['user_id', 'friend_id']);
+        $info = UserFriendsApply::where('id', $apply_id)->where('friend_id', $user_id)->where('status', 0)->orderBy('id', 'desc')->first(['user_id', 'friend_id']);
         if (!$info) {
             return false;
         }
 
         DB::beginTransaction();
         try {
-            $res = UsersFriendsApply::where('id', $apply_id)->update(['status' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
+            $res = UserFriendsApply::where('id', $apply_id)->update(['status' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
             if (!$res) {
                 throw new \Exception('更新好友申请表信息失败');
             }
@@ -92,16 +92,16 @@ class FriendService
             }
 
             //查询是否存在好友记录
-            $friendResult = UsersFriends::select('id', 'user1', 'user2', 'active', 'status')->where('user1', '=', $user1)->where('user2', '=', $user2)->first();
+            $friendResult = UserFriends::select('id', 'user1', 'user2', 'active', 'status')->where('user1', '=', $user1)->where('user2', '=', $user2)->first();
             if ($friendResult) {
                 $active = ($friendResult->user1 == $info->user_id && $friendResult->user2 == $info->friend_id) ? 1 : 2;
-                if (!UsersFriends::where('id', $friendResult->id)->update(['active' => $active, 'status' => 1])) {
+                if (!UserFriends::where('id', $friendResult->id)->update(['active' => $active, 'status' => 1])) {
                     throw new \Exception('更新好友关系信息失败');
                 }
             } else {
                 //好友昵称
                 $friend_nickname = User::where('id', $info->friend_id)->value('nickname');
-                $insRes = UsersFriends::create([
+                $insRes = UserFriends::create([
                     'user1' => $user1,
                     'user2' => $user2,
                     'user1_remark' => $user1 == $user_id ? $remarks : $friend_nickname,
@@ -135,7 +135,7 @@ class FriendService
      */
     public function removeFriend(int $user_id, int $friend_id)
     {
-        if (!UsersFriends::isFriend($user_id, $friend_id)) {
+        if (!UserFriends::isFriend($user_id, $friend_id)) {
             return false;
         }
 
@@ -146,7 +146,7 @@ class FriendService
             [$user_id, $friend_id] = [$friend_id, $user_id];
         }
 
-        return (bool)UsersFriends::where('user1', $user_id)->where('user2', $friend_id)->update($data);
+        return (bool)UserFriends::where('user1', $user_id)->where('user2', $friend_id)->update($data);
     }
 
     /**
@@ -157,9 +157,9 @@ class FriendService
      * @param int $page_size 分页大小
      * @return array
      */
-    public function friendApplyRecords(int $user_id, $page = 1, $page_size = 30)
+    public function findApplyRecords(int $user_id, $page = 1, $page_size = 30)
     {
-        $rowsSqlObj = UsersFriendsApply::select([
+        $rowsSqlObj = UserFriendsApply::select([
             'users_friends_apply.id',
             'users_friends_apply.status',
             'users_friends_apply.remarks',
@@ -201,6 +201,6 @@ class FriendService
             $data['user1_remark'] = $remarks;
         }
 
-        return (bool)UsersFriends::where('user1', $user_id)->where('user2', $friend_id)->update($data);
+        return (bool)UserFriends::where('user1', $user_id)->where('user2', $friend_id)->update($data);
     }
 }

@@ -192,7 +192,6 @@ function arraysSort(array $array, $field, $sort = SORT_DESC)
     return $array;
 }
 
-
 /**
  * 格式化查询时间
  *

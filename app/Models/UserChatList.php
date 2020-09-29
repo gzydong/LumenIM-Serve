@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class UsersChatList extends BaseModel
+class UserChatList extends BaseModel
 {
     /**
      * 关联到模型的数据表

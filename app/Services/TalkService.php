@@ -10,9 +10,9 @@ use App\Models\Chat\{
     ChatRecordsInvite
 };
 use App\Models\User;
-use App\Models\UsersChatList;
-use App\Models\UsersFriends;
-use App\Models\Group\UsersGroup;
+use App\Models\UserChatList;
+use App\Models\UserFriends;
+use App\Models\Group\UserGroup;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\Cache\CacheHelper;
 
@@ -37,7 +37,7 @@ class TalkService
             'group.group_name', 'group.avatar as group_avatar'
         ];
 
-        $rows = UsersChatList::from('users_chat_list as list')
+        $rows = UserChatList::from('users_chat_list as list')
             ->leftJoin('users', 'users.id', '=', 'list.friend_id')
             ->leftJoin('users_group as group', 'group.id', '=', 'list.group_id')
             ->where('list.uid', $user_id)
@@ -73,7 +73,7 @@ class TalkService
                 if (!is_null($remark)) {
                     $data['remark_name'] = $remark;
                 } else {
-                    $info = UsersFriends::select('user1', 'user2', 'user1_remark', 'user2_remark')
+                    $info = UserFriends::select('user1', 'user2', 'user1_remark', 'user2_remark')
                         ->where('user1', ($user_id < $item['friend_id']) ? $user_id : $item['friend_id'])
                         ->where('user2', ($user_id < $item['friend_id']) ? $item['friend_id'] : $user_id)->first();
                     if ($info) {//这个环节待优化
@@ -108,7 +108,7 @@ class TalkService
     public function updateUnreadTalkList(int $user_id, $data)
     {
         foreach ($data as $friend_id => $num) {
-            UsersChatList::updateOrCreate(['uid' => $user_id, 'friend_id' => intval($friend_id), 'type' => 1], [
+            UserChatList::updateOrCreate(['uid' => $user_id, 'friend_id' => intval($friend_id), 'type' => 1], [
                 'status' => 1,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
@@ -305,7 +305,7 @@ class TalkService
         //判断是否有权限查看
         if ($result->source == 1 && ($result->user_id != $user_id && $result->receive_id != $user_id)) {
             return [];
-        } else if ($result->source == 2 && !UsersGroup::isMember($result->receive_id, $user_id)) {
+        } else if ($result->source == 2 && !UserGroup::isMember($result->receive_id, $user_id)) {
             return [];
         }
 
@@ -357,7 +357,7 @@ class TalkService
         }
 
         // 判读是否属于群消息并且判断是否是群成员
-        if ($source == 2 && !UsersGroup::isMember($receive_id, $user_id)) {
+        if ($source == 2 && !UserGroup::isMember($receive_id, $user_id)) {
             return false;
         }
 
@@ -394,7 +394,7 @@ class TalkService
                 return [false, '非法操作', []];
             }
         } else if ($result->source == 2) {
-            if (!UsersGroup::isMember($result->receive_id, $user_id)) {
+            if (!UserGroup::isMember($result->receive_id, $user_id)) {
                 return [false, '非法操作', []];
             }
         }
@@ -427,7 +427,7 @@ class TalkService
                 return [];
             }
         } else if ($result->source == 2) {
-            if (!UsersGroup::isMember($result->receive_id, $user_id)) {
+            if (!UserGroup::isMember($result->receive_id, $user_id)) {
                 return [];
             }
         }
@@ -516,14 +516,14 @@ class TalkService
         //验证是否有权限转发
         if ($source == 2) {//群聊消息
             //判断是否是群聊成员
-            if (!UsersGroup::isMember($receive_id, $user_id)) {
+            if (!UserGroup::isMember($receive_id, $user_id)) {
                 return [];
             }
 
             $sqlObj = $sqlObj->where('receive_id', $receive_id)->whereIn('msg_type', $msg_type)->where('source', 2)->where('is_revoke', 0);
         } else {//私聊消息
             //判断是否存在好友关系
-            if (!UsersFriends::isFriend($user_id, $receive_id)) {
+            if (!UserFriends::isFriend($user_id, $receive_id)) {
                 return [];
             }
 

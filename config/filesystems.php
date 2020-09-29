@@ -51,7 +51,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
         ],
 
@@ -67,7 +67,7 @@ return [
         //自定义上传文件目录，需要单独配置域名指向这个文件夹
         'uploads' => [
             'driver' => 'local',
-            'root' => '/www/data/lumenim'
+            'root' => env('UPLOAD_PATH', base_path('uploads'))
         ]
     ]
 ];

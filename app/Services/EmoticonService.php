@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\Chat\{ChatRecords, ChatRecordsFile};
 use App\Models\EmoticonDetails;
-use App\Models\UsersEmoticon;
-use App\Models\Group\UsersGroup;
+use App\Models\UserEmoticon;
+use App\Models\Group\UserGroup;
 
 /**
  * 表情服务层
@@ -24,9 +24,9 @@ class EmoticonService
      */
     public function installSysEmoticon(int $user_id, int $emoticon_id)
     {
-        $info = UsersEmoticon::select(['id', 'user_id', 'emoticon_ids'])->where('user_id', $user_id)->first();
+        $info = UserEmoticon::select(['id', 'user_id', 'emoticon_ids'])->where('user_id', $user_id)->first();
         if (!$info) {
-            return UsersEmoticon::create(['user_id' => $user_id, 'emoticon_ids' => $emoticon_id]) ? true : false;
+            return UserEmoticon::create(['user_id' => $user_id, 'emoticon_ids' => $emoticon_id]) ? true : false;
         }
 
         $emoticon_ids = $info->emoticon_ids;
@@ -35,7 +35,7 @@ class EmoticonService
         }
 
         $emoticon_ids[] = $emoticon_id;
-        return UsersEmoticon::where('user_id', $user_id)->update(['emoticon_ids' => implode(',', $emoticon_ids)]) ? true : false;
+        return UserEmoticon::where('user_id', $user_id)->update(['emoticon_ids' => implode(',', $emoticon_ids)]) ? true : false;
     }
 
     /**
@@ -47,7 +47,7 @@ class EmoticonService
      */
     public function removeSysEmoticon(int $user_id, int $emoticon_id)
     {
-        $info = UsersEmoticon::select(['id', 'user_id', 'emoticon_ids'])->where('user_id', $user_id)->first();
+        $info = UserEmoticon::select(['id', 'user_id', 'emoticon_ids'])->where('user_id', $user_id)->first();
         if (!$info || !in_array($emoticon_id, $info->emoticon_ids)) {
             return false;
         }
@@ -63,7 +63,7 @@ class EmoticonService
             return false;
         }
 
-        return UsersEmoticon::where('user_id', $user_id)->update(['emoticon_ids' => implode(',', $emoticon_ids)]) ? true : false;
+        return UserEmoticon::where('user_id', $user_id)->update(['emoticon_ids' => implode(',', $emoticon_ids)]) ? true : false;
     }
 
     /**
@@ -74,7 +74,7 @@ class EmoticonService
      */
     public function getInstallIds(int $user_id)
     {
-        return UsersEmoticon::where('user_id', $user_id)->value('emoticon_ids') ?? [];
+        return UserEmoticon::where('user_id', $user_id)->value('emoticon_ids') ?? [];
     }
 
     /**
@@ -101,7 +101,7 @@ class EmoticonService
                 return [false, []];
             }
         } else {
-            if (!UsersGroup::isMember($result->receive_id, $user_id)) {
+            if (!UserGroup::isMember($result->receive_id, $user_id)) {
                 return [false, []];
             }
         }

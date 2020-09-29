@@ -1,6 +1,5 @@
 <?php
-namespace App\Helpers;
-
+namespace App\Support;
 
 /**
  * Class Curl 基础的curl 请求类
@@ -28,7 +27,7 @@ namespace App\Helpers;
  * @method Curl setSslKeyFile(string $keyFile) 设置的sslKeyFile文件地址
  * @method Curl setCurlOptions(array $options) 设置的curl的附加配置，优先级最高
  * @link https://github.com/myloveGy/curl
- * @package Verypay\Utils
+ * @package App\Support
  */
 class Curl
 {

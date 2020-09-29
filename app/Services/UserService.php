@@ -4,10 +4,10 @@ namespace App\Services;
 
 use App\Models\Article\ArticleClass;
 use App\Models\User;
-use App\Models\UsersChatList;
-use App\Models\UsersFriends;
-use App\Models\UsersFriendsApply;
-use App\Models\Group\UsersGroupMember;
+use App\Models\UserChatList;
+use App\Models\UserFriends;
+use App\Models\UserFriendsApply;
+use App\Models\Group\UserGroupMember;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
@@ -93,7 +93,7 @@ class UserService
      */
     public function getUserChatGroups(int $user_id)
     {
-        $items = UsersGroupMember::select(['users_group.id', 'users_group.group_name', 'users_group.avatar', 'users_group.group_profile', 'users_group.user_id as group_user_id'])
+        $items = UserGroupMember::select(['users_group.id', 'users_group.group_name', 'users_group.avatar', 'users_group.group_profile', 'users_group.user_id as group_user_id'])
             ->join('users_group', 'users_group.id', '=', 'users_group_member.group_id')
             ->where('users_group_member.user_id', $user_id)->where('users_group_member.status', 0)->orderBy('id', 'desc')->get()->toarray();
 
@@ -101,7 +101,7 @@ class UserService
             foreach ($items as $key => $item) {
                 $items[$key]['isGroupLeader'] = $item['group_user_id'] == $user_id;
                 unset($items[$key]['group_user_id']);
-                $items[$key]['not_disturb'] = UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $item['id'])->value('not_disturb');
+                $items[$key]['not_disturb'] = UserChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $item['id'])->value('not_disturb');
             }
         }
 
@@ -116,7 +116,7 @@ class UserService
      */
     public static function getUserGroupIds(int $user_id)
     {
-        return UsersGroupMember::where('user_id', $user_id)->where('status', 0)->get()->pluck('group_id')->toarray();
+        return UserGroupMember::where('user_id', $user_id)->where('status', 0)->get()->pluck('group_id')->toarray();
     }
 
     /**
@@ -145,7 +145,7 @@ class UserService
             $info['friend_apply'] = 0;
             if ($info['id'] != $user_id) {
                 $friend_id = $info['id'];
-                $friendInfo = UsersFriends::select('id', 'user1', 'user2', 'active', 'user1_remark', 'user2_remark')->where(function ($query) use ($friend_id, $user_id) {
+                $friendInfo = UserFriends::select('id', 'user1', 'user2', 'active', 'user1_remark', 'user2_remark')->where(function ($query) use ($friend_id, $user_id) {
                     $query->where('user1', '=', $user_id)->where('user2', '=', $friend_id)->where('status', 1);
                 })->orWhere(function ($query) use ($friend_id, $user_id) {
                     $query->where('user1', '=', $friend_id)->where('user2', '=', $user_id)->where('status', 1);
@@ -155,7 +155,7 @@ class UserService
                 if ($friendInfo) {
                     $info['nickname_remark'] = ($friendInfo->user1 == $friend_id) ? $friendInfo->user2_remark : $friendInfo->user1_remark;
                 } else {
-                    $res = UsersFriendsApply::where('user_id', $user_id)->where('friend_id', $info['id'])->where('status', 0)->orderBy('id', 'desc')->exists();
+                    $res = UserFriendsApply::where('user_id', $user_id)->where('friend_id', $info['id'])->where('status', 0)->orderBy('id', 'desc')->exists();
                     $info['friend_apply'] = $res ? 1 : 0;
                 }
             }

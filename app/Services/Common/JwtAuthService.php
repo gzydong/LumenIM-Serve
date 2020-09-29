@@ -3,7 +3,7 @@
 namespace App\Services\Common;
 
 use \Exception;
-use App\Helpers\JwtObject;
+use App\Support\JwtObject;
 use App\Helpers\Encryption;
 
 /**

@@ -3,7 +3,7 @@
 namespace App\Models\Group;
 
 use App\Models\BaseModel;
-class UsersGroupNotice extends BaseModel
+class UserGroupNotice extends BaseModel
 {
     /**
      * 关联到模型的数据表

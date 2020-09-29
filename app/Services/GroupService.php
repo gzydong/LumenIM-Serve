@@ -12,8 +12,8 @@ namespace App\Services;
 
 use App\Helpers\Cache\CacheHelper;
 use Illuminate\Support\Facades\DB;
-use App\Models\UsersChatList;
-use App\Models\Group\{UsersGroup, UsersGroupMember};
+use App\Models\UserChatList;
+use App\Models\Group\{UserGroup, UserGroupMember};
 use App\Models\Chat\{ChatRecords, ChatRecordsInvite};
 
 class GroupService
@@ -34,7 +34,7 @@ class GroupService
 
         DB::beginTransaction();
         try {
-            $insRes = UsersGroup::create([
+            $insRes = UserGroup::create([
                 'user_id' => $user_id,
                 'group_name' => $group_info['name'],
                 'avatar' => $group_info['avatar'],
@@ -115,19 +115,19 @@ class GroupService
      */
     public function dismiss(int $group_id, int $user_id)
     {
-        if (!UsersGroup::where('id', $group_id)->where('status', 0)->exists()) {
+        if (!UserGroup::where('id', $group_id)->where('status', 0)->exists()) {
             return false;
         }
 
         //判断执行者是否属于群主
-        if (!UsersGroup::isManager($user_id, $group_id)) {
+        if (!UserGroup::isManager($user_id, $group_id)) {
             return false;
         }
 
         DB::beginTransaction();
         try {
-            UsersGroup::where('id', $group_id)->update(['status' => 1]);
-            UsersGroupMember::where('group_id', $group_id)->update(['status' => 1]);
+            UserGroup::where('id', $group_id)->update(['status' => 1]);
+            UserGroupMember::where('group_id', $group_id)->update(['status' => 1]);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -147,7 +147,7 @@ class GroupService
      */
     public function invite(int $user_id, int $group_id, $friend_ids = [])
     {
-        $info = UsersGroupMember::select(['id', 'status'])->where('group_id', $group_id)->where('user_id', $user_id)->first();
+        $info = UserGroupMember::select(['id', 'status'])->where('group_id', $group_id)->where('user_id', $user_id)->first();
 
         //判断主动邀请方是否属于聊天群成员
         if (!$info && $info->status == 1) {
@@ -160,8 +160,8 @@ class GroupService
 
         $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
 
-        $members = UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $friend_ids)->get(['id', 'user_id', 'status'])->keyBy('user_id')->toArray();
-        $chatArr = UsersChatList::where('group_id', $group_id)->whereIn('uid', $friend_ids)->get(['id', 'uid', 'status'])->keyBy('uid')->toArray();
+        $members = UserGroupMember::where('group_id', $group_id)->whereIn('user_id', $friend_ids)->get(['id', 'user_id', 'status'])->keyBy('user_id')->toArray();
+        $chatArr = UserChatList::where('group_id', $group_id)->whereIn('uid', $friend_ids)->get(['id', 'uid', 'status'])->keyBy('uid')->toArray();
 
         foreach ($friend_ids as $uid) {
             if (!isset($members[$uid])) {//存在聊天群成员记录
@@ -179,7 +179,7 @@ class GroupService
 
         try {
             if ($updateArr) {
-                UsersGroupMember::whereIn('id', $updateArr)->update(['status' => 0]);
+                UserGroupMember::whereIn('id', $updateArr)->update(['status' => 0]);
             }
 
             if ($insertArr) {
@@ -187,7 +187,7 @@ class GroupService
             }
 
             if ($updateArr1) {
-                UsersChatList::whereIn('id', $updateArr1)->update(['status' => 1, 'created_at' => date('Y-m-d H:i:s')]);
+                UserChatList::whereIn('id', $updateArr1)->update(['status' => 1, 'created_at' => date('Y-m-d H:i:s')]);
             }
 
             if ($insertArr1) {
@@ -235,9 +235,9 @@ class GroupService
         $record_id = 0;
         DB::beginTransaction();
         try {
-            $res = UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status' => 1]);
+            $res = UserGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('group_owner', 0)->update(['status' => 1]);
             if ($res) {
-                UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->update(['status' => 0]);
+                UserChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->update(['status' => 0]);
 
                 $result = ChatRecords::create([
                     'msg_type' => 3,
@@ -285,14 +285,14 @@ class GroupService
      */
     public function removeMember(int $group_id, int $user_id, array $member_ids)
     {
-        if (!UsersGroup::isManager($user_id, $group_id)) {
+        if (!UserGroup::isManager($user_id, $group_id)) {
             return [false, 0];
         }
 
         DB::beginTransaction();
         try {
             //更新用户状态
-            if (!UsersGroupMember::where('group_id', $group_id)->whereIn('user_id', $member_ids)->where('group_owner', 0)->update(['status' => 1])) {
+            if (!UserGroupMember::where('group_id', $group_id)->whereIn('user_id', $member_ids)->where('group_owner', 0)->update(['status' => 1])) {
                 throw new \Exception('修改群成员状态失败');
             }
 

@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-use App\Models\{EmoticonDetails, FileSplitUpload, User, UsersChatList, UsersFriends};
-use App\Models\Group\UsersGroup;
+use App\Models\{EmoticonDetails, FileSplitUpload, User, UserChatList, UserFriends};
+use App\Models\Group\UserGroup;
 use App\Models\Chat\{ChatRecords, ChatRecordsCode, ChatRecordsFile};
 use App\Helpers\Cache\CacheHelper;
 use App\Helpers\RequestProxy;
@@ -62,16 +62,16 @@ class TalkController extends CController
         }
 
         if ($type == 1) {
-            if (!UsersFriends::isFriend($uid, $receive_id)) {
+            if (!UserFriends::isFriend($uid, $receive_id)) {
                 return $this->ajaxReturn(305, '暂不属于好友关系，无法进行聊天...');
             }
         } else {
-            if (!UsersGroup::isMember($receive_id, $uid)) {
+            if (!UserGroup::isMember($receive_id, $uid)) {
                 return $this->ajaxReturn(305, '暂不属于群成员，无法进行群聊 ...');
             }
         }
 
-        $result = UsersChatList::addItem($uid, $receive_id, $type);
+        $result = UserChatList::addItem($uid, $receive_id, $type);
         if (!$result) {
             return $this->ajaxError('创建失败...');
         }
@@ -99,7 +99,7 @@ class TalkController extends CController
             $data['name'] = $userInfo->nickname;
             $data['avatar'] = $userInfo->avatar;
         } else if ($result['type'] == 2) {
-            $groupInfo = UsersGroup::where('id', $result['group_id'])->first(['group_name', 'avatar']);
+            $groupInfo = UserGroup::where('id', $result['group_id'])->first(['group_name', 'avatar']);
             $data['name'] = $groupInfo->group_name;
             $data['avatar'] = $groupInfo->avatar;
         }
@@ -126,7 +126,7 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = UsersChatList::delItem($this->uid(), $list_id);
+        $isTrue = UserChatList::delItem($this->uid(), $list_id);
         return $isTrue ? $this->ajaxSuccess('操作完成...') : $this->ajaxError('操作失败...');
     }
 
@@ -144,7 +144,7 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = UsersChatList::topItem($this->uid(), $list_id, $type == 1);
+        $isTrue = UserChatList::topItem($this->uid(), $list_id, $type == 1);
         return $isTrue ? $this->ajaxSuccess('操作完成...') : $this->ajaxError('操作失败...');
     }
 
@@ -163,7 +163,7 @@ class TalkController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = UsersChatList::notDisturbItem($this->uid(), $receive_id, $type, $not_disturb);
+        $isTrue = UserChatList::notDisturbItem($this->uid(), $receive_id, $type, $not_disturb);
 
         return $isTrue ? $this->ajaxSuccess('设置成功...') : $this->ajaxError('设置失败...');
     }
@@ -228,7 +228,7 @@ class TalkController extends CController
         }
 
         //判断是否属于群成员
-        if ($source == 2 && UsersGroup::isMember($receive_id, $user_id) == false) {
+        if ($source == 2 && UserGroup::isMember($receive_id, $user_id) == false) {
             return $this->ajaxSuccess('非群聊成员不能查看群聊信息', [
                 'rows' => [],
                 'record_id' => 0,
@@ -388,7 +388,7 @@ class TalkController extends CController
         }
 
         //判断是否属于群成员
-        if ($source == 2 && UsersGroup::isMember($receive_id, $user_id) == false) {
+        if ($source == 2 && UserGroup::isMember($receive_id, $user_id) == false) {
             return $this->ajaxSuccess('非群聊成员不能查看群聊信息', [
                 'rows' => [],
                 'record_id' => 0,

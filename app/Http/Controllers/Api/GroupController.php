@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Services\GroupService;
 use Illuminate\Http\Request;
-use App\Models\{UsersChatList, UsersFriends};
-use App\Models\Group\{UsersGroup, UsersGroupMember, UsersGroupNotice};
+use App\Models\{UserChatList, UserFriends};
+use App\Models\Group\{UserGroup, UserGroupMember, UserGroupNotice};
 use App\Helpers\RequestProxy;
 
 /**
@@ -51,7 +51,7 @@ class GroupController extends CController
         }
 
         $user_id = $this->uid();
-        $groupInfo = UsersGroup::leftJoin('users', 'users.id', '=', 'users_group.user_id')
+        $groupInfo = UserGroup::leftJoin('users', 'users.id', '=', 'users_group.user_id')
             ->where('users_group.id', $group_id)->where('users_group.status', 0)->first([
                 'users_group.id', 'users_group.user_id',
                 'users_group.group_name',
@@ -64,7 +64,7 @@ class GroupController extends CController
             return $this->ajaxSuccess('success', []);
         }
 
-        $notice = UsersGroupNotice::where('group_id', $group_id)->where('is_delete', 0)->orderBy('id', 'desc')->first(['title', 'content']);
+        $notice = UserGroupNotice::where('group_id', $group_id)->where('is_delete', 0)->orderBy('id', 'desc')->first(['title', 'content']);
         return $this->ajaxSuccess('success', [
             'group_id' => $groupInfo->id,
             'group_name' => $groupInfo->group_name,
@@ -73,8 +73,8 @@ class GroupController extends CController
             'created_at' => $groupInfo->created_at,
             'is_manager' => $groupInfo->user_id == $user_id,
             'manager_nickname' => $groupInfo->nickname,
-            'visit_card' => UsersGroupMember::visitCard($user_id, $group_id),
-            'not_disturb' => UsersChatList::where('uid', $user_id)->where('group_id', $group_id)->where('type', 2)->value('not_disturb') ?? 0,
+            'visit_card' => UserGroupMember::visitCard($user_id, $group_id),
+            'not_disturb' => UserChatList::where('uid', $user_id)->where('group_id', $group_id)->where('type', 2)->value('not_disturb') ?? 0,
             'notice' => $notice ? $notice->toArray() : []
         ]);
     }
@@ -128,7 +128,7 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        $result = UsersGroup::where('id', $params['group_id'])->where('user_id', $this->uid())->update([
+        $result = UserGroup::where('id', $params['group_id'])->where('user_id', $this->uid())->update([
             'group_name' => $params['group_name'],
             'group_profile' => $params['group_profile'],
             'avatar' => $params['avatar']
@@ -241,7 +241,7 @@ class GroupController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = UsersGroupMember::where('group_id', $group_id)->where('user_id', $this->uid())->where('status', 0)->update(['visit_card' => $visit_card]);
+        $isTrue = UserGroupMember::where('group_id', $group_id)->where('user_id', $this->uid())->where('status', 0)->update(['visit_card' => $visit_card]);
         return $isTrue ? $this->ajaxSuccess('设置成功') : $this->ajaxError('设置失败');
     }
 
@@ -253,9 +253,9 @@ class GroupController extends CController
     public function getInviteFriends()
     {
         $group_id = $this->request->get('group_id', 0);
-        $friends = UsersFriends::getUserFriends($this->uid());
+        $friends = UserFriends::getUserFriends($this->uid());
         if ($group_id > 0 && $friends) {
-            if ($ids = UsersGroupMember::getGroupMenberIds($group_id)) {
+            if ($ids = UserGroupMember::getGroupMenberIds($group_id)) {
                 foreach ($friends as $k => $item) {
                     if (in_array($item['id'], $ids)) unset($friends[$k]);
                 }
@@ -278,11 +278,11 @@ class GroupController extends CController
         $group_id = $this->request->get('group_id', 0);
 
         // 判断用户是否是群成员
-        if (!UsersGroup::isMember($group_id, $user_id)) {
+        if (!UserGroup::isMember($group_id, $user_id)) {
             return $this->ajaxReturn(403, '非法操作');
         }
 
-        $members = UsersGroupMember::select([
+        $members = UserGroupMember::select([
             'users_group_member.id', 'users_group_member.group_owner as is_manager', 'users_group_member.visit_card',
             'users_group_member.user_id', 'users.avatar', 'users.nickname', 'users.gender',
             'users.motto',
@@ -307,11 +307,11 @@ class GroupController extends CController
         $group_id = $this->request->get('group_id', 0);
 
         // 判断用户是否是群成员
-        if (!UsersGroup::isMember($group_id, $user_id)) {
+        if (!UserGroup::isMember($group_id, $user_id)) {
             return $this->ajaxReturn(403, '非法操作');
         }
 
-        $rows = UsersGroupNotice::leftJoin('users', 'users.id', '=', 'users_group_notice.user_id')
+        $rows = UserGroupNotice::leftJoin('users', 'users.id', '=', 'users_group_notice.user_id')
             ->where([['users_group_notice.group_id', '=', $group_id], ['users_group_notice.is_delete', '=', 0]])
             ->orderBy('users_group_notice.id', 'desc')
             ->get([
@@ -340,13 +340,13 @@ class GroupController extends CController
         $user_id = $this->uid();
 
         // 判断用户是否是管理员
-        if (!UsersGroup::isManager($user_id, $data['group_id'])) {
+        if (!UserGroup::isManager($user_id, $data['group_id'])) {
             return $this->ajaxReturn(305, '非管理员禁止操作...');
         }
 
         // 判断是否是新增数据
         if (empty($data['notice_id'])) {
-            $result = UsersGroupNotice::create([
+            $result = UserGroupNotice::create([
                 'group_id' => $data['group_id'],
                 'title' => $data['title'],
                 'content' => $data['content'],
@@ -363,7 +363,7 @@ class GroupController extends CController
             return $this->ajaxSuccess('添加群公告信息成功...');
         }
 
-        $result = UsersGroupNotice::where('id', $data['notice_id'])->update(['title' => $data['title'], 'content' => $data['content'], 'updated_at' => date('Y-m-d H:i:s')]);
+        $result = UserGroupNotice::where('id', $data['notice_id'])->update(['title' => $data['title'], 'content' => $data['content'], 'updated_at' => date('Y-m-d H:i:s')]);
         return $result ? $this->ajaxSuccess('修改群公告信息成功...') : $this->ajaxError('修改群公告信息成功...');
     }
 
@@ -384,11 +384,11 @@ class GroupController extends CController
         $user_id = $this->uid();
 
         // 判断用户是否是管理员
-        if (!UsersGroup::isManager($user_id, $group_id)) {
+        if (!UserGroup::isManager($user_id, $group_id)) {
             return $this->ajaxReturn(305, 'fail');
         }
 
-        $result = UsersGroupNotice::where('id', $notice_id)->where('group_id', $group_id)->update(['is_delete' => 1, 'deleted_at' => date('Y-m-d H:i:s')]);
+        $result = UserGroupNotice::where('id', $notice_id)->where('group_id', $group_id)->update(['is_delete' => 1, 'deleted_at' => date('Y-m-d H:i:s')]);
         return $result ? $this->ajaxError('删除公告失败...') : $this->ajaxSuccess('删除公告成功...');
     }
 }

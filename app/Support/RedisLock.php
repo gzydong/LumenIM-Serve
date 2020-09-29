@@ -1,16 +1,23 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Support;
 
+/**
+ * Class RedisLock
+ * @package App\Support
+ */
 class RedisLock
 {
-    //加锁前缀标识
-    const PREFIX = 'lock';
 
-    static $redis;
+    /**
+     * 锁前缀标识
+     */
+    const PREFIX = 'lock';
 
     /**
      * 获取Redis实例
+     *
+     * @return \Laravel\Lumen\Application|mixed|\Redis
      */
     public static function getRedis()
     {

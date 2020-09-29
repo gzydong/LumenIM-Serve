@@ -5,7 +5,7 @@ namespace App\WebSocket;
 use App\Helpers\PushMessageHelper;
 use App\Services\UserService;
 use Illuminate\Http\Request;
-use App\Models\UsersFriends;
+use App\Models\UserFriends;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 
 class SocketHandler extends WebsocketHandler
@@ -48,7 +48,7 @@ class SocketHandler extends WebsocketHandler
         //判断用户是否在其它地方登陆
         if (!$isLogin) {
             //获取所有好友的用户ID
-            if ($uids = UsersFriends::getFriendIds($user_id)) {
+            if ($uids = UserFriends::getFriendIds($user_id)) {
                 $ffds = [];//所有好友的客户端ID
 
                 foreach ($uids as $friends_id) {
@@ -87,7 +87,7 @@ class SocketHandler extends WebsocketHandler
         }
 
         //获取所有好友的用户ID
-        $uids = UsersFriends::getFriendIds($user_id);
+        $uids = UserFriends::getFriendIds($user_id);
         if ($uids) {
             $fds = [];
             foreach ($uids as $friends_id) {

@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Emoticon;
-use App\Models\UsersEmoticon;
+use App\Models\UserEmoticon;
 use App\Services\EmoticonService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 
 /**

@@ -1,5 +1,5 @@
 <?php
-namespace App\Helpers;
+namespace App\Support;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

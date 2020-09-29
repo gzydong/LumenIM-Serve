@@ -4,7 +4,7 @@ namespace App\Models\Group;
 
 use App\Models\BaseModel;
 
-class UsersGroup extends BaseModel
+class UserGroup extends BaseModel
 {
     /**
      * 关联到模型的数据表
@@ -33,7 +33,7 @@ class UsersGroup extends BaseModel
      */
     public function members()
     {
-        return $this->hasMany(UsersGroupMember::class, 'group_id', 'id');
+        return $this->hasMany(UserGroupMember::class, 'group_id', 'id');
     }
 
     /**
@@ -44,7 +44,7 @@ class UsersGroup extends BaseModel
      * @return mixed
      */
     public static function isManager(int $user_id,int $group_id){
-        return UsersGroup::where('id', $group_id)->where('user_id', $user_id)->exists();
+        return UserGroup::where('id', $group_id)->where('user_id', $user_id)->exists();
     }
 
     /**
@@ -56,6 +56,6 @@ class UsersGroup extends BaseModel
      */
     public static function isMember(int $group_id, int $user_id)
     {
-        return UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('status', 0)->exists() ? true : false;
+        return UserGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('status', 0)->exists() ? true : false;
     }
 }

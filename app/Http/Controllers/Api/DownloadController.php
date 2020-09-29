@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use App\Models\Group\UsersGroup;
+use App\Models\Group\UserGroup;
 use App\Models\Article\ArticleAnnex;
 use App\Models\Chat\{ChatRecords, ChatRecordsFile};
 use Illuminate\Support\Facades\Storage;
@@ -44,7 +44,7 @@ class DownloadController extends CController
                     return $this->ajaxError('非法请求...');
                 }
             } else {
-                if (!UsersGroup::isMember($recordsInfo->receive_id, $uid)) {
+                if (!UserGroup::isMember($recordsInfo->receive_id, $uid)) {
                     return $this->ajaxError('非法请求...');
                 }
             }

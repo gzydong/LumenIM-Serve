@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\SplitUpload;
+use App\Support\SplitUpload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 

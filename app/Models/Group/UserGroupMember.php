@@ -4,7 +4,7 @@ namespace App\Models\Group;
 
 use App\Models\BaseModel;
 
-class UsersGroupMember extends BaseModel
+class UserGroupMember extends BaseModel
 {
 
     /**
@@ -36,7 +36,7 @@ class UsersGroupMember extends BaseModel
      */
     public static function getGroupMenberIds(int $group_id)
     {
-        return UsersGroupMember::where('group_id', $group_id)->where('status', 0)->pluck('user_id')->toArray();
+        return UserGroupMember::where('group_id', $group_id)->where('status', 0)->pluck('user_id')->toArray();
     }
 
     /**
@@ -48,6 +48,6 @@ class UsersGroupMember extends BaseModel
      */
     public static function visitCard(int $user_id, int $group_id)
     {
-        return UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->value('visit_card');
+        return UserGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->value('visit_card');
     }
 }

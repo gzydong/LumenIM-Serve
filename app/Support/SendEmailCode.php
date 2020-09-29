@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Support;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
@@ -12,6 +12,13 @@ class SendEmailCode
     const CHANGE_REGISTER = 'user_register';
     const CHANGE_EMAIL = 'change_email';
 
+    /**
+     * 获取缓存key
+     *
+     * @param string $type
+     * @param string $mobile
+     * @return string
+     */
     private function getKey(string $type, string $mobile)
     {
         return "email_code:{$type}:{$mobile}";

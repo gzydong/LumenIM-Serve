@@ -135,6 +135,7 @@ class AuthController extends CController
     {
         $token = parse_token();
 
+        // token 加入黑名单
         app('jwt.auth')->joinBlackList($token, app('jwt.auth')->decode($token)->getExp() - time());
 
         return $this->ajaxReturn(200, '退出成功...', []);

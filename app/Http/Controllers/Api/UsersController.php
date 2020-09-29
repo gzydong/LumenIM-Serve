@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Services\FriendService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
-use App\Models\{User, UsersChatList, UsersFriends};
+use App\Models\{User, UserChatList, UserFriends};
 use App\Helpers\Cache\CacheHelper;
-use App\Helpers\SendEmailCode;
+use App\Support\SendEmailCode;
 
 class UsersController extends CController
 {
@@ -84,11 +84,10 @@ class UsersController extends CController
      */
     public function getUserFriends()
     {
-        $rows = UsersFriends::getUserFriends($this->uid());
-
-        array_walk($rows, function ($item) {
-            $item['online'] = app('client.manage')->isOnline($item['id']);
-        });
+        $rows = UserFriends::getUserFriends($this->uid());
+        foreach ($rows as $k => $row) {
+            $rows[$k] = app('client.manage')->isOnline($row['id']);
+        }
 
         return $this->ajaxSuccess('success', $rows);
     }
@@ -106,6 +105,7 @@ class UsersController extends CController
         }
 
         $isTrue = User::where('id', $this->uid())->update($this->request->only($params));
+
         return $isTrue ? $this->ajaxSuccess('个人信息修改成功') : $this->ajaxError('个人信息修改失败');
     }
 
@@ -124,7 +124,7 @@ class UsersController extends CController
             return $this->ajaxParamError('新密码格式错误(8~16位字母加数字)');
         }
 
-        $userInfo = User::select(['id', 'password', 'mobile'])->where('id', $this->uid())->first();
+        $userInfo = User::where('id', $this->uid())->first(['id', 'password', 'mobile']);
 
         // 验证密码是否正确
         if (!$this->userService->checkPassword($userInfo->password, $this->request->post('old_password'))) {
@@ -162,9 +162,13 @@ class UsersController extends CController
     {
         $page = $this->request->get('page', 1);
         $page_size = $this->request->get('page_size', 10);
+        $user_id = $this->uid();
 
-        $data = $this->friendService->friendApplyRecords($this->uid(), $page, $page_size);
-        CacheHelper::setFriendApplyUnreadNum($this->uid(), 1);
+        $data = $this->friendService->findApplyRecords($user_id, $page, $page_size);
+
+        // 清空好友申请未读数
+        CacheHelper::setFriendApplyUnreadNum($user_id, 1);
+
         return $this->ajaxSuccess('success', $data);
     }
 
@@ -261,10 +265,12 @@ class UsersController extends CController
             return $this->ajaxParamError();
         }
 
-        $isTrue = $this->friendService->editFriendRemark($this->uid(), $friend_id, $remarks);
+        $user_id = $this->uid();
 
+        $isTrue = $this->friendService->editFriendRemark($user_id, $friend_id, $remarks);
         if ($isTrue) {
-            CacheHelper::setFriendRemarkCache($this->uid(), $friend_id, $remarks);
+            // 设置好友备注缓存
+            CacheHelper::setFriendRemarkCache($user_id, $friend_id, $remarks);
         }
 
         return $isTrue ? $this->ajaxSuccess('备注修改成功...') : $this->ajaxError('备注修改失败，请稍后再试...');
@@ -329,12 +335,12 @@ class UsersController extends CController
             return $this->ajaxParamError('验证码填写错误...');
         }
 
-        $uid = $this->uid();
-        if (!$this->userService->checkPassword($password, User::where('id', $uid)->value('password'))) {
+        $user_id = $this->uid();
+        if (!$this->userService->checkPassword($password, User::where('id', $user_id)->value('password'))) {
             return $this->ajaxError('账号密码验证失败');
         }
 
-        [$isTrue, $message] = $this->userService->renewalUserMobile($this->uid(), $mobile);
+        [$isTrue, $message] = $this->userService->renewalUserMobile($user_id, $mobile);
         if ($isTrue) {
             app('sms.code')->delCode('change_mobile', $mobile);
         }
@@ -392,8 +398,8 @@ class UsersController extends CController
         }
 
         //删除好友会话列表
-        UsersChatList::delItem($user_id, $friend_id, 2);
-        UsersChatList::delItem($friend_id, $user_id, 2);
+        UserChatList::delItem($user_id, $friend_id, 2);
+        UserChatList::delItem($friend_id, $user_id, 2);
 
         return $this->ajaxSuccess('success');
     }

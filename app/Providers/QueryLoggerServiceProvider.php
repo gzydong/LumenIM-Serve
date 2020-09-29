@@ -14,12 +14,12 @@ class QueryLoggerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (config('logging.query.enabled',false) == false) {
+        if (config('logging.query.enabled', false) == false) {
             return;
         }
 
         DB::listen(function (QueryExecuted $query) {
-            if ($query->time < $this->app['config']->get('logging.query.slower_than', 0)) {
+            if ($query->time < config('logging.query.slower_than', 0)) {
                 return;
             }
 

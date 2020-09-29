@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Helpers\InstallDatabase;
+use App\Support\InstallDatabase;
 
 /**
  *  项目安装命令

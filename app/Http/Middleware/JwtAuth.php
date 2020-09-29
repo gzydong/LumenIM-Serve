@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\JwtObject;
+use App\Support\JwtObject;
 use Closure;
 
 class JwtAuth

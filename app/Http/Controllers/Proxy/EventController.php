@@ -11,7 +11,7 @@ use App\Models\Chat\{
     ChatRecordsInvite
 };
 use App\Models\User;
-use App\Models\Group\UsersGroup;
+use App\Models\Group\UserGroup;
 use Illuminate\Http\Request;
 use App\Helpers\PushMessageHelper;
 
@@ -98,7 +98,7 @@ class EventController extends Controller
             PushMessageHelper::response('join_group',
                 $joinClientFds,
                 [
-                    'group_name' => UsersGroup::where('id', $recordInfo->receive_id)->value('group_name')
+                    'group_name' => UserGroup::where('id', $recordInfo->receive_id)->value('group_name')
                 ]
             );
         }

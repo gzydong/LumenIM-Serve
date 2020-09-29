@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Socket;
 use App\Helpers\PushMessageHelper;
 use App\Helpers\Cache\CacheHelper;
 use App\Models\Chat\ChatRecords;
-use App\Models\UsersFriends;
-use App\Models\Group\UsersGroup;
+use App\Models\UserFriends;
+use App\Models\Group\UserGroup;
 use App\Http\Controllers\Controller;
 
 class NotifyController extends Controller
@@ -35,13 +35,13 @@ class NotifyController extends Controller
         //验证发送消息用户与接受消息用户之间是否存在好友或群聊关系
         if ($msgData['source_type'] == 1) {//私信
             //判断发送者和接受者是否是好友关系
-            if (!UsersFriends::isFriend($msgData['send_user'], $msgData['receive_user'])) {
+            if (!UserFriends::isFriend($msgData['send_user'], $msgData['receive_user'])) {
                 PushMessageHelper::response('notify', $fd, ['notify' => '温馨提示:您当前与对方尚未成功好友！']);
                 return true;
             }
         } else if ($msgData['source_type'] == 2) {//群聊
             //判断是否属于群成员
-            if (!UsersGroup::isMember($msgData['receive_user'], $msgData['send_user'])) {
+            if (!UserGroup::isMember($msgData['receive_user'], $msgData['send_user'])) {
                 PushMessageHelper::response('notify', $fd, ['notify' => '温馨提示:您还没有加入该聊天群！']);
                 return true;
             }

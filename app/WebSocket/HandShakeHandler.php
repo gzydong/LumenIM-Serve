@@ -2,7 +2,7 @@
 
 namespace App\WebSocket;
 
-use App\Helpers\JwtObject;
+use App\Support\JwtObject;
 
 /**
  * Websocket 自定义挥手处理
