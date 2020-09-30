@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Article\ArticleClass;
+use Exception;
 use App\Models\User;
 use App\Models\UserChatList;
 use App\Models\UserFriends;
 use App\Models\UserFriendsApply;
 use App\Models\Group\UserGroupMember;
+use App\Models\Article\ArticleClass;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
@@ -65,7 +66,7 @@ class UserService
                 'sort' => 1,
                 'created_at' => time()
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $result = false;
             DB::rollBack();
         }
@@ -95,12 +96,25 @@ class UserService
     {
         $items = UserGroupMember::select(['users_group.id', 'users_group.group_name', 'users_group.avatar', 'users_group.group_profile', 'users_group.user_id as group_user_id'])
             ->join('users_group', 'users_group.id', '=', 'users_group_member.group_id')
-            ->where('users_group_member.user_id', $user_id)->where('users_group_member.status', 0)->orderBy('id', 'desc')->get()->toarray();
+            ->where([
+                ['users_group_member.user_id', '=', $user_id],
+                ['users_group_member.status', '=', 0]
+            ])
+            ->orderBy('id', 'desc')->get()->toarray();
 
         foreach ($items as $key => $item) {
+            // 判断当前用户是否是群主
             $items[$key]['isGroupLeader'] = $item['group_user_id'] == $user_id;
+
+            //删除无关字段
             unset($items[$key]['group_user_id']);
-            $items[$key]['not_disturb'] = UserChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $item['id'])->value('not_disturb');
+
+            // 是否消息免打扰
+            $items[$key]['not_disturb'] = UserChatList::where([
+                ['uid', '=', $user_id],
+                ['type', '=', 2],
+                ['group_id', '=', $item['id']]
+            ])->value('not_disturb');
         }
 
         return $items;
@@ -141,6 +155,8 @@ class UserService
             $info['friend_status'] = 0;//朋友关系状态  0:本人  1:陌生人 2:朋友
             $info['nickname_remark'] = '';
             $info['friend_apply'] = 0;
+
+            // 判断查询信息是否是自己
             if ($info['id'] != $user_id) {
                 $friend_id = $info['id'];
                 $friendInfo = UserFriends::select('id', 'user1', 'user2', 'active', 'user1_remark', 'user2_remark')->where(function ($query) use ($friend_id, $user_id) {
@@ -163,13 +179,13 @@ class UserService
     }
 
     /**
-     * 换绑手机号
+     * 修改绑定的手机号
      *
      * @param int $user_id 用户ID
      * @param string $mobile 换绑手机号
      * @return array|bool
      */
-    public function renewalUserMobile(int $user_id, string $mobile)
+    public function changeMobile(int $user_id, string $mobile)
     {
         $uid = User::where('mobile', $mobile)->value('id');
         if ($uid) {

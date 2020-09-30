@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\UserFriends;
 use App\Models\UserFriendsApply;
 use Illuminate\Support\Facades\DB;
-
 use App\Traits\PagingTrait;
 
 class FriendService

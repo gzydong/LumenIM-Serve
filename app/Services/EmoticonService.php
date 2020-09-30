@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Chat\{ChatRecords, ChatRecordsFile};
+use App\Models\Chat\ChatRecords;
+use App\Models\Chat\ChatRecordsFile;
 use App\Models\EmoticonDetails;
 use App\Models\UserEmoticon;
 use App\Models\Group\UserGroup;

@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
+use App\Models\UserChatList;
+use App\Models\UserFriends;
 use App\Services\FriendService;
 use App\Services\UserService;
-use Illuminate\Http\Request;
-use App\Models\{User, UserChatList, UserFriends};
-use App\Helpers\Cache\CacheHelper;
 use App\Support\SendEmailCode;
+use Illuminate\Http\Request;
+
+use App\Cache\ApplyNumCache;
+use App\Cache\FriendRemarkCache;
 
 class UsersController extends CController
 {
@@ -167,7 +171,8 @@ class UsersController extends CController
         $data = $this->friendService->findApplyRecords($user_id, $page, $page_size);
 
         // 清空好友申请未读数
-        CacheHelper::setFriendApplyUnreadNum($user_id, 1);
+        ApplyNumCache::del($user_id);
+
 
         return $this->ajaxSuccess('success', $data);
     }
@@ -196,8 +201,9 @@ class UsersController extends CController
         if (app('client.manage')->isOnline($friend_id)) {
 
         }
+        // 好友申请未读消息数自增
+        ApplyNumCache::setInc($friend_id);
 
-        CacheHelper::setFriendApplyUnreadNum($friend_id);
         return $this->ajaxReturn(200, '发送好友申请成功...');
     }
 
@@ -247,7 +253,7 @@ class UsersController extends CController
     public function getApplyUnreadNum()
     {
         return $this->ajaxSuccess('success', [
-            'unread_num' => CacheHelper::getFriendApplyUnreadNum($this->uid())
+            'unread_num' => ApplyNumCache::get($this->uid())
         ]);
     }
 
@@ -270,7 +276,7 @@ class UsersController extends CController
         $isTrue = $this->friendService->editFriendRemark($user_id, $friend_id, $remarks);
         if ($isTrue) {
             // 设置好友备注缓存
-            CacheHelper::setFriendRemarkCache($user_id, $friend_id, $remarks);
+            FriendRemarkCache::set($user_id, $friend_id, $remarks);
         }
 
         return $isTrue ? $this->ajaxSuccess('备注修改成功...') : $this->ajaxError('备注修改失败，请稍后再试...');
@@ -340,7 +346,7 @@ class UsersController extends CController
             return $this->ajaxError('账号密码验证失败');
         }
 
-        [$isTrue, $message] = $this->userService->renewalUserMobile($user_id, $mobile);
+        [$isTrue, $message] = $this->userService->changeMobile($user_id, $mobile);
         if ($isTrue) {
             app('sms.code')->delCode('change_mobile', $mobile);
         }

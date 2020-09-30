@@ -10,20 +10,22 @@ class Encryption
 {
     /**
      * Url 加密
-     * @param $content
-     * @return mixed
+     *
+     * @param string $content
+     * @return string
      */
-    public static function base64UrlEncode($content)
+    public static function base64UrlEncode(string $content)
     {
         return str_replace('=', '', strtr(base64_encode($content), '+/', '-_'));
     }
 
     /**
      * Url 解密
-     * @param $content
-     * @return mixed
+     *
+     * @param string $content
+     * @return string
      */
-    public static function base64UrlDecode($content)
+    public static function base64UrlDecode(string $content)
     {
         $remainder = strlen($content) % 4;
         if ($remainder) {
@@ -43,7 +45,7 @@ class Encryption
      * @param string $rsaPrivateKey 私钥PEM文件的绝对路径
      * @return string
      */
-    public static function rsaEnCode($data, $rsaPrivateKey)
+    public static function rsaEnCode(string $data, string $rsaPrivateKey)
     {
         /* 获取私钥PEM文件内容 */
         $priKey = file_get_contents($rsaPrivateKey);
@@ -56,6 +58,7 @@ class Encryption
         openssl_free_key($res);
         /* 对签名进行Base64编码，变为可读的字符串 */
         $sign = base64_encode($sign);
+
         return $sign;
     }
 
@@ -66,7 +69,7 @@ class Encryption
      * @param string $rsaPublicKey 公钥PEM文件的绝对路径
      * @return mixed
      */
-    public static function rsaDeCode($data, $rsaPublicKey)
+    public static function rsaDeCode(string $data, string $rsaPublicKey)
     {
         /* 获取公钥PEM文件内容 */
         $pubKey = file_get_contents($rsaPublicKey);
@@ -76,6 +79,7 @@ class Encryption
         openssl_public_decrypt(base64_decode($data), $decrypted, $res);
         /* 释放资源 */
         openssl_free_key($res);
+
         return $decrypted;
     }
 }

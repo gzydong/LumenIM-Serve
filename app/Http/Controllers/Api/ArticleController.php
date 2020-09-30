@@ -34,7 +34,7 @@ class ArticleController extends CController
     public function getArticleClass()
     {
         return $this->ajaxSuccess('success', [
-            'rows' => $this->articleService->getUserArticleClass($this->uid()),
+            'rows' => $this->articleService->getUserClass($this->uid()),
         ]);
     }
 
@@ -47,7 +47,7 @@ class ArticleController extends CController
     {
         $user_id = $this->uid();
         return $this->ajaxSuccess('success', [
-            'tags' => $this->articleService->getUserArticleTags($user_id)
+            'tags' => $this->articleService->getUserTags($user_id)
         ]);
     }
 

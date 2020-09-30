@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Socket;
 
-use App\Helpers\PushMessageHelper;
-use App\Helpers\Cache\CacheHelper;
-use App\Models\Chat\ChatRecords;
 use App\Models\UserFriends;
 use App\Models\Group\UserGroup;
+use App\Models\Chat\ChatRecords;
 use App\Http\Controllers\Controller;
+use App\Cache\LastMsgCache;
+use App\Helpers\PushMessageHelper;
 
 class NotifyController extends Controller
 {
@@ -65,7 +65,7 @@ class NotifyController extends Controller
         if ($msgData['source_type'] == 1) {//私聊
             $msg_text = mb_substr($result->content, 0, 30);
             // 缓存最后一条消息
-            CacheHelper::setLastChatCache([
+            LastMsgCache::set([
                 'text' => $msg_text,
                 'created_at' => $result->created_at
             ], $msgData['receive_user'], $msgData['send_user']);

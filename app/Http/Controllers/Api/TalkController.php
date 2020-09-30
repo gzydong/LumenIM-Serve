@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-
 use App\Models\{EmoticonDetails, FileSplitUpload, User, UserChatList, UserFriends};
 use App\Models\Group\UserGroup;
 use App\Models\Chat\{ChatRecords, ChatRecordsCode, ChatRecordsFile};
-use App\Helpers\Cache\CacheHelper;
 use App\Helpers\RequestProxy;
-
 use App\Services\TalkService;
+use App\Cache\LastMsgCache;
 
 /**
  * 聊天对话处理
@@ -104,7 +101,7 @@ class TalkController extends CController
             $data['avatar'] = $groupInfo->avatar;
         }
 
-        $records = CacheHelper::getLastChatCache($result['type'] == 1 ? $result['friend_id'] : $result['group_id'], $result['type'] == 1 ? $uid : 0);
+        $records = LastMsgCache::get($result['type'] == 1 ? $result['friend_id'] : $result['group_id'], $result['type'] == 1 ? $uid : 0);
         if ($records) {
             $data['msg_text'] = $records['text'];
             $data['updated_at'] = $records['created_at'];

@@ -10,11 +10,14 @@
 
 namespace App\Services;
 
-use App\Helpers\Cache\CacheHelper;
-use Illuminate\Support\Facades\DB;
+use Exception;
 use App\Models\UserChatList;
-use App\Models\Group\{UserGroup, UserGroupMember};
-use App\Models\Chat\{ChatRecords, ChatRecordsInvite};
+use App\Models\Group\UserGroup;
+use App\Models\Group\UserGroupMember;
+use App\Models\Chat\ChatRecords;
+use App\Models\Chat\ChatRecordsInvite;
+use Illuminate\Support\Facades\DB;
+use App\Cache\LastMsgCache;
 
 class GroupService
 {
@@ -44,7 +47,7 @@ class GroupService
             ]);
 
             if (!$insRes) {
-                throw new \Exception('创建群失败');
+                throw new Exception('创建群失败');
             }
 
             foreach ($friend_ids as $k => $uid) {
@@ -68,11 +71,11 @@ class GroupService
             }
 
             if (!DB::table('users_group_member')->insert($groupMember)) {
-                throw new \Exception('创建群成员信息失败');
+                throw new Exception('创建群成员信息失败');
             }
 
             if (!DB::table('users_chat_list')->insert($chatList)) {
-                throw new \Exception('创建群成员的聊天列表失败');
+                throw new Exception('创建群成员的聊天列表失败');
             }
 
             $result = ChatRecords::create([
@@ -84,7 +87,7 @@ class GroupService
             ]);
 
             if (!$result) {
-                throw new \Exception('创建群成员的聊天列表失败');
+                throw new Exception('创建群成员的聊天列表失败');
             }
 
             ChatRecordsInvite::create([
@@ -95,13 +98,13 @@ class GroupService
             ]);
 
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             return [false, 0];
         }
 
         // 设置群聊消息缓存
-        CacheHelper::setLastChatCache(['created_at' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $insRes->id, 0);
+        LastMsgCache::set(['created_at' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $insRes->id, 0);
 
         return [true, ['record_id' => $result->id, 'group_id' => $insRes->id]];
     }
@@ -129,7 +132,7 @@ class GroupService
             UserGroup::where('id', $group_id)->update(['status' => 1]);
             UserGroupMember::where('group_id', $group_id)->update(['status' => 1]);
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             return false;
         }
@@ -202,7 +205,7 @@ class GroupService
                 'created_at' => date('Y-m-d H:i;s')
             ]);
 
-            if (!$result) throw new \Exception('添加群通知记录失败1');
+            if (!$result) throw new Exception('添加群通知记录失败1');
 
             $result2 = ChatRecordsInvite::create([
                 'record_id' => $result->id,
@@ -211,7 +214,7 @@ class GroupService
                 'user_ids' => implode(',', $friend_ids)
             ]);
 
-            if (!$result2) throw new \Exception('添加群通知记录失败2');
+            if (!$result2) throw new Exception('添加群通知记录失败2');
 
             DB::commit();
         } catch (\Exception $e) {
@@ -219,7 +222,7 @@ class GroupService
             return [false, 0];
         }
 
-        CacheHelper::setLastChatCache(['created_at' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $group_id, 0);
+        LastMsgCache::set(['created_at' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $group_id, 0);
         return [true, $result->id];
     }
 
@@ -249,7 +252,7 @@ class GroupService
                 ]);
 
                 if (!$result) {
-                    throw new \Exception('添加群通知记录失败 : quitGroupChat');
+                    throw new Exception('添加群通知记录失败 : quitGroupChat');
                 }
 
                 $result2 = ChatRecordsInvite::create([
@@ -260,14 +263,14 @@ class GroupService
                 ]);
 
                 if (!$result2) {
-                    throw new \Exception('添加群通知记录失败2  : quitGroupChat');
+                    throw new Exception('添加群通知记录失败2  : quitGroupChat');
                 }
 
                 $record_id = $result->id;
             }
 
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             return [false, 0];
         }
@@ -293,7 +296,7 @@ class GroupService
         try {
             //更新用户状态
             if (!UserGroupMember::where('group_id', $group_id)->whereIn('user_id', $member_ids)->where('group_owner', 0)->update(['status' => 1])) {
-                throw new \Exception('修改群成员状态失败');
+                throw new Exception('修改群成员状态失败');
             }
 
             $result = ChatRecords::create([
@@ -305,7 +308,7 @@ class GroupService
             ]);
 
             if (!$result) {
-                throw new \Exception('添加群通知记录失败1');
+                throw new Exception('添加群通知记录失败1');
             }
 
             $result2 = ChatRecordsInvite::create([
@@ -316,11 +319,11 @@ class GroupService
             ]);
 
             if (!$result2) {
-                throw new \Exception('添加群通知记录失败2');
+                throw new Exception('添加群通知记录失败2');
             }
 
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             return [false, 0];
         }

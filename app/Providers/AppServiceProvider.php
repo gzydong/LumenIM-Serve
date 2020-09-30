@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Services\Service;
 use Illuminate\Support\ServiceProvider;
-
 use App\Services\Common\ClientManageService;
 use App\Services\Common\JwtAuthService;
 use App\Services\Common\RoomManageService;

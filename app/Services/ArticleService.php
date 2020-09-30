@@ -2,10 +2,16 @@
 
 namespace App\Services;
 
-use App\Models\Article\{Article, ArticleAnnex, ArticleClass, ArticleDetail, ArticleTags};
+use Exception;
+use App\Models\Article\Article;
+use App\Models\Article\ArticleAnnex;
+use App\Models\Article\ArticleClass;
+use App\Models\Article\ArticleDetail;
+use App\Models\Article\ArticleTags;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Traits\PagingTrait;
+
 
 class ArticleService
 {
@@ -17,9 +23,8 @@ class ArticleService
      * @param int $user_id 用户ID
      * @return array
      */
-    public function getUserArticleClass(int $user_id)
+    public function getUserClass(int $user_id)
     {
-
         $subJoin = Article::select('class_id', DB::raw('count(class_id) as count'))->where('user_id', $user_id)->where('status', 1)->groupBy('class_id');
 
         return ArticleClass::leftJoinSub($subJoin, 'sub_join', function ($join) {
@@ -36,7 +41,7 @@ class ArticleService
      * @param int $user_id 用户ID
      * @return mixed
      */
-    public function getUserArticleTags(int $user_id)
+    public function getUserTags(int $user_id)
     {
         $items = ArticleTags::where('user_id', $user_id)->orderBy('id', 'desc')->get(['id', 'tag_name'])->toArray();
         array_walk($items, function ($item) use ($user_id) {
@@ -171,11 +176,11 @@ class ArticleService
 
             $insRes = ArticleClass::create(['user_id' => $uid, 'class_name' => $class_name, 'sort' => 1, 'created_at' => time()]);
             if (!$insRes) {
-                throw new \Exception('添加错误..,.');
+                throw new Exception('添加错误..,.');
             }
 
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             return false;
         }
@@ -289,7 +294,7 @@ class ArticleService
 
                 DB::commit();
                 return $article_id;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 DB::rollBack();
             }
 
@@ -315,7 +320,7 @@ class ArticleService
 
             DB::commit();
             return $res->id;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
         }
 
@@ -544,6 +549,7 @@ class ArticleService
             return false;
         }
 
+        // 将文件从磁盘中删除
         if (!Storage::disk('uploads')->delete($info->save_dir)) {
             return false;
         }
@@ -577,11 +583,11 @@ class ArticleService
             $info->detail->delete();
 
             if (!$info->delete()) {
-                throw new \Exception('删除笔记失败...');
+                throw new Exception('删除笔记失败...');
             }
 
             if (!ArticleAnnex::whereIn('id', array_column($annex_files, 'id'))->delete()) {
-                throw new \Exception('删除笔记附件失败...');
+                throw new Exception('删除笔记附件失败...');
             }
 
             DB::commit();

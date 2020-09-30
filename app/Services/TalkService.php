@@ -2,22 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\Chat\{
-    ChatRecords,
-    ChatRecordsCode,
-    ChatRecordsFile,
-    ChatRecordsForward,
-    ChatRecordsInvite
-};
+use Exception;
 use App\Models\User;
 use App\Models\UserChatList;
 use App\Models\UserFriends;
 use App\Models\Group\UserGroup;
+use App\Models\Chat\ChatRecords;
+use App\Models\Chat\ChatRecordsCode;
+use App\Models\Chat\ChatRecordsFile;
+use App\Models\Chat\ChatRecordsForward;
+use App\Models\Chat\ChatRecordsInvite;
 use Illuminate\Support\Facades\DB;
-use App\Helpers\Cache\CacheHelper;
-
 use App\Traits\PagingTrait;
-use Exception;
+use App\Cache\FriendRemarkCache;
+use App\Cache\LastMsgCache;
 
 class TalkService
 {
@@ -71,16 +69,17 @@ class TalkService
                 $data['unread_num'] = app('unread.talk')->get($user_id, $item['friend_id']);
                 $data['online'] = app('client.manage')->isOnline($item['friend_id']);
 
-                $remark = CacheHelper::getFriendRemarkCache($user_id, $item['friend_id']);
-                if (!is_null($remark)) {
+                $remark = FriendRemarkCache::get($user_id, $item['friend_id']);
+                if ($remark) {
                     $data['remark_name'] = $remark;
                 } else {
                     $info = UserFriends::select('user1', 'user2', 'user1_remark', 'user2_remark')
                         ->where('user1', ($user_id < $item['friend_id']) ? $user_id : $item['friend_id'])
                         ->where('user2', ($user_id < $item['friend_id']) ? $item['friend_id'] : $user_id)->first();
-                    if ($info) {//这个环节待优化
+                    if ($info) {
                         $data['remark_name'] = ($info->user1 == $item['friend_id']) ? $info->user2_remark : $info->user1_remark;
-                        CacheHelper::setFriendRemarkCache($user_id, $item['friend_id'], $data['remark_name']);
+
+                        FriendRemarkCache::set($user_id, $item['friend_id'], $data['remark_name']);
                     }
                 }
             } else {
@@ -88,7 +87,7 @@ class TalkService
                 $data['avatar'] = $item['group_avatar'];
             }
 
-            $records = CacheHelper::getLastChatCache($item['type'] == 1 ? $item['friend_id'] : $item['group_id'], $item['type'] == 1 ? $user_id : 0);
+            $records = LastMsgCache::get($item['type'] == 1 ? $item['friend_id'] : $item['group_id'], $item['type'] == 1 ? $user_id : 0);
 
             if ($records) {
                 $data['msg_text'] = $records['text'];

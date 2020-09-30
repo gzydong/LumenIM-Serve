@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers\Proxy;
 
-use App\Http\Controllers\Controller;
-use App\Models\Chat\{
-    ChatRecords,
-    ChatRecordsCode,
-    ChatRecordsFile,
-    ChatRecordsForward,
-    ChatRecordsInvite
-};
 use App\Models\User;
-use App\Models\Group\UserGroup;
+use App\Models\Chat\ChatRecords;
+use App\Models\Chat\ChatRecordsCode;
+use App\Models\Chat\ChatRecordsFile;
+use App\Models\Chat\ChatRecordsForward;
+use App\Models\Chat\ChatRecordsInvite;
 use Illuminate\Http\Request;
 use App\Helpers\PushMessageHelper;
+use App\Http\Controllers\Controller;
 
 class EventController extends Controller
 {
@@ -92,16 +89,6 @@ class EventController extends Controller
                 "created_at" => $recordInfo->created_at,
             ])
         ]);
-
-        // 推送入群通知
-        if ($notifyInfo->type == 1) {
-            PushMessageHelper::response('join_group',
-                $joinClientFds,
-                [
-                    'group_name' => UserGroup::where('id', $recordInfo->receive_id)->value('group_name')
-                ]
-            );
-        }
     }
 
     /**
