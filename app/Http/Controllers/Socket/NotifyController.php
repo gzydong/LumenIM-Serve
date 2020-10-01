@@ -11,10 +11,15 @@ use App\Helpers\PushMessageHelper;
 
 class NotifyController extends Controller
 {
+
     /**
      * 聊天对话消息
+     *
+     * @param $webSocket
+     * @param array $msgData 接收数据
+     * @return bool
      */
-    public function talk($websocket, $msgData)
+    public function talk($webSocket, $msgData)
     {
         $fd = $msgData['fd'];
 
@@ -104,10 +109,10 @@ class NotifyController extends Controller
     /**
      * 键盘输入事件消息
      *
-     * @param  $websocket
+     * @param  $webSocket
      * @param array $data 接收数据
      */
-    public function keyboard($websocket, $data)
+    public function keyboard($webSocket, $data)
     {
         $clientFds = app('client.manage')->findUserIdFds($data['receive_user']);
         if ($clientFds) {

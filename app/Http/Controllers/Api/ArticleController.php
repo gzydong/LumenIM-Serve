@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Support\RedisLock;
 use App\Services\ArticleService;
+use App\Http\Requests\ArticleValidate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends CController
 {
-
     /**
      * @var Request
      */
@@ -45,9 +45,8 @@ class ArticleController extends CController
      */
     public function getArticleTags()
     {
-        $user_id = $this->uid();
         return $this->ajaxSuccess('success', [
-            'tags' => $this->articleService->getUserTags($user_id)
+            'tags' => $this->articleService->getUserTags($this->uid())
         ]);
     }
 
@@ -58,11 +57,13 @@ class ArticleController extends CController
      */
     public function getArticleList()
     {
-        //搜索关键词
+        // 搜索关键词
         $keyword = $this->request->get('keyword', '');
-        //查询类型 $findType 1:获取近期日记  2:获取星标日记  3:获取指定分类文章  4:获取指定标签文章 5:获取已删除文章 6:关键词搜索
+
+        // 查询类型 $findType 1:获取近期日记  2:获取星标日记  3:获取指定分类文章  4:获取指定标签文章 5:获取已删除文章 6:关键词搜索
         $findType = $this->request->get('find_type', 0);
-        //分类ID
+
+        // 分类ID
         $cid = $this->request->get('cid', -1);
         $page = $this->request->get('page', 1);
 
@@ -85,29 +86,25 @@ class ArticleController extends CController
     }
 
     /**
-     * 编辑用户笔记
+     * 编辑笔记信息
      *
+     * @param ArticleValidate $articleValidate
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editArticle()
+    public function editArticle(ArticleValidate $articleValidate)
     {
-        $article_id = $this->request->post('article_id', 0);
-        $class_id = $this->request->post('class_id', 0);
-        $md_content = $this->request->post('md_content', '');
-        $content = $this->request->post('content', '');
-        $title = $this->request->post('title', '');
-
-        if (!check_int($article_id, true) || !check_int($class_id, true) || empty($title) || empty($md_content) || empty($content)) {
+        $params = $this->request->only(['article_id', 'class_id', 'md_content', 'content', 'title']);
+        if (!$articleValidate->check($params)) {
             return $this->ajaxParamError();
         }
 
-        $id = $this->articleService->editArticle($this->uid(), $article_id, [
-            'title' => $title,
-            'abstract' => mb_substr(strip_tags($content), 0, 200),
-            'class_id' => $class_id,
-            'image' => get_html_images($content),
-            'md_content' => htmlspecialchars($md_content),
-            'content' => htmlspecialchars($content)
+        $id = $this->articleService->editArticle($this->uid(), $params['article_id'], [
+            'title' => $params['title'],
+            'abstract' => mb_substr(strip_tags($params['content']), 0, 200),
+            'class_id' => $params['class_id'],
+            'image' => get_html_images($params['content']),
+            'md_content' => htmlspecialchars($params['md_content']),
+            'content' => htmlspecialchars($params['content'])
         ]);
 
         return $id ? $this->ajaxSuccess('笔记编辑成功...', [
@@ -122,7 +119,7 @@ class ArticleController extends CController
      */
     public function getArticleDetail()
     {
-        $article_id = $this->request->get('article_id', 0);
+        $article_id = $this->request->get('article_id');
         if (!check_int($article_id)) {
             return $this->ajaxParamError();
         }
@@ -177,7 +174,7 @@ class ArticleController extends CController
      */
     public function delArticleClass()
     {
-        $class_id = $this->request->post('class_id', 0);
+        $class_id = $this->request->post('class_id');
         if (!check_int($class_id)) {
             return $this->ajaxParamError();
         }
@@ -193,7 +190,7 @@ class ArticleController extends CController
      */
     public function delArticleTags()
     {
-        $tag_id = $this->request->post('tag_id', 0);
+        $tag_id = $this->request->post('tag_id');
         if (!check_int($tag_id)) {
             return $this->ajaxParamError();
         }
@@ -213,19 +210,23 @@ class ArticleController extends CController
      */
     public function articleClassSort()
     {
-        $class_id = $this->request->post('class_id', 0);
-        $sort_type = $this->request->post('sort_type', 0);
+        $class_id = $this->request->post('class_id');
+        $sort_type = $this->request->post('sort_type');
         $user_id = $this->uid();
         if (!check_int($class_id) || !in_array($sort_type, [1, 2])) {
             return $this->ajaxParamError();
         }
 
-        $isTrue = false;
         $lockKey = "article_class_sort:{$user_id}_{$class_id}";
+
+        // 获取Redis锁
         if (RedisLock::lock($lockKey, 0, 5)) {
             $isTrue = $this->articleService->articleClassSort($user_id, $class_id, $sort_type);
 
+            // 释放Redis锁
             RedisLock::release($lockKey, 0);
+        } else {
+            $isTrue = false;
         }
 
         return $isTrue ? $this->ajaxSuccess('排序完成...') : $this->ajaxError('排序失败...');
@@ -238,8 +239,8 @@ class ArticleController extends CController
      */
     public function mergeArticleClass()
     {
-        $class_id = $this->request->post('class_id', 0);
-        $toid = $this->request->post('toid', 0);
+        $class_id = $this->request->post('class_id');
+        $toid = $this->request->post('toid');
         if (!check_int($class_id) || !check_int($toid)) {
             return $this->ajaxParamError();
         }
@@ -255,8 +256,8 @@ class ArticleController extends CController
      */
     public function moveArticle()
     {
-        $article_id = $this->request->post('article_id', 0);
-        $class_id = $this->request->post('class_id', 0);
+        $article_id = $this->request->post('article_id');
+        $class_id = $this->request->post('class_id');
         if (!check_int($article_id) || !check_int($class_id)) {
             return $this->ajaxParamError();
         }
@@ -272,8 +273,8 @@ class ArticleController extends CController
      */
     public function setAsteriskArticle()
     {
-        $article_id = $this->request->post('article_id', 0);
-        $type = $this->request->post('type', 0);
+        $article_id = $this->request->post('article_id');
+        $type = $this->request->post('type');
         if (!check_int($article_id) || !in_array($type, [1, 2])) {
             return $this->ajaxParamError();
         }
@@ -320,7 +321,7 @@ class ArticleController extends CController
     public function uploadArticleAnnex()
     {
         $file = $this->request->file('annex');
-        $article_id = $this->request->post('article_id', 0);
+        $article_id = $this->request->post('article_id');
         if (!$file->isValid() || !check_int($article_id)) {
             return $this->ajaxParamError('附件上传失败，请稍后再试...');
         }
@@ -356,7 +357,7 @@ class ArticleController extends CController
      */
     public function deleteArticleAnnex()
     {
-        $annex_id = $this->request->post('annex_id', 0);
+        $annex_id = $this->request->post('annex_id');
         if (!check_int($annex_id)) {
             return $this->ajaxParamError();
         }
@@ -372,7 +373,7 @@ class ArticleController extends CController
      */
     public function foreverDelAnnex()
     {
-        $annex_id = $this->request->post('annex_id', 0);
+        $annex_id = $this->request->post('annex_id');
         if (!check_int($annex_id)) {
             return $this->ajaxParamError();
         }
@@ -388,7 +389,7 @@ class ArticleController extends CController
      */
     public function recoverArticleAnnex()
     {
-        $annex_id = $this->request->post('annex_id', 0);
+        $annex_id = $this->request->post('annex_id');
         if (!check_int($annex_id)) {
             return $this->ajaxParamError();
         }
@@ -428,7 +429,7 @@ class ArticleController extends CController
      */
     public function deleteArticle()
     {
-        $article_id = $this->request->post('article_id', 0);
+        $article_id = $this->request->post('article_id');
         if (!check_int($article_id)) {
             return $this->ajaxParamError();
         }
@@ -444,7 +445,7 @@ class ArticleController extends CController
      */
     public function recoverArticle()
     {
-        $article_id = $this->request->post('article_id', 0);
+        $article_id = $this->request->post('article_id');
         if (!check_int($article_id)) {
             return $this->ajaxParamError();
         }
@@ -460,7 +461,7 @@ class ArticleController extends CController
      */
     public function foreverDelArticle()
     {
-        $article_id = $this->request->post('article_id', 0);
+        $article_id = $this->request->post('article_id');
         if (!check_int($article_id)) {
             return $this->ajaxParamError();
         }
@@ -476,7 +477,7 @@ class ArticleController extends CController
      */
     public function updateArticleTag()
     {
-        $article_id = $this->request->post('article_id', 0);
+        $article_id = $this->request->post('article_id');
         $tags = $this->request->post('tags', []);
         if (!check_int($article_id) || !check_ids($tags)) {
             return $this->ajaxParamError();

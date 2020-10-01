@@ -45,7 +45,7 @@ class GroupController extends CController
      */
     public function detail()
     {
-        $group_id = $this->request->get('group_id', 0);
+        $group_id = $this->request->get('group_id');
         if (!check_int($group_id)) {
             return $this->ajaxParamError();
         }
@@ -144,7 +144,7 @@ class GroupController extends CController
      */
     public function invite()
     {
-        $group_id = $this->request->post('group_id', 0);
+        $group_id = $this->request->post('group_id');
         $uids = array_filter(explode(',', $this->request->post('uids', '')));
 
         if (!check_int($group_id) || !check_ids($uids)) {
@@ -169,7 +169,7 @@ class GroupController extends CController
      */
     public function removeMembers()
     {
-        $group_id = $this->request->post('group_id', 0);
+        $group_id = $this->request->post('group_id');
         $member_ids = $this->request->post('members_ids', []);
 
         if (!check_int($group_id) || !check_ids($member_ids)) {
@@ -193,7 +193,7 @@ class GroupController extends CController
      */
     public function dismiss()
     {
-        $group_id = $this->request->post('group_id', 0);
+        $group_id = $this->request->post('group_id');
         if (!check_int($group_id)) {
             return $this->ajaxParamError();
         }
@@ -213,8 +213,10 @@ class GroupController extends CController
      */
     public function secede()
     {
-        $group_id = $this->request->post('group_id', 0);
-        if (!check_int($group_id)) return $this->ajaxParamError();
+        $group_id = $this->request->post('group_id');
+        if (!check_int($group_id)) {
+            return $this->ajaxParamError();
+        }
 
         $user_id = $this->uid();
         [$isTrue, $record_id] = $this->groupService->quit($user_id, $group_id);
@@ -234,8 +236,8 @@ class GroupController extends CController
      */
     public function setGroupCard()
     {
-        $group_id = $this->request->post('group_id', 0);
-        $visit_card = $this->request->post('visit_card', '');
+        $group_id = $this->request->post('group_id');
+        $visit_card = $this->request->post('visit_card');
 
         if (!check_int($group_id) || empty($visit_card)) {
             return $this->ajaxParamError();
@@ -255,7 +257,7 @@ class GroupController extends CController
         $group_id = $this->request->get('group_id', 0);
         $friends = UserFriends::getUserFriends($this->uid());
         if ($group_id > 0 && $friends) {
-            if ($ids = UserGroupMember::getGroupMenberIds($group_id)) {
+            if ($ids = UserGroupMember::getGroupMemberIds($group_id)) {
                 foreach ($friends as $k => $item) {
                     if (in_array($item['id'], $ids)) unset($friends[$k]);
                 }
@@ -374,8 +376,8 @@ class GroupController extends CController
      */
     public function deleteNotice()
     {
-        $group_id = $this->request->post('group_id', 0);
-        $notice_id = $this->request->post('notice_id', 0);
+        $group_id = $this->request->post('group_id');
+        $notice_id = $this->request->post('notice_id');
 
         if (!check_int($group_id) || !check_int($notice_id)) {
             return $this->ajaxParamError();

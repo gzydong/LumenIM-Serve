@@ -109,7 +109,11 @@ class TalkService
     public function updateUnreadTalkList(int $user_id, $data)
     {
         foreach ($data as $friend_id => $num) {
-            UserChatList::updateOrCreate(['uid' => $user_id, 'friend_id' => intval($friend_id), 'type' => 1], [
+            UserChatList::updateOrCreate([
+                'uid' => $user_id,
+                'friend_id' => intval($friend_id),
+                'type' => 1
+            ], [
                 'status' => 1,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
@@ -247,7 +251,6 @@ class TalkService
             'chat_records.content',
             'chat_records.is_revoke',
             'chat_records.created_at',
-
             'users.nickname',
             'users.avatar as avatar',
         ];
@@ -321,7 +324,6 @@ class TalkService
             'chat_records.content',
             'chat_records.is_revoke',
             'chat_records.created_at',
-
             'users.nickname',
             'users.avatar as avatar',
         ];

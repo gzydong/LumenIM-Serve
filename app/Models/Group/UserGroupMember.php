@@ -34,7 +34,7 @@ class UserGroupMember extends BaseModel
      * @param int $group_id 群聊ID
      * @return mixed
      */
-    public static function getGroupMenberIds(int $group_id)
+    public static function getGroupMemberIds(int $group_id)
     {
         return UserGroupMember::where('group_id', $group_id)->where('status', 0)->pluck('user_id')->toArray();
     }

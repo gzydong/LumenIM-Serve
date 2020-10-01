@@ -9,9 +9,9 @@ namespace App\Helpers;
 class Encryption
 {
     /**
-     * Url 加密
+     * Url  base64_encode 加密
      *
-     * @param string $content
+     * @param string $content 加密的url
      * @return string
      */
     public static function base64UrlEncode(string $content)
@@ -20,9 +20,9 @@ class Encryption
     }
 
     /**
-     * Url 解密
+     * Url base64_decode 解密
      *
-     * @param string $content
+     * @param string $content 解密字符串
      * @return string
      */
     public static function base64UrlDecode(string $content)

@@ -21,7 +21,7 @@ class SocketIOParser extends Parser
      */
     public function execute($server, $frame): bool
     {
-        //判断接收的消息是否为心跳检测
+        // 判断接收的消息是否为心跳检测消息
         if ($frame->data == 'heartbeat') {
             return true;
         }

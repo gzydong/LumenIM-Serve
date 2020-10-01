@@ -3,16 +3,31 @@
 namespace App\Events;
 
 /**
- * 登录事件处理
+ * 登录事件
  *
  * Class UserLoginLogEvent
  * @package App\Events
  */
 class UserLoginLogEvent
 {
-    //登录用户
+    /**
+     * 登录用户ID
+     * @var int
+     */
     public $user_id;
+
+    /**
+     * 登录IP
+     *
+     * @var string
+     */
     public $login_ip;
+
+    /**
+     * 登录时间
+     *
+     * @var false|string
+     */
     public $created_at;
 
     /**

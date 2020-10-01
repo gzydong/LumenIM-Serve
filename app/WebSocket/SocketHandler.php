@@ -73,9 +73,10 @@ class SocketHandler extends WebsocketHandler
      */
     public function onClose($fd, $reactorId)
     {
-        //获取客户端对应的用户ID
+        // 获取客户端对应的用户ID
         $user_id = app('client.manage')->findFdUserId($fd);
 
+        // 清除用户绑定信息
         app('client.manage')->deleteFd($fd);
 
         // 将fd 退出所有聊天室
@@ -86,7 +87,7 @@ class SocketHandler extends WebsocketHandler
             return true;
         }
 
-        //获取所有好友的用户ID
+        // 获取所有好友的用户ID
         $uids = UserFriends::getFriendIds($user_id);
         if ($uids) {
             $fds = [];

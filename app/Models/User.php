@@ -16,6 +16,15 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
 {
     use Authenticatable, Authorizable;
 
+    // 性别状态:未知
+    const GENDER_UNKNOWN = 0;
+
+    // 性别状态:男
+    const GENDER_MAN = 1;
+
+    // 性别状态:女
+    const GENDER_WOMAN = 2;
+
     /**
      * 关联到模型的数据表
      *
@@ -23,6 +32,11 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
      */
     protected $table = 'users';
 
+    /**
+     * 可批量赋值属性
+     *
+     * @var array
+     */
     protected $fillable = [
         'mobile',
         'nickname',

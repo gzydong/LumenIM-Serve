@@ -4,8 +4,11 @@ namespace App\WebSocket;
 
 use App\Support\JwtObject;
 
+use Swoole\Http\Request;
+use Swoole\Http\Response;
+
 /**
- * Websocket 自定义挥手处理
+ * WebSocket 自定义挥手处理
  *
  * Class HandShakeHandler
  * @package App\Services\Websocket
@@ -14,8 +17,8 @@ class HandShakeHandler
 {
     /**
      *
-     * @param \Swoole\Http\Request $request
-     * @param \Swoole\Http\Response $response
+     * @param Request $request
+     * @param Response $response
      *
      * @return bool
      */

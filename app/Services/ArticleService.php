@@ -110,36 +110,56 @@ class ArticleService
      * 获取文章详情
      *
      * @param int $article_id 文章ID
-     * @param int $uid 用户ID
+     * @param int $user_id 用户ID
      * @return array
      */
-    public function getArticleDetail(int $article_id, $uid = 0)
+    public function getArticleDetail(int $article_id, $user_id = 0)
     {
-        $info = Article::where('id', $article_id)->where('user_id', $uid)->first(['id', 'class_id', 'tags_id', 'title', 'status', 'is_asterisk', 'created_at', 'updated_at']);
-        if (!$info) return [];
+        $info = Article::where('id', $article_id)->where('user_id', $user_id)->first(['id', 'class_id', 'tags_id', 'title', 'status', 'is_asterisk', 'created_at', 'updated_at']);
+        if (!$info) {
+            return [];
+        }
 
+        // 关联文章详情
         $detail = $info->detail;
         if (!$detail) {
             return [];
         }
 
-        $data = [
+        $tags = [];
+        if ($info->tags_id) {
+            $tags = ArticleTags::whereIn('id', explode(',', $info->tags_id))->get(['id', 'tag_name']);
+        }
+
+        return [
             'id' => $article_id,
-            'title' => $info->title,
-            'updated_at' => $info->updated_at,
-            'created_at' => $info->created_at,
             'class_id' => $info->class_id,
+            'title' => $info->title,
             'md_content' => htmlspecialchars_decode($detail->md_content),
             'content' => htmlspecialchars_decode($detail->content),
             'is_asterisk' => $info->is_asterisk,
             'status' => $info->status,
-            'tags' => $info->tags_id ? ArticleTags::whereIn('id', explode(',', $info->tags_id))->get(['id', 'tag_name']) : [],
-            'files' => ArticleAnnex::where('user_id', $uid)->where('article_id', $article_id)->where('status', 1)->get([
-                'id', 'file_suffix', 'file_size', 'original_name', 'created_at'
-            ])->toArray()
+            'created_at' => $info->created_at,
+            'updated_at' => $info->updated_at,
+            'tags' => $tags,
+            'files' => $this->findArticleAnnexAll($user_id, $article_id)
         ];
+    }
 
-        return $data;
+    /**
+     * 获取笔记附件
+     *
+     * @param int $user_id 用户ID
+     * @param int $article_id 笔记ID
+     * @return mixed
+     */
+    public function findArticleAnnexAll(int $user_id, int $article_id)
+    {
+        return ArticleAnnex::where([
+            ['user_id', '=', $user_id],
+            ['article_id', '=', $article_id],
+            ['status', '=', 1]
+        ])->get(['id', 'file_suffix', 'file_size', 'original_name', 'created_at'])->toArray();
     }
 
     /**

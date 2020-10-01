@@ -9,7 +9,6 @@ use App\Services\FriendService;
 use App\Services\UserService;
 use App\Support\SendEmailCode;
 use Illuminate\Http\Request;
-
 use App\Cache\ApplyNumCache;
 use App\Cache\FriendRemarkCache;
 
@@ -147,7 +146,7 @@ class UsersController extends CController
      */
     public function editAvatar()
     {
-        $avatar = $this->request->post('avatar', '');
+        $avatar = $this->request->post('avatar');
         if (empty($avatar)) {
             return $this->ajaxParamError();
         }
@@ -184,7 +183,7 @@ class UsersController extends CController
      */
     public function sendFriendApply()
     {
-        $friend_id = $this->request->post('friend_id', 0);
+        $friend_id = $this->request->post('friend_id');
         $remarks = $this->request->post('remarks', '');
         if (!check_int($friend_id)) {
             return $this->ajaxParamError();
@@ -214,7 +213,7 @@ class UsersController extends CController
      */
     public function handleFriendApply()
     {
-        $apply_id = $this->request->post('apply_id', 0);
+        $apply_id = $this->request->post('apply_id');
         $remarks = $this->request->post('remarks', '');
         if (!check_int($apply_id)) {
             return $this->ajaxParamError();
@@ -236,7 +235,7 @@ class UsersController extends CController
      */
     public function deleteFriendApply()
     {
-        $apply_id = $this->request->post('apply_id', 0);
+        $apply_id = $this->request->post('apply_id');
         if (!check_int($apply_id)) {
             return $this->ajaxParamError();
         }
@@ -264,7 +263,7 @@ class UsersController extends CController
      */
     public function editFriendRemark()
     {
-        $friend_id = $this->request->post('friend_id', 0);
+        $friend_id = $this->request->post('friend_id');
         $remarks = $this->request->post('remarks', '');
 
         if (!check_int($friend_id) || empty($remarks)) {
@@ -393,7 +392,7 @@ class UsersController extends CController
      */
     public function removeFriend()
     {
-        $friend_id = $this->request->post('friend_id', 0);
+        $friend_id = $this->request->post('friend_id');
         $user_id = $this->uid();
         if (!check_int($friend_id)) {
             return $this->ajaxParamError();
@@ -418,7 +417,7 @@ class UsersController extends CController
      */
     public function sendChangeEmailCode(SendEmailCode $sendEmailCode)
     {
-        $email = $this->request->post('email', '');
+        $email = $this->request->post('email');
         if (empty($email)) {
             return $this->ajaxParamError();
         }

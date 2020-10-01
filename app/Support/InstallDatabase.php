@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Support;
 
 use Illuminate\Database\Schema\Blueprint;
@@ -6,6 +7,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Console\Command;
 
+/**
+ * 数据库安装助手
+ *
+ * Class InstallDatabase
+ * @package App\Support
+ */
 class InstallDatabase
 {
     public $command;

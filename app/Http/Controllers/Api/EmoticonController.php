@@ -40,8 +40,8 @@ class EmoticonController extends CController
     {
         $emoticonList = [];
         $user_id = $this->uid();
-        $ids = $this->emoticonService->getInstallIds($user_id);
-        if ($ids) {
+
+        if ($ids = $this->emoticonService->getInstallIds($user_id)) {
             $items = Emoticon::whereIn('id', $ids)->get(['id', 'name', 'url']);
             foreach ($items as $item) {
                 $emoticonList[] = [
@@ -92,8 +92,8 @@ class EmoticonController extends CController
      */
     public function setUserEmoticon()
     {
-        $emoticon_id = $this->request->post('emoticon_id', 0);
-        $type = $this->request->post('type', 0);
+        $emoticon_id = $this->request->post('emoticon_id');
+        $type = $this->request->post('type');
         if (!check_int($emoticon_id) || !in_array($type, [1, 2])) {
             return $this->ajaxParamError();
         }
@@ -132,7 +132,7 @@ class EmoticonController extends CController
      */
     public function collectEmoticon()
     {
-        $id = $this->request->post('record_id', 0);
+        $id = $this->request->post('record_id');
         if (!check_int($id)) {
             return $this->ajaxParamError();
         }
@@ -188,7 +188,7 @@ class EmoticonController extends CController
      */
     public function delCollectEmoticon()
     {
-        $ids = $this->request->post('ids', '');
+        $ids = $this->request->post('ids');
         if (empty($ids)) {
             return $this->ajaxParamError();
         }

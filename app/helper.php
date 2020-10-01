@@ -41,7 +41,7 @@ function check_number(string $num)
  * @param bool $isZero 判断是否可为0
  * @return bool
  */
-function check_int(string $int, $isZero = false)
+function check_int($int, $isZero = false)
 {
     $reg = $isZero ? '/^[+]{0,1}(\d+)$/' : '/^[1-9]\d*$/';
     return is_numeric($int) && preg_match($reg, $int);
