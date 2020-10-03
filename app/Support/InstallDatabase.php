@@ -39,18 +39,18 @@ class InstallDatabase
 
         if (!Schema::hasTable('article')) {
             Schema::create('article', function (Blueprint $table) {
-                $table->unsignedInteger('id', true)->comment('文章ID');
+                $table->unsignedInteger('id', true)->comment('笔记ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
                 $table->unsignedInteger('class_id')->default(0)->comment('分类ID');
                 $table->string('tags_id', 20)->default('')->comment('笔记关联标签');
-                $table->string('title', 80)->default('')->charset('utf8mb4')->comment('文章标题');
-                $table->string('abstract', 200)->default('')->charset('utf8mb4')->comment('文章摘要');
-                $table->string('image', 255)->default('')->comment('文章首图');
-                $table->unsignedTinyInteger('is_asterisk')->default(0)->comment('是否星标文章(0:否  1:是)');
-                $table->unsignedTinyInteger('status')->default(1)->comment('笔记状态 1:正常 2:已删除');
-                $table->dateTime('created_at')->comment('添加时间');
-                $table->dateTime('updated_at')->comment('最后一次更新时间');
-                $table->dateTime('deleted_at')->comment('笔记删除时间');
+                $table->string('title', 80)->default('')->charset('utf8mb4')->comment('笔记标题');
+                $table->string('abstract', 200)->default('')->charset('utf8mb4')->comment('笔记摘要');
+                $table->string('image', 255)->default('')->comment('笔记首图');
+                $table->unsignedTinyInteger('is_asterisk')->default(0)->comment('是否星标笔记[0:否;1:是]');
+                $table->unsignedTinyInteger('status')->default(1)->comment('笔记状态[1:正常;2:已删除]');
+                $table->dateTime('created_at')->nullable(true)->comment('添加时间');
+                $table->dateTime('updated_at')->nullable(true)->comment('最后一次更新时间');
+                $table->dateTime('deleted_at')->nullable(true)->comment('笔记删除时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -60,7 +60,7 @@ class InstallDatabase
                 $table->index(['user_id', 'class_id', 'title'], 'idx_user_id_class_id_title');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}article` comment '用户文章表'");
+            DB::statement("ALTER TABLE `{$prefix}article` comment '用户笔记表'");
             $this->command->info("{$prefix}article 数据表安装成功...");
             $this->installNum++;
         }
@@ -74,9 +74,9 @@ class InstallDatabase
                 $table->bigInteger('file_size')->default(0)->unsigned()->comment('文件大小（单位字节）');
                 $table->string('save_dir', 500)->nullable()->comment('文件保存地址（相对地址）');
                 $table->string('original_name', 100)->nullable()->comment('原文件名');
-                $table->tinyInteger('status')->default(1)->unsigned()->comment('附件状态 1:正常 2:已删除');
-                $table->dateTime('created_at')->comment('附件上传时间');
-                $table->dateTime('deleted_at')->comment('附件删除时间');
+                $table->tinyInteger('status')->default(1)->unsigned()->comment('附件状态[1:正常;2:已删除]');
+                $table->dateTime('created_at')->nullable(true)->comment('附件上传时间');
+                $table->dateTime('deleted_at')->nullable(true)->comment('附件删除时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -84,19 +84,19 @@ class InstallDatabase
 
                 $table->index(['user_id', 'article_id'], 'idx_user_id_article_id');
             });
-            DB::statement("ALTER TABLE `{$prefix}article_annex` comment '文章附件信息表'");
+            DB::statement("ALTER TABLE `{$prefix}article_annex` comment '笔记附件信息表'");
             $this->command->info("{$prefix}article_annex 数据表安装成功...");
             $this->installNum++;
         }
 
         if (!Schema::hasTable('article_class')) {
             Schema::create('article_class', function (Blueprint $table) {
-                $table->unsignedInteger('id', true)->comment('文章分类ID');
+                $table->unsignedInteger('id', true)->comment('笔记分类ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
                 $table->string('class_name', 20)->default('')->comment('分类名');
                 $table->unsignedTinyInteger('sort')->default(0)->comment('排序');
-                $table->unsignedTinyInteger('is_default')->default(0)->comment('默认分类1:是 0:不是');
-                $table->unsignedInteger('created_at')->default(0)->comment('创建时间');
+                $table->unsignedTinyInteger('is_default')->default(0)->comment('默认分类[1:是;0:不是]');
+                $table->unsignedInteger('created_at')->nullable(true)->default(0)->comment('创建时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -104,15 +104,15 @@ class InstallDatabase
 
                 $table->index(['user_id', 'sort'], 'idx_user_id_sort');
             });
-            DB::statement("ALTER TABLE `{$prefix}article_class` comment '文章分类表'");
+            DB::statement("ALTER TABLE `{$prefix}article_class` comment '笔记分类表'");
             $this->command->info("{$prefix}article_class 数据表安装成功...");
             $this->installNum++;
         }
 
         if (!Schema::hasTable('article_detail')) {
             Schema::create('article_detail', function (Blueprint $table) {
-                $table->unsignedInteger('id', true)->comment('文章详情ID');
-                $table->unsignedInteger('article_id')->nullable(false)->comment('文章ID');
+                $table->unsignedInteger('id', true)->comment('笔记详情ID');
+                $table->unsignedInteger('article_id')->nullable(false)->comment('笔记ID');
                 $table->longtext('md_content')->charset('utf8mb4')->comment('Markdown 内容');
                 $table->longtext('content')->charset('utf8mb4')->comment('Markdown 解析HTML内容');
 
@@ -122,7 +122,7 @@ class InstallDatabase
 
                 $table->unique('article_id', 'unique_article_id');
             });
-            DB::statement("ALTER TABLE `{$prefix}article_detail` comment '文章详情表'");
+            DB::statement("ALTER TABLE `{$prefix}article_detail` comment '笔记详情表'");
 
             $this->command->info("{$prefix}article_detail 数据表安装成功...");
             $this->installNum++;
@@ -130,11 +130,11 @@ class InstallDatabase
 
         if (!Schema::hasTable('article_tags')) {
             Schema::create('article_tags', function (Blueprint $table) {
-                $table->unsignedInteger('id', true)->comment('文章标签ID');
+                $table->unsignedInteger('id', true)->comment('笔记标签ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
                 $table->string('tag_name', 20)->default('')->comment('标签名');
                 $table->unsignedTinyInteger('sort')->default(0)->comment('排序');
-                $table->unsignedInteger('created_at')->default(0)->comment('创建时间');
+                $table->unsignedInteger('created_at')->nullable(true)->default(0)->comment('创建时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -142,7 +142,7 @@ class InstallDatabase
                 $table->index(['user_id'], 'idx_user_id');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}article_tags` comment '文章标签表'");
+            DB::statement("ALTER TABLE `{$prefix}article_tags` comment '笔记标签表'");
             $this->command->info("{$prefix}article_tags 数据表安装成功...");
             $this->installNum++;
         }
@@ -152,7 +152,7 @@ class InstallDatabase
                 $table->unsignedInteger('id', true)->comment('表情分组ID');
                 $table->string('name', 100)->default('')->comment('表情分组名称');
                 $table->string('url', 255)->default('')->comment('图片地址');
-                $table->unsignedInteger('created_at')->default(0)->comment('创建时间');
+                $table->unsignedInteger('created_at')->nullable(true)->default(0)->comment('创建时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -172,7 +172,7 @@ class InstallDatabase
                 $table->string('url', 255)->default('')->comment('表情链接');
                 $table->string('file_suffix', 10)->default('')->comment('文件后缀名');
                 $table->unsignedBigInteger('file_size')->default(0)->comment('文件大小（单位字节）');
-                $table->unsignedInteger('created_at')->default(0)->comment('添加时间');
+                $table->unsignedInteger('created_at')->nullable(true)->default(0)->comment('添加时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -186,7 +186,7 @@ class InstallDatabase
         if (!Schema::hasTable('file_split_upload')) {
             Schema::create('file_split_upload', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('临时文件ID');
-                $table->unsignedTinyInteger('file_type')->default(2)->comment('1:合并文件  2:拆分文件');
+                $table->unsignedTinyInteger('file_type')->default(2)->comment('数据类型[1:合并文件;2:拆分文件]');
                 $table->unsignedInteger('user_id')->default(0)->comment('上传的用户ID');
                 $table->string('hash_name', 30)->default('')->comment('临时文件hash名');
                 $table->string('original_name', 100)->default('')->comment('原文件名');
@@ -195,8 +195,8 @@ class InstallDatabase
                 $table->string('save_dir', 255)->default('')->comment('文件的临时保存路径');
                 $table->string('file_ext', 10)->default('')->comment('文件后缀名');
                 $table->unsignedInteger('file_size')->default(0)->comment('临时文件大小');
-                $table->unsignedTinyInteger('is_delete')->default(0)->comment('文件是否已被删除(1:是 0:否)');
-                $table->unsignedInteger('upload_at')->comment('文件上传时间');
+                $table->unsignedTinyInteger('is_delete')->default(0)->comment('文件是否已被删除[0:否;1:是]');
+                $table->unsignedInteger('upload_at')->nullable(true)->comment('文件上传时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -214,7 +214,7 @@ class InstallDatabase
                 $table->unsignedInteger('id', true)->comment('登录日志ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
                 $table->string('ip', 20)->comment('登录地址IP');
-                $table->dateTime('created_at')->comment('登录时间');
+                $table->dateTime('created_at')->nullable(true)->comment('登录时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -231,7 +231,7 @@ class InstallDatabase
                 $table->string('mobile', 11)->default('')->unique()->comment('手机号');
                 $table->string('nickname', 20)->default('')->comment('用户昵称');
                 $table->string('avatar', 255)->default('')->comment('用户头像地址');
-                $table->unsignedTinyInteger('gender')->default(0)->unsigned()->comment('用户性别  0:未知  1:男   2:女');
+                $table->unsignedTinyInteger('gender')->default(0)->unsigned()->comment('用户性别[0:未知;1:男;2:女]');
                 $table->string('password', 255)->default('')->comment('用户密码');
                 $table->string('invite_code', 6)->default('')->comment('邀请码');
                 $table->string('motto', 100)->default('')->comment('用户座右铭');
@@ -245,7 +245,7 @@ class InstallDatabase
                 $table->unique(['mobile'], 'idx_mobile');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}users` comment '用户表'");
+            DB::statement("ALTER TABLE `{$prefix}users` comment '用户信息表'");
             $this->command->info("{$prefix}users 数据表安装成功...");
             $this->installNum++;
         }
@@ -253,15 +253,15 @@ class InstallDatabase
         if (!Schema::hasTable('users_chat_list')) {
             Schema::create('users_chat_list', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('聊天列表ID');
-                $table->unsignedTinyInteger('type')->default(1)->comment('聊天类型  1:好友  2:群聊');
+                $table->unsignedTinyInteger('type')->default(1)->comment('聊天类型[1:好友;2:群聊]');
                 $table->unsignedInteger('uid')->default(0)->comment('用户ID');
                 $table->unsignedInteger('friend_id')->default(0)->comment('朋友的用户ID');
                 $table->unsignedInteger('group_id')->default(0)->comment('聊天分组ID');
-                $table->unsignedInteger('status')->default(1)->default(1)->comment('状态 1:正常 0:已删除');
-                $table->unsignedTinyInteger('is_top')->default(0)->comment('是否置顶 0:否  1:是');
-                $table->unsignedTinyInteger('not_disturb')->default(0)->comment('是否消息免打扰 0:否  1:是');
-                $table->dateTime('created_at')->comment('创建时间');
-                $table->dateTime('updated_at')->comment('更新时间');
+                $table->unsignedInteger('status')->default(1)->default(1)->comment('状态[0:已删除;1:正常]');
+                $table->unsignedTinyInteger('is_top')->default(0)->comment('是否置顶[0:否;1:是]');
+                $table->unsignedTinyInteger('not_disturb')->default(0)->comment('是否消息免打扰[0:否;1:是]');
+                $table->dateTime('created_at')->nullable(true)->comment('创建时间');
+                $table->dateTime('updated_at')->nullable(true)->comment('更新时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -278,13 +278,13 @@ class InstallDatabase
         if (!Schema::hasTable('chat_records')) {
             Schema::create('chat_records', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('聊天记录ID');
-                $table->tinyInteger('source')->unsigned()->default(1)->comment('消息来源  1:好友消息 2:群聊消息');
-                $table->tinyInteger('msg_type')->unsigned()->default(1)->comment('消息类型 (1:文本消息   2:文件消息   3:系统提示好友入群消息 或系统提示好友退群消息  4:会话记录转发) ');
-                $table->unsignedInteger('user_id')->default(0)->comment('发送消息的用户ID（0:代表系统消息）');
+                $table->tinyInteger('source')->unsigned()->default(1)->comment('消息来源[1:好友消息;2:群聊消息]');
+                $table->tinyInteger('msg_type')->unsigned()->default(1)->comment('消息类型[1:文本消息;2:文件消息;3:系统提示好友入群消息或系统提示好友退群消息;4:会话记录转发]');
+                $table->unsignedInteger('user_id')->default(0)->comment('发送消息的用户ID[0:代表系统消息]');
                 $table->unsignedInteger('receive_id')->default(0)->comment('接收消息的用户ID或群聊ID');
-                $table->text('content')->charset('utf8mb4')->comment('文本消息');
-                $table->tinyInteger('is_revoke')->default(0)->comment('是否撤回消息（0:否 1:是）');
-                $table->dateTime('created_at')->comment('发送消息的时间');
+                $table->text('content')->nullable(true)->charset('utf8mb4')->comment('文本消息');
+                $table->tinyInteger('is_revoke')->default(0)->comment('是否撤回消息[0:否;1:是]');
+                $table->dateTime('created_at')->nullable(true)->comment('发送消息的时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -303,15 +303,15 @@ class InstallDatabase
                 $table->unsignedInteger('id', true)->comment('文件ID');
                 $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('上传文件的用户ID');
-                $table->tinyInteger('file_source')->default(1)->unsigned()->comment('文件来源(1:用户上传 2:表情包 )');
-                $table->tinyInteger('file_type')->default(1)->unsigned()->comment('消息类型  1:图片   2:视频   3:文件');
+                $table->tinyInteger('file_source')->default(1)->unsigned()->comment('文件来源[1:用户上传;2:表情包]');
+                $table->tinyInteger('file_type')->default(1)->unsigned()->comment('消息类型[1:图片;2:视频;3:文件]');
                 $table->tinyInteger('save_type')->default(0)->unsigned()->comment('文件保存方式（0:本地 1:第三方[阿里OOS、七牛云] ）');
                 $table->string('original_name', 100)->default('')->comment('原文件名');
                 $table->string('file_suffix', 10)->default('')->comment('文件后缀名');
                 $table->unsignedBigInteger('file_size')->default(0)->comment('文件大小（单位字节）');
                 $table->string('save_dir', 500)->default('')->comment('文件保存地址（相对地址/第三方网络地址）');
-                $table->tinyInteger('is_delete')->default(0)->unsigned()->comment('文件是否已删除 （0:否 1:已删除）');
-                $table->dateTime('created_at')->comment('创建时间');
+                $table->tinyInteger('is_delete')->default(0)->unsigned()->comment('文件是否已删除[0:否;1:已删除]');
+                $table->dateTime('created_at')->nullable(true)->comment('创建时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -320,7 +320,7 @@ class InstallDatabase
                 $table->unique(['record_id'], 'idx_record_id');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}chat_records_file` comment '用户聊天记录（文件消息）'");
+            DB::statement("ALTER TABLE `{$prefix}chat_records_file` comment '用户聊天记录_文件消息表'");
             $this->command->info("{$prefix}chat_records_file 数据表安装成功...");
             $this->installNum++;
         }
@@ -330,7 +330,7 @@ class InstallDatabase
                 $table->unsignedInteger('id', true)->comment('聊天删除记录ID');
                 $table->unsignedInteger('record_id')->default(0)->comment('聊天记录ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
-                $table->dateTime('created_at')->comment('删除时间');
+                $table->dateTime('created_at')->nullable(true)->comment('删除时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -339,7 +339,7 @@ class InstallDatabase
                 $table->index(['record_id', 'user_id'], 'idx_record_user_id');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}chat_records_delete` comment '聊天记录删除记录表'");
+            DB::statement("ALTER TABLE `{$prefix}chat_records_delete` comment '用户聊天记录_删除记录表'");
             $this->command->info("{$prefix}chat_records_delete 数据表安装成功...");
             $this->installNum++;
         }
@@ -351,7 +351,7 @@ class InstallDatabase
                 $table->unsignedInteger('user_id')->default(0)->comment('转发用户ID');
                 $table->string('records_id', 255)->default('')->comment("转发的聊天记录ID，多个用','分割");
                 $table->json('text')->default(null)->comment('记录快照');
-                $table->dateTime('created_at')->comment('转发时间');
+                $table->dateTime('created_at')->nullable(true)->comment('转发时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -360,7 +360,7 @@ class InstallDatabase
                 $table->index(['user_id', 'records_id'], 'idx_user_id_records_id');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}chat_records_forward` comment '用户聊天记录转发信息表'");
+            DB::statement("ALTER TABLE `{$prefix}chat_records_forward` comment '用户聊天记录_转发信息表'");
             $this->command->info("{$prefix}chat_records_forward 数据表安装成功...");
             $this->installNum++;
         }
@@ -369,7 +369,7 @@ class InstallDatabase
             Schema::create('chat_records_invite', function (Blueprint $table) {
                 $table->unsignedInteger('id', true)->comment('入群或退群通知ID');
                 $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
-                $table->tinyInteger('type')->default(1)->comment('通知类型 （1:入群通知 2:自动退群 3:管理员踢群）');
+                $table->tinyInteger('type')->default(1)->comment('通知类型[1:入群通知;2:自动退群;3:管理员踢群]');
                 $table->unsignedInteger('operate_user_id')->default(0)->comment('操作人的用户ID(邀请人)');
                 $table->string('user_ids', 255)->default('')->comment("用户ID，多个用','分割");
 
@@ -380,7 +380,7 @@ class InstallDatabase
                 $table->index(['record_id'], 'idx_recordid');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}chat_records_invite` comment '用户聊天记录（入群/退群消息）'");
+            DB::statement("ALTER TABLE `{$prefix}chat_records_invite` comment '用户聊天记录_入群或退群消息表'");
             $this->command->info("{$prefix}chat_records_invite 数据表安装成功...");
             $this->installNum++;
         }
@@ -392,7 +392,7 @@ class InstallDatabase
                 $table->unsignedInteger('user_id')->default(0)->comment('上传文件的用户ID');
                 $table->string('code_lang', 20)->default('')->comment("代码片段类型(如：php,java,python)");
                 $table->text('code')->charset('utf8mb4')->comment('代码片段内容');
-                $table->dateTime('created_at')->comment('创建时间');
+                $table->dateTime('created_at')->nullable(true)->comment('创建时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -401,7 +401,7 @@ class InstallDatabase
                 $table->index(['record_id'], 'idx_recordid');
             });
 
-            DB::statement("ALTER TABLE `{$prefix}chat_records_code` comment '用户聊天记录（代码块消息）'");
+            DB::statement("ALTER TABLE `{$prefix}chat_records_code` comment '用户聊天记录_代码块消息表'");
             $this->command->info("{$prefix}chat_records_code 数据表安装成功...");
             $this->installNum++;
         }
@@ -430,10 +430,10 @@ class InstallDatabase
                 $table->unsignedInteger('user2')->default(0)->comment('用户2(user1 一定比 user2 小)');
                 $table->string('user1_remark', 20)->default('')->comment('好友备注');
                 $table->string('user2_remark', 20)->default('')->comment('好友备注');
-                $table->unsignedTinyInteger('active')->default(1)->default(1)->comment('主动邀请方  1:user1   2:user2');
-                $table->unsignedTinyInteger('status')->default(1)->comment('好友状态  1: 好友状态  0:已解除好友关系');
+                $table->unsignedTinyInteger('active')->default(1)->default(1)->comment('主动邀请方[1:user1;2:user2]');
+                $table->unsignedTinyInteger('status')->default(1)->comment('好友状态[0:已解除好友关系;1:好友状态]');
                 $table->dateTime('agree_time')->comment('成为好友时间');
-                $table->dateTime('created_at')->comment('创建时间');
+                $table->dateTime('created_at')->nullable(true)->comment('创建时间');
 
                 $table->charset = 'utf8';
                 $table->collation = 'utf8_general_ci';
@@ -452,7 +452,7 @@ class InstallDatabase
                 $table->unsignedInteger('id', true)->comment('申请ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('申请人ID');
                 $table->unsignedInteger('friend_id')->default(0)->comment('被申请人');
-                $table->unsignedTinyInteger('status')->default(0)->comment('申请状态(0:等待处理  1:已同意');
+                $table->unsignedTinyInteger('status')->default(0)->comment('申请状态[0:等待处理;1:已同意]');
                 $table->string('remarks', 50)->default('')->comment('申请人备注信息');
                 $table->dateTime('created_at')->nullable()->comment('申请时间');
                 $table->dateTime('updated_at')->nullable()->comment('处理时间');
@@ -476,7 +476,7 @@ class InstallDatabase
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
                 $table->string('group_name', 30)->default('')->charset('utf8mb4')->comment('群名称');
                 $table->string('group_profile', 100)->default('')->comment('群介绍');
-                $table->tinyInteger('status')->default(0)->comment('群状态 0:正常 1:已解散');
+                $table->tinyInteger('status')->default(0)->comment('群状态[0:正常;1:已解散]');
                 $table->string('avatar', 255)->default('')->comment('群头像');
                 $table->dateTime('created_at')->nullable()->comment('创建时间');
             });
@@ -491,8 +491,8 @@ class InstallDatabase
                 $table->unsignedInteger('id', true)->comment('自增ID');
                 $table->unsignedInteger('group_id')->default(0)->comment('群ID');
                 $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
-                $table->tinyInteger('group_owner')->nullable()->comment('是否为群主 0:否  1:是');
-                $table->tinyInteger('status')->default(0)->comment('退群状态  0: 正常状态  1:已退群');
+                $table->tinyInteger('group_owner')->nullable()->comment('是否为群主[0:否;1:是]');
+                $table->tinyInteger('status')->default(0)->comment('退群状态[0:正常状态;1:已退群]');
                 $table->string('visit_card', 20)->default('')->comment('用户群名片');
                 $table->dateTime('created_at')->nullable()->comment('入群时间');
 
@@ -515,7 +515,7 @@ class InstallDatabase
                 $table->unsignedInteger('user_id')->default(0)->comment('创建者用户ID');
                 $table->string('title', 30)->default('')->charset('utf8mb4')->comment('公告标题');
                 $table->text('content')->charset('utf8mb4')->comment('公告内容');
-                $table->tinyInteger('is_delete')->default(0)->comment('是否删除  0: 否  1:已删除');
+                $table->tinyInteger('is_delete')->default(0)->comment('是否删除[0:否;1:已删除]');
                 $table->dateTime('created_at')->nullable()->comment('创建时间');
                 $table->dateTime('updated_at')->nullable()->comment('更新时间');
                 $table->dateTime('deleted_at')->nullable()->comment('删除时间');
