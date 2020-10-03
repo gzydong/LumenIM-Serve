@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\ArticleValidate;
+use App\Models\Article\Article;
 use Illuminate\Http\Request;
 
 /**
@@ -13,20 +14,15 @@ use Illuminate\Http\Request;
  */
 class TestController extends CController
 {
-
-    public function __construct()
+    public function test(Request $request)
     {
 
-    }
-
-    public function test(ArticleValidate $articleValidate, Request $request)
-    {
-
-        $type = $request->post('type');
-
-
-        dd(check_int($type));
-        $result = $articleValidate->check(app('request')->all());
-        dd($articleValidate->getError());
+        $this->validate($request, [
+            'article_id' => 'required|Integer|min:0',
+            'class_id' => 'required|Integer|min:0',
+            'title' => 'required|max:255',
+            'content' => 'required',
+            'md_content' => 'required',
+        ]);
     }
 }

@@ -17,5 +17,13 @@ return [
         'algo' => 'HS256',// HS256, HMACSHA256, AES
         'secret' => env('JWT_SECRET', ''),
         'ttl' => 60 * 60 * 24 * 7,// 过期时间
-    ]
+    ],
+
+    // SQL查询日志(测试环境)
+    'sql_query_log' => [
+        // 是否开启
+        'enabled' => env('SQL_QUERY_LOG', false),
+        // 慢查询时间/单位毫秒
+        'slower_than' => env('SQL_QUERY_SLOWER', 0),
+    ],
 ];

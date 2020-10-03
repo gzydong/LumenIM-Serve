@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Storage;
  */
 class DownloadController extends CController
 {
-
     /**
      * 下载用户聊天文件
      *
