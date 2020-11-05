@@ -83,7 +83,7 @@ class GroupService
                 'source' => 2,
                 'user_id' => 0,
                 'receive_id' => $insRes->id,
-                'created_at' => date('Y-m-d H:i;s')
+                'created_at' => date('Y-m-d H:i:s')
             ]);
 
             if (!$result) {
@@ -202,7 +202,7 @@ class GroupService
                 'source' => 2,
                 'user_id' => 0,
                 'receive_id' => $group_id,
-                'created_at' => date('Y-m-d H:i;s')
+                'created_at' => date('Y-m-d H:i:s')
             ]);
 
             if (!$result) throw new Exception('添加群通知记录失败1');
@@ -248,7 +248,7 @@ class GroupService
                     'user_id' => 0,
                     'receive_id' => $group_id,
                     'content' => $user_id,
-                    'created_at' => date('Y-m-d H:i;s')
+                    'created_at' => date('Y-m-d H:i:s')
                 ]);
 
                 if (!$result) {
@@ -304,7 +304,7 @@ class GroupService
                 'source' => 2,
                 'user_id' => 0,
                 'receive_id' => $group_id,
-                'created_at' => date('Y-m-d H:i;s')
+                'created_at' => date('Y-m-d H:i:s')
             ]);
 
             if (!$result) {
